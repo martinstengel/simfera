@@ -1,0 +1,19 @@
+# Ignore following files
+config_simulator.pro
+*~
+*test*
+*log
+*eps
+*png
+*jpeg
+*jpg
+*EPS
+*PNG
+*JPEG
+*JPG
+*nc
+*txt
+*swp
+*error*
+.directory
+
