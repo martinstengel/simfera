@@ -3,7 +3,7 @@
 PRO CS_EPS2PNG, epsfile
     filbase = FSC_Base_Filename( epsfile, Directory=dir, Extension=ext )
     pngfile = dir + filbase + '.png'
-    SPAWN, 'convert -density 300 ' + epsfile + $
+    SPAWN, 'convert -density 150 ' + epsfile + $
            ' -resize 50% -flatten ' + pngfile + ' >/dev/null 2>&1 '
     PRINT, 'Convert  Image: ' + pngfile
     SPAWN, 'rm -f ' + epsfile
