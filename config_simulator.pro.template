@@ -15,7 +15,7 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     ; ========================================================
 
     ; subdirectory for output & figures
-    run = 'v5_compare_with_cloudcci/'
+    run = 'v5.0_advanced_scops/'
 
     ; 1=random, 2=max/random
     scops_overlap_type = 2
@@ -45,10 +45,10 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
 
     IF KEYWORD_SET(y1) AND ~KEYWORD_SET(y2) THEN y2 = y1
     IF KEYWORD_SET(m1) AND ~KEYWORD_SET(m2) THEN m2 = m1
-    IF ~KEYWORD_SET(y1) THEN y1 = 2008;1979
-    IF ~KEYWORD_SET(y2) THEN y2 = 2008;2014
-    IF ~KEYWORD_SET(m1) THEN m1 = 2;1
-    IF ~KEYWORD_SET(m2) THEN m2 = 6;12
+    IF ~KEYWORD_SET(y1) THEN y1 = 2007;1979
+    IF ~KEYWORD_SET(y2) THEN y2 = 2007;2014
+    IF ~KEYWORD_SET(m1) THEN m1 = 4;1
+    IF ~KEYWORD_SET(m2) THEN m2 = 4;12
 
     ; Set list of years to be processed
     years_list = STRTRIM( STRING( INDGEN( y2 - y1 + 1 ) + y1 ), 2 )

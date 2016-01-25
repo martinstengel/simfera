@@ -46,11 +46,10 @@
 ;         (c) SCOPS modification: collect cloud parameters based on subcolumns
 ;
 ;******************************************************************************
-PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, MAP=map, $
-                        SYEAR=syear, EYEAR=eyear, $
-                        SMONTH=smonth, EMONTH=emonth, $
-                        RATIO=ratio, AUXMAP=auxmap, $
-                        CONSTANT_CER=constant_cer, HPLOT=hplot, HELP=help
+PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
+                     SYEAR=syear, EYEAR=eyear, SMONTH=smonth, EMONTH=emonth, $
+                     RATIO=ratio, AUXMAP=auxmap, INTMAP=intmap, $
+                     CONSTANT_CER=constant_cer, FINMAP=finmap, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
 
@@ -63,7 +62,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, MAP=map, $
                " ""config_simulator.pro"" and modify the settings for your needs."
         PRINT, ""
         PRINT, " USAGE: "
-        PRINT, " CLOUD_SIMULATOR, /test, /log, /ver, /map, /hplot"
+        PRINT, " CLOUD_SIMULATOR, /test, /log, /ver, /intmap, /auxmap"
         PRINT, " CLOUD_SIMULATOR, sy=2008, sm=7"
         PRINT, " CLOUD_SIMULATOR, sy=1979, ey=2014, sm=1, em=12"
         PRINT, ""
@@ -76,34 +75,37 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, MAP=map, $
         PRINT, " VERBOSE        increase output verbosity."
         PRINT, " LOGFILE        creates journal logfile."
         PRINT, " TEST           output based on the first day only."
-        PRINT, " MAP            creates some intermediate results."
         PRINT, " AUXMAP         creates maps showing auxiliary data."
-        PRINT, " HPLOT          creates HISTOS_1D plots of final HIST results."
+        PRINT, " INTMAP         creates some intermediate results."
+        PRINT, " FINMAP         creates final hist1d & 2d map results."
         PRINT, " RATIO          adds liquid cloud fraction to HIST1D plot."
         PRINT, " HELP           prints this message."
         PRINT, ""
         RETURN
     ENDIF
 
+    ; for intermediate & final plotting
+    vars  = ['ctt','cwp','ctp','cot','cer']
+    vars2 = ['cfc','cph','cth','lwp','iwp',$
+             'cot_liq','cot_ice','cer_liq','cer_ice']
+
     IF KEYWORD_SET(verbose) THEN PRINT, '** Import user setttings'
 
-    CONFIG_SIMULATOR, PATHS=path, TIMES=times, THRESHOLDS=thv, $
-                      SYEAR=syear, EYEAR=eyear, $
-                      SMONTH=smonth, EMONTH=emonth, $
-                      HIST_INFO=his, CER_INFO=cer_info, TEST=test
+    CONFIG_SIMULATOR, PATHS=path, TIMES=time, THRESHOLDS=thv, $ 
+        SYEAR=syear, EYEAR=eyear, SMONTH=smonth, EMONTH=emonth, $ 
+        HIST_INFO=his, CER_INFO=cer_info, TEST=test
 
     ;!EXCEPT=0 ; silence
     !EXCEPT=2 ; detects errors/warnings
     DEFSYSV, '!SAVE_DIR', path.FIG
 
     IF KEYWORD_SET(logfile) THEN $
-        JOURNAL, path.out + 'journal_' + thv.MAX_STR + cgTimeStamp() + '.pro'
+        JOURNAL, path.out + 'journal_' + thv.COT_STR + cgTimeStamp() + '.pro'
 
     PRINT, FORMAT='(A, A-100)', '** INP:     ', path.INP
     PRINT, FORMAT='(A, A-100)', '** OUT:     ', path.OUT
     PRINT, FORMAT='(A, A-100)', '** FIG:     ', path.FIG
-    PRINT, FORMAT='(A, F8.3)',  '** MIN-thv: ', thv.MIN
-    PRINT, FORMAT='(A, F8.3)',  '** MAX-thv: ', thv.MAX
+    PRINT, FORMAT='(A, F8.3)',  '** COT-thv: ', thv.COT
     PRINT, FORMAT='(A, A-100)', '** SCOPS:   ', thv.SCOPS
 
     IF KEYWORD_SET(constant_cer) THEN BEGIN 
@@ -117,12 +119,12 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, MAP=map, $
 
 
     ; loop over years and months
-    FOR ii1=0, times.NY-1 DO BEGIN
-        FOR jj1=0, times.NM-1 DO BEGIN
+    FOR ii1=0, time.NY-1 DO BEGIN
+        FOR jj1=0, time.NM-1 DO BEGIN
 
             SMM = SYSTIME(1)
-            year  = times.YEARS[ii1]
-            month = times.MONTHS[jj1]
+            year  = time.YEARS[ii1]
+            month = time.MONTHS[jj1]
             counti = 0
 
             ff = FINDFILE(path.inp+year+month+'/'+'*'+year+month+'*plev')
@@ -158,12 +160,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, MAP=map, $
                             INIT_ERA_GRID, input, grid 
                             READ_ERA_SSTFILE, path.SST, grid, sst, void, MAP=auxmap
                             lsm2d = INIT_LSM_ARRAY(grid, sst, void, MAP=auxmap)
-
-                            ; cnt* = counters required for calc. the means
-                            ; *min = applying thv.MIN, e.g. 0.01
-                            ; *max = applying thv.MAX, e.g. 0.30
-                            INIT_OUT_ARRAYS, grid, his, arr_min, cnt_min
-                            INIT_OUT_ARRAYS, grid, his, arr_max, cnt_max
+                            INIT_OUT_ARRAYS, grid, his, means, counts
 
                         ENDIF
                         counti++
@@ -182,43 +179,34 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, MAP=map, $
                                        VERBOSE=verbose
 
                         ; search for upper-most cloud layer for, ~15 seconds
-                        tmp_max = SEARCH4CLOUD( input, grid, thv.SCOPS, $
-                                                cwp_lay, cot_lay, cer_lay, $
-                                                thv.MAX )
-                        tmp_min = SEARCH4CLOUD( input, grid, thv.SCOPS, $
-                                                cwp_lay, cot_lay, cer_lay, $
-                                                thv.MIN )
+                        temps = SEARCH4CLOUD( input, grid, thv.SCOPS, $
+                                              cwp_lay, cot_lay, cer_lay, $
+                                              thv.COT )
 
                         ; scale cot & cwp as it is done in Cloud_cci
-                        SCALE_COT_CWP, tmp_min, grid
-                        SCALE_COT_CWP, tmp_max, grid
+                        SCALE_COT_CWP, temps, grid
 
                         ; sunlit region only for COT & CWP & CER
-                        SOLAR_VARS, tmp_min, sza2d, grid, SCOPS=thv.SCOPS, $
-                                    FLAG=thv.MIN_STR, FILE=file1, MAP=map
-                        SOLAR_VARS, tmp_max, sza2d, grid, SCOPS=thv.SCOPS, $
-                                    FLAG=thv.MAX_STR, FILE=file1, MAP=map
+                        SOLAR_VARS, temps, sza2d, grid, SCOPS=thv.SCOPS, $ 
+                                    FLAG=thv.COT_STR, FILE=file1, MAP=intmap
 
                         ; sum up cloud parameters
-                        SUMUP_VARS, arr_min, cnt_min, tmp_min, his
-                        SUMUP_VARS, arr_max, cnt_max, tmp_max, his
+                        SUMUP_VARS, means, counts, temps, his
 
                         ; check intermediate results: current_time_slot
-                        IF KEYWORD_SET(map) THEN BEGIN
-                            varnames = ['ctt','cwp','ctp','cot','cer']
-                            FOR v=0, N_ELEMENTS(varnames)-1 DO BEGIN
-                                PLOT_INTER_HISTOS, tmp_max, varnames[v], his,$
-                                    file1, thv.MAX_STR, thv.SCOPS, $
+                        IF KEYWORD_SET(intmap) THEN BEGIN
+                            FOR v=0, N_ELEMENTS(vars)-1 DO BEGIN
+                                PLOT_INTER_HISTOS, temps, vars[v], his,$
+                                    file1, thv.COT_STR, thv.SCOPS, $
                                     CONSTANT_CER=constant_cer, RATIO=ratio
                             ENDFOR
                         ENDIF
 
                         ; count number of files
-                        cnt_min.raw++
-                        cnt_max.raw++
+                        counts.raw++
 
                         ; delete tmp arrays
-                        UNDEFINE, sza2d, tmp_min, tmp_max
+                        UNDEFINE, sza2d, temps
                         UNDEFINE, cwp_lay, cot_lay, cer_lay
 
                     ENDIF ;end of IF(is_file(file1))
@@ -228,26 +216,36 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, MAP=map, $
                 ;--------------------------------------------------------------
 
                 ; calculate averages
-                MEAN_VARS, arr_min, cnt_min
-                MEAN_VARS, arr_max, cnt_max
+                MEAN_VARS, means, counts
 
-                ; plot final hist1d results: ctp, cwp, cer, cot
-                IF KEYWORD_SET(hplot) THEN BEGIN 
-                    ofile = 'ERA_Interim_'+year+month
-                    PLOT_HISTOS_1D, arr_min, ofile, thv.MIN_STR, thv.SCOPS, $
-                                    CONSTANT_CER=constant_cer, RATIO=ratio
-                    PLOT_HISTOS_1D, arr_max, ofile, thv.MAX_STR, thv.SCOPS, $
-                                    CONSTANT_CER=constant_cer, RATIO=ratio
+                ; plot final hist1d results: ctp, cwp, cer, cot, ctt
+                IF KEYWORD_SET(finmap) THEN BEGIN 
+
+                    FOR v2=0, N_ELEMENTS(vars2)-1 DO BEGIN
+                        ofile = 'ERA_Interim_'+year+month
+                        MAP_MM, grid, means, ofile, vars2[v2], thv.COT_STR, $
+                            thv.SCOPS, CONSTANT_CER=creff
+                    ENDFOR
+
+                    FOR v=0, N_ELEMENTS(vars)-1 DO BEGIN
+                        ofile = 'ERA_Interim_'+year+month
+
+                        PLOT_HISTOS_1D, vars[v], means, his, ofile, $
+                            thv.COT_STR, thv.SCOPS, $
+                            CONSTANT_CER=constant_cer, RATIO=ratio
+
+                        MAP_MM, grid, means, ofile, vars[v], thv.COT_STR, $
+                            thv.SCOPS, CONSTANT_CER=creff
+                    ENDFOR
+
                 ENDIF
 
                 ; write output files
                 WRITE_MONTHLY_MEAN, path.out, year, month, grid, input, his, $ 
-                    thv.MIN_STR, thv.MIN, arr_min, cnt_min, thv.SCOPS
-                WRITE_MONTHLY_MEAN, path.out, year, month, grid, input, his, $ 
-                    thv.MAX_STR, thv.MAX, arr_max, cnt_max, thv.SCOPS
+                    thv.COT_STR, thv.COT, means, counts, thv.SCOPS
 
                 ; delete final arrays before next cycle starts
-                UNDEFINE, arr_min, arr_max, cnt_min, cnt_max
+                UNDEFINE, means, counts
 
             ENDIF ;end of IF(N_ELEMENTS(ff) GT 1)
 
