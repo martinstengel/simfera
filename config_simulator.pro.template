@@ -15,7 +15,7 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     ; ========================================================
 
     ; subdirectory for output & figures
-    run = 'v5.0_advanced_scops/'
+    run = 'v5.2_test/'
 
     ; 1=random, 2=max/random
     scops_overlap_type = 2
@@ -24,8 +24,7 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     devmode = 0
 
     ; cloud optical thickness thresholds required in search4cloud.pro
-    min_thv = 0.01 ; high sensitivity w.r.t. very thin clouds
-    max_thv = 0.3  ; lower sensitivity w.r.t. very thin clouds
+    cot_thv = 0.3
 
     IF KEYWORD_SET(test) THEN $
         iw = 'TESTDATA_era_simulator/' ELSE iw = 'INPUT_era_simulator/'
@@ -45,10 +44,10 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
 
     IF KEYWORD_SET(y1) AND ~KEYWORD_SET(y2) THEN y2 = y1
     IF KEYWORD_SET(m1) AND ~KEYWORD_SET(m2) THEN m2 = m1
-    IF ~KEYWORD_SET(y1) THEN y1 = 2007;1979
-    IF ~KEYWORD_SET(y2) THEN y2 = 2007;2014
-    IF ~KEYWORD_SET(m1) THEN m1 = 4;1
-    IF ~KEYWORD_SET(m2) THEN m2 = 4;12
+    IF ~KEYWORD_SET(y1) THEN y1 = 2008;1979
+    IF ~KEYWORD_SET(y2) THEN y2 = 2008;2014
+    IF ~KEYWORD_SET(m1) THEN m1 = 7;1
+    IF ~KEYWORD_SET(m2) THEN m2 = 7;12
 
     ; Set list of years to be processed
     years_list = STRTRIM( STRING( INDGEN( y2 - y1 + 1 ) + y1 ), 2 )
@@ -74,10 +73,8 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     IF (devmode EQ 1) THEN devstr='devmode_' ELSE devstr=''
 
     ; create THV strings
-    cadd_min = STRTRIM(STRING(min_thv, FORMAT='(F4.2)'),2)
-    cadd_max = STRTRIM(STRING(max_thv, FORMAT='(F4.2)'),2)
-    crit_string_min = devstr + 'cot_thv_' + cadd_min
-    crit_string_max = devstr + 'cot_thv_' + cadd_max
+    cadd_cot = STRTRIM(STRING(cot_thv, FORMAT='(F4.2)'),2)
+    crit_string_cot = devstr + 'cot_thv_' + cadd_cot
 
 
     ; === Cloud_cci like settings
@@ -184,8 +181,7 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
 
     cot_thresholds = {cot_thresholds, $
                       scops:scops_overlap_type, $
-                      min:min_thv, min_str:crit_string_min, $
-                      max:max_thv, max_str:crit_string_max}
+                      cot:cot_thv, cot_str:crit_string_cot}
 
     const_reffs = {effective_radii_microns, $
                    water:reff_water, ice:reff_ice}
