@@ -37,19 +37,18 @@
 ;   C. Schlundt, Jan 2016: implementation of ireff, lreff as func(T,IWC/LWC)
 ;   C. Schlundt, Jan 2016: implementation of hist1d_ref
 ;   C. Schlundt, Jan 2016: clean up code
-;   C. Schlundt, Jan 2016: scops-like method for COT, CWP, CFC (random overlap)
+;   M. Stengel,  Jan 2016: scops-like method for COT, CWP, CFC (random overlap)
 ;   C. Schlundt, Jan 2016: speedup of search4cloud.pro
 ;   C. Schlundt, Jan 2016: scops type in config file: 1=random, 2=max/random
-;
-;   ToDO: (a) output variable names: change to new Cloud_cci names
-;         (b) SZA < 75 equals daytime (previously 80 deg)
-;         (c) SCOPS modification: collect cloud parameters based on subcolumns
+;   C. Schlundt, Jan 2016: Cloud_cci variable names implemented
+;   C. Schlundt, Jan 2016: SZA < 75 equals daytime (previously 80 deg)
+;   M. Stengel,  Jan 2016: pseudo_retrieval, i.e. SCOPS and more
 ;
 ;******************************************************************************
 PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                      SYEAR=syear, EYEAR=eyear, SMONTH=smonth, EMONTH=emonth, $
-                     RATIO=ratio, AUXMAP=auxmap, INTMAP=intmap, $
-                     CONSTANT_CER=constant_cer, FINMAP=finmap, HELP=help
+                     AUXMAP=auxmap, INTMAP=intmap, FINMAP=finmap, $
+                     RATIO=ratio, CONSTANT_CER=constant_cer, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
 
@@ -84,10 +83,12 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
         RETURN
     ENDIF
 
+
     ; for intermediate & final plotting
-    vars  = ['ctt','cwp','ctp','cot','cer']
+    vars  = ['cer','cot','cwp','ctt','ctp']
     vars2 = ['cfc','cph','cth','lwp','iwp',$
              'cot_liq','cot_ice','cer_liq','cer_ice']
+
 
     IF KEYWORD_SET(verbose) THEN PRINT, '** Import user setttings'
 
@@ -95,7 +96,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
         SYEAR=syear, EYEAR=eyear, SMONTH=smonth, EMONTH=emonth, $ 
         HIST_INFO=his, CER_INFO=cer_info, TEST=test
 
-    ;!EXCEPT=0 ; silence
+
     !EXCEPT=2 ; detects errors/warnings
     DEFSYSV, '!SAVE_DIR', path.FIG
 
@@ -137,9 +138,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
 
             IF(N_ELEMENTS(ff) GT 1) THEN BEGIN
 
-                ;--------------------------------------------------------------
                 FOR fidx=0,N_ELEMENTS(ff)-1,1 DO BEGIN ;loop over files
-                ;--------------------------------------------------------------
 
                     file0 = ff[fidx]
                     file1 = file0+'.nc'
@@ -178,24 +177,19 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                                        CONSTANT_CER=constant_cer, $
                                        VERBOSE=verbose
 
-                        ; search for upper-most cloud layer for, ~15 seconds
-                        temps = SEARCH4CLOUD( input, grid, thv.SCOPS, $
-                                              cwp_lay, cot_lay, cer_lay, $
-                                              thv.COT )
-
-                        ; scale cot & cwp as it is done in Cloud_cci
-                        SCALE_COT_CWP, temps, grid
-
-                        ; sunlit region only for COT & CWP & CER
-                        SOLAR_VARS, temps, sza2d, grid, SCOPS=thv.SCOPS, $ 
-                                    FLAG=thv.COT_STR, FILE=file1, MAP=intmap
+                        ; means (in/out), temps (out)
+                        PSEUDO_RETRIEVAL, input, grid, sza2d, thv.SCOPS, $ 
+                                          cwp_lay, cot_lay, cer_lay, $ 
+                                          thv.COT, his, means, temps
 
                         ; sum up cloud parameters
-                        SUMUP_VARS, means, counts, temps, his
+                        SUMUP_VARS, means, counts, temps
 
                         ; check intermediate results: current_time_slot
                         IF KEYWORD_SET(intmap) THEN BEGIN
                             FOR v=0, N_ELEMENTS(vars)-1 DO BEGIN
+                                IF (vars[v] EQ 'ctt') THEN CONTINUE 
+                                IF (vars[v] EQ 'ctp') THEN CONTINUE 
                                 PLOT_INTER_HISTOS, temps, vars[v], his,$
                                     file1, thv.COT_STR, thv.SCOPS, $
                                     CONSTANT_CER=constant_cer, RATIO=ratio
@@ -211,9 +205,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
 
                     ENDIF ;end of IF(is_file(file1))
 
-                ;--------------------------------------------------------------
                 ENDFOR ;end of file loop
-                ;--------------------------------------------------------------
 
                 ; calculate averages
                 MEAN_VARS, means, counts

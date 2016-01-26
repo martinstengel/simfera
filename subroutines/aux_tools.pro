@@ -189,7 +189,7 @@ FUNCTION GET_DETAILS, varname, DATA=data, HISTO=histo
             maxvalue = 2000.
             minvalue = 0.0001
             cci_str = 'cwp'
-            ymax = 40
+            ymax = 30
             legpos = "tl"
             binsize = 50
             IF KEYWORD_SET(histo) THEN BEGIN
@@ -209,7 +209,7 @@ FUNCTION GET_DETAILS, varname, DATA=data, HISTO=histo
             maxvalue = 100.
             minvalue = 0.0001
             cci_str = 'cot'
-            ymax = 40
+            ymax = 30
             legpos = "tl"
             binsize = 1
             IF KEYWORD_SET(histo) THEN BEGIN
@@ -229,7 +229,7 @@ FUNCTION GET_DETAILS, varname, DATA=data, HISTO=histo
             maxvalue = 80.
             minvalue = 0.0001
             cci_str = 'ref'
-            ymax = 60
+            ymax = 40
             legpos = "tr" 
             binsize = 1
             IF KEYWORD_SET(histo) THEN BEGIN
@@ -279,7 +279,7 @@ END
 PRO SOLAR_VARS, data, sza, grd, FLAG=flag, FILE=fil, MAP=map, SCOPS=type
 ;-----------------------------------------------------------------------------
 
-    night = WHERE( sza GE 80., nnight, COMPLEMENT=day, NCOMPLEMENT=nday)
+    night = WHERE( sza GE 75., nnight, COMPLEMENT=day, NCOMPLEMENT=nday)
 
     IF ( nnight GT 0 ) THEN BEGIN
 
@@ -335,6 +335,8 @@ FUNCTION SUMUP_HIST1D, bin_dim=bin1d_dim, cph_dim=phase_dim, lim_bin=bbins, $
         dims = SIZE(var, /DIM)
 
     ENDIF
+
+    IF ( N_ELEMENTS(dims) EQ 1 ) THEN dims = [dims[0],1]
 
     ; counts [lon,lat]
     cnts = LONARR(dims[0],dims[1])
@@ -445,6 +447,7 @@ FUNCTION SUMUP_HIST2D, hist, cot, ctp, cfc, cph
 ;------------------------------------------------------------------------------
 
     dims = SIZE(cot, /DIM)
+    IF ( N_ELEMENTS(dims) EQ 1 ) THEN dims = [dims[0],1]
 
     ; counts [lon,lat]
     cnts = LONARR(dims[0],dims[1])
@@ -737,7 +740,7 @@ PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
     cph_dim = histo.PHASE_DIM
 
     IF (scops_type EQ 1) THEN st = 'random' ELSE st='max/random'
-    astr = ' (2D - upper most clouds; CFC==1) '
+    astr = ' (2D - upper most clouds; temps.CFC) '
     varstring = 'temps'
 
     ; collect data and hist settings
@@ -753,11 +756,8 @@ PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
     cs = 2.0
     lg = 'tr'
 
-    ; get total COT and set CFC
-    all  = (varplt.LIQ>0) + (varplt.ICE>0) ; consider fill_values
-    dims = SIZE(varplt.LIQ, /DIM)
-    acfc = FLTARR(dims[0],dims[1])
-    acfc[*,*] = 1.
+    ; get total COT
+    all = (varplt.LIQ>0) + (varplt.ICE>0) ; consider fill_values
 
     ; VARNAME GT maxvalue set to maxvalue
     i1=WHERE( varplt.LIQ GT auxplt.MAXV, ni1)
@@ -792,7 +792,7 @@ PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
     
     ; -- HIST1D: cloud_cci binsizes ---
     res = SUMUP_HIST1D( bin_dim=auxplt.BIN_DIM, lim_bin=auxplt.LIM_BIN, $
-                        cph_dim=cph_dim, cfc_tmp=acfc, $
+                        cph_dim=cph_dim, cfc_tmp=data.CFC, $
                         liq_tmp=varplt.LIQ, ice_tmp=varplt.ICE )
 
     CREATE_1DHIST, RESULT=res, VARNAME=auxplt.CCI_STR, YMAX=auxplt.YMAX, $
@@ -911,8 +911,8 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
             found=found1)
     ENDIF
 
-    plot,[0,0],[1,1],yr=[0,ymax],xr=[0,n_elements(bild)-1],$
-        xticks=n_elements(xtickname)-1, $
+    plot,[0,0],[1,1],yr=[0,ymax],xr=[0,N_ELEMENTS(bild)-1],$
+        xticks=N_ELEMENTS(xtickname)-1, $
         xtickname = strcompress(string(xtickname,f='(f20.1)'),/rem), $
         ;xtickname = strcompress(string(xtickname,f='(f20)'),/rem), $
         xtitle=data_name+xtitle,ytitle=ytitle,xminor=2, $

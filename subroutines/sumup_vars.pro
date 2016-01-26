@@ -1,8 +1,8 @@
 ;------------------------------------------------------------------------------
-; IN : DATA, COUNTS, TEMPS, HIST_INFO
+; IN : DATA, COUNTS, TEMPS
 ; OUT: DATA, COUNTS
 ;------------------------------------------------------------------------------
-PRO SUMUP_VARS, means, counts, temps, histo
+PRO SUMUP_VARS, means, counts, temps
 ;------------------------------------------------------------------------------
 
     ; no condition for cloud fraction [0;1]: clear or cloudy
@@ -19,8 +19,7 @@ PRO SUMUP_VARS, means, counts, temps, histo
     counts.CTP[wo_ctp] = counts.CTP[wo_ctp] + 1l
 
 
-    ; TOTAL CER (liquid + ice) ------------------------------------------------
-    temps.CER = temps.CER_LIQ + temps.CER_ICE
+    ; TOTAL CER 
     wo_cer = WHERE(temps.CER GT 0., nwo_cer)
     means.CER[wo_cer] = means.CER[wo_cer] + temps.CER[wo_cer]
     counts.CER[wo_cer] = counts.CER[wo_cer] + 1l
@@ -36,8 +35,7 @@ PRO SUMUP_VARS, means, counts, temps, histo
     counts.CER_ICE[wo_icer] = counts.CER_ICE[wo_icer] + 1l
 
 
-    ; TOTAL COT (liquid + ice) ------------------------------------------------
-    temps.COT = temps.COT_LIQ + temps.COT_ICE
+    ; TOTAL COT 
     wo_cot = WHERE(temps.COT GT 0., nwo_cot)
     means.COT[wo_cot] = means.COT[wo_cot] + temps.COT[wo_cot]
     counts.COT[wo_cot] = counts.COT[wo_cot] + 1l
@@ -53,8 +51,7 @@ PRO SUMUP_VARS, means, counts, temps, histo
     counts.COT_ICE[wo_icot] = counts.COT_ICE[wo_icot] + 1l
 
 
-    ; TOTAL CWP (liquid + ice) ------------------------------------------------
-    temps.CWP = temps.LWP + temps.IWP
+    ; TOTAL CWP     
     wo_cwp = WHERE(temps.CWP GT 0., nwo_cwp)
     means.CWP[wo_cwp] = means.CWP[wo_cwp] + temps.CWP[wo_cwp]
     counts.CWP[wo_cwp] = counts.CWP[wo_cwp] + 1l
@@ -68,63 +65,6 @@ PRO SUMUP_VARS, means, counts, temps, histo
     wo_iwp = WHERE(temps.IWP GT 0., nwo_iwp)
     means.IWP[wo_iwp] = means.IWP[wo_iwp] + temps.IWP[wo_iwp]
     counts.IWP[wo_iwp] = counts.IWP[wo_iwp] + 1l
-
-
-    ; -- HIST1D_CTP
-    res = SUMUP_HIST1D( bin_dim=histo.CTP_BIN1D_DIM, $
-                        cph_dim=histo.PHASE_DIM, $
-                        lim_bin=histo.CTP2D, $
-                        var_tmp=temps.CTP, $
-                        cfc_tmp=temps.CFC, $
-                        cph_tmp=temps.CPH )
-    means.HIST1D_CTP = means.HIST1D_CTP + res
-    UNDEFINE, res
-
-    ; -- HIST1D_CTT
-    res = SUMUP_HIST1D( bin_dim=histo.CTT_BIN1D_DIM, $
-                        cph_dim=histo.PHASE_DIM, $
-                        lim_bin=histo.CTT2D, $
-                        var_tmp=temps.CTT, $
-                        cfc_tmp=temps.CFC, $
-                        cph_tmp=temps.CPH )
-    means.HIST1D_CTT = means.HIST1D_CTT + res
-    UNDEFINE, res
-
-    ; -- HIST1D_COT
-    res = SUMUP_HIST1D( bin_dim=histo.COT_BIN1D_DIM, $
-                        cph_dim=histo.PHASE_DIM, $
-                        lim_bin=histo.COT2D, $
-                        var_tmp=temps.COT, $
-                        cfc_tmp=temps.CFC, $
-                        cph_tmp=temps.CPH )
-    means.HIST1D_COT = means.HIST1D_COT + res
-    UNDEFINE, res 
-
-    ; -- HIST1D_CER
-    res = SUMUP_HIST1D( bin_dim=histo.CER_BIN1D_DIM, $
-                        cph_dim=histo.PHASE_DIM, $
-                        lim_bin=histo.CER2D, $
-                        var_tmp=temps.CER, $
-                        cfc_tmp=temps.CFC, $
-                        cph_tmp=temps.CPH )
-    means.HIST1D_CER = means.HIST1D_CER + res
-    UNDEFINE, res 
-
-    ; -- HIST1D_CWP: bins [g/m2], temps [kg/m2]
-    res = SUMUP_HIST1D( bin_dim=histo.CWP_BIN1D_DIM, $
-                        cph_dim=histo.PHASE_DIM, $
-                        lim_bin=histo.CWP2D, $
-                        var_tmp=temps.CWP*1000., $
-                        cfc_tmp=temps.CFC, $
-                        cph_tmp=temps.CPH )
-    means.HIST1D_CWP = means.HIST1D_CWP + res
-    UNDEFINE, res
-
-
-    ; -- HIST2D_COT_CTP
-    res = SUMUP_HIST2D( histo, temps.COT, temps.CTP, temps.CFC, temps.CPH)
-    means.HIST2D_COT_CTP = means.HIST2D_COT_CTP + res
-    UNDEFINE, res
 
 END
 

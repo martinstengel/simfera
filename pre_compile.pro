@@ -6,6 +6,6 @@
 @/home/cschlund/Programme/idl/cloud_simulator/subroutines/initialize_arrays.pro
 @/home/cschlund/Programme/idl/cloud_simulator/subroutines/calc_incloud_cwc.pro
 @/home/cschlund/Programme/idl/cloud_simulator/subroutines/calc_cld_vars.pro
-@/home/cschlund/Programme/idl/cloud_simulator/subroutines/search4cloud.pro
+@/home/cschlund/Programme/idl/cloud_simulator/subroutines/pseudo_retrieval.pro
 @/home/cschlund/Programme/idl/cloud_simulator/subroutines/mean_vars.pro
 @/home/cschlund/Programme/idl/cloud_simulator/subroutines/write_monthly_mean.pro
