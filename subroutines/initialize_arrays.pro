@@ -172,3 +172,29 @@ PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
                cer_ice:numb_cer_ice }
 
 END
+
+
+;-------------------------------------------------------------------
+; IN  : DATA
+; OUT : GRID
+;-------------------------------------------------------------------
+PRO GET_ERA_GRID, data, lon, lat, grid
+;-------------------------------------------------------------------
+
+    dims = SIZE(data, /DIM)
+    xdim = dims[0]
+    ydim = dims[1]
+    
+    ; define longitude & latitude arrays ;[cols, rows]
+    longrd=FLTARR(xdim,ydim)
+    latgrd=FLTARR(xdim,ydim)
+    
+    ; create lat/lon grid arrays using lon & lat from ncfile
+    FOR loi=0,xdim-1 DO longrd[loi,*]=lon[loi]
+    FOR lai=0,ydim-1 DO latgrd[*,lai]=lat[lai]
+
+    grid = { era_grid, $
+             lon2d:longrd, lat2d:latgrd, $
+             xdim:xdim, ydim:ydim }
+
+END
