@@ -1,5 +1,13 @@
 @config_vis.pro
 @config_simulator.pro
+@subtools/fsc_base_filename.pro
+@subtools/create_dir.pro
+@subtools/daysinmonth.pro
+@subtools/valid_dir.pro
+@subtools/cs_eps2png.pro
+@subtools/doy.pro
+@subtools/is_file.pro
+@subtools/zensun.pro
 @subroutines/aux_tools.pro
 @subroutines/sumup_vars.pro
 @subroutines/read_netcdf.pro
@@ -9,11 +17,3 @@
 @subroutines/pseudo_retrieval.pro
 @subroutines/mean_vars.pro
 @subroutines/write_monthly_mean.pro
-@subtools/create_dir.pro
-@subtools/daysinmonth.pro
-@subtools/valid_dir.pro
-@subtools/cs_eps2png.pro
-@subtools/doy.pro
-@subtools/is_file.pro
-@subtools/zensun.pro
-@subtools/fsc_base_filename.pro
