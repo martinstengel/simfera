@@ -18,7 +18,7 @@ END
 
 
 ;-----------------------------------------------------------------------------
-FUNCTION GET_FILENAME, filename, varname, type, scops_type, flag, $ 
+FUNCTION GET_FILE_NAME, filename, varname, type, scops_type, flag, $ 
                        CONSTANT_CER=creff, RATIO=ratio
 ;-----------------------------------------------------------------------------
     IF (scops_type EQ 1) THEN st = 'random' ELSE st='max/random'
@@ -665,7 +665,7 @@ PRO MAP_MM, grd, data, filename, varname, flag, scops_type, $
 ;-----------------------------------------------------------------------------
     !EXCEPT=0
 
-    ofil = GET_FILENAME( filename, varname, 'map', scops_type, flag, $
+    ofil = GET_FILE_NAME( filename, varname, 'map', scops_type, flag, $
                          CONSTANT_CER=creff )
 
     IF (is_file(ofil+'.png')) THEN RETURN
@@ -699,7 +699,7 @@ PRO PLOT_HISTOS_1D, varname, data, histo, filename, flag, scops_type, $
                     CONSTANT_CER=creff, RATIO=ratio
 ;-----------------------------------------------------------------------------
 
-    ofil = GET_FILENAME( filename, varname, 'hist1d', scops_type, flag, $
+    ofil = GET_FILE_NAME( filename, varname, 'hist1d', scops_type, flag, $
                          CONSTANT_CER=creff, RATIO=ratio )
 
     IF (is_file(ofil+'.png')) THEN RETURN
@@ -731,7 +731,7 @@ PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
                        CONSTANT_CER=creff, RATIO=ratio
 ;-----------------------------------------------------------------------------
 
-    ofil = GET_FILENAME( filename, varname, '2Dtmp', scops_type, flag, $
+    ofil = GET_FILE_NAME( filename, varname, '2Dtmp', scops_type, flag, $
                          CONSTANT_CER=creff, RATIO=ratio )
 
     IF ( is_file( ofil + '.png' ) ) THEN RETURN
