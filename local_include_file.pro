@@ -16,3 +16,4 @@
 @subtools/doy.pro
 @subtools/is_file.pro
 @subtools/zensun.pro
+@subtools/fsc_base_filename.pro
