@@ -1,5 +1,4 @@
-@/cmsaf/nfshome/sstapelb/idl/vali_gui/vali_pre_compile.pro
-@/cmsaf/nfshome/sstapelb/idl/vali_gui/validation_tool_box.pro
+@/../vali_gui/plot_l3.pro
 @local_include_file.pro
 ;+
 ; NAME:
