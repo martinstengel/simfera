@@ -876,39 +876,79 @@ END
 ;-----------------------------------------------------------------------------
 PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
                    CHARSIZE=cs, XTITLE=xtitle, YMAX=ymax, $
-                   LEGEND_POSITION=lp, RATIO=ratio, BIN_BORDERS=xtickname
+                   LEGEND_POSITION=lp, RATIO=ratio, BIN_BORDERS=xtickname,$
+                   COMPARE=compare
 ;-----------------------------------------------------------------------------
     IF NOT KEYWORD_SET(ymax) THEN ymax = 40
     IF NOT KEYWORD_SET(lp) THEN lp='tl'
     IF KEYWORD_SET(ratio) THEN ymax = 100
 
+    IF KEYWORD_SET(compare) THEN BEGIN
+        ; get reference data
+        ref_liq = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
+                           algo=compare.REF, level='l3c', $
+                           data='hist1d_' + compare.VAR + '_liq') 
+        ref_ice = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
+                           algo=compare.REF, level='l3c', $
+                           data='hist1d_' + compare.VAR + '_ice') 
+        ; consider fill_values
+        ref_all = ( ref_liq>0 ) + ( ref_ice>0 )
+
+        ; prepare plotting results
+        refbild = get_1d_rel_hist_from_1d_hist( ref_all, $
+                    'hist1d_'+compare.VAR, algo=compare.REF, $
+                    land=land, sea=sea, arctic=arctic, antarctic=antarctic, $
+                    ytitle = ytitle, hist_name=data_name, found=found1)
+
+        refbild1 = get_1d_rel_hist_from_1d_hist( ref_liq, $
+                    'hist1d_'+compare.VAR+'_liq', algo=compare.REF, $
+                    land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
+                    ytitle = ytitle, hist_name=data_name, found=found1)
+
+        refbild2 = get_1d_rel_hist_from_1d_hist( ref_ice, $
+                    'hist1d_'+compare.VAR+'_ice', algo=compare.REF, $
+                    land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
+                    ytitle = ytitle, hist_name=data_name, found=found1)
+
+        IF KEYWORD_SET(ratio) THEN BEGIN
+            ref_total = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
+                                 algo=compare.REF, level='l3c', $
+                                 data='hist1d_' + compare.VAR) 
+            refbild3 = get_1d_rel_hist_from_1d_hist( ref_total, $
+                    'hist1d_'+compare.VAR+'_ratio', algo=compare.REF, $
+                    land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
+                    ytitle = ytitle, hist_name=data_name, found=found1)
+        ENDIF
+    ENDIF
+
+
     bild_liq = reform(res[*,*,*,0])
     bild_ice = reform(res[*,*,*,1])
-    bild_all = ( bild_liq>0 ) + ( bild_ice>0 ) ;consider fill_values!
+    bild_all = ( bild_liq>0 ) + ( bild_ice>0 )
 
     bild = get_1d_rel_hist_from_1d_hist( bild_all, 'hist1d_'+vn, $
-        algo='era-i', land=land, sea=sea, arctic=arctic, $
-        antarctic=antarctic, ytitle = ytitle, hist_name=data_name, $
-        found=found1)
+                algo='era-i', land=land, sea=sea, arctic=arctic, $
+                antarctic=antarctic, ytitle = ytitle, hist_name=data_name, $
+                found=found1)
 
     bild1 = get_1d_rel_hist_from_1d_hist( bild_liq, $
-        'hist1d_'+vn+'_liq', algo='era-i', $
-        land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
-        ytitle = ytitle, hist_name=data_name, $
-        found=found1)
+                'hist1d_'+vn+'_liq', algo='era-i', $
+                land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
+                ytitle = ytitle, hist_name=data_name, $
+                found=found1)
 
     bild2 = get_1d_rel_hist_from_1d_hist( bild_ice, $
-        'hist1d_'+vn+'_ice', algo='era-i', $
-        land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
-        ytitle = ytitle, hist_name=data_name, $
-        found=found1)
+                'hist1d_'+vn+'_ice', algo='era-i', $
+                land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
+                ytitle = ytitle, hist_name=data_name, $
+                found=found1)
 
     IF KEYWORD_SET(ratio) THEN BEGIN
         bild3 = get_1d_rel_hist_from_1d_hist( res, $
-            'hist1d_'+vn+'_ratio', algo='era-i', $
-            land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
-            ytitle = ytitle, hist_name=data_name, $
-            found=found1)
+                'hist1d_'+vn+'_ratio', algo='era-i', $
+                land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
+                ytitle = ytitle, hist_name=data_name, $
+                found=found1)
     ENDIF
 
     plot,[0,0],[1,1],yr=[0,ymax],xr=[0,N_ELEMENTS(bild)-1],$
@@ -925,6 +965,26 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
     oplot,bild2,psym=-4, col=cgcolor('royal blue'), THICK=thick
     IF KEYWORD_SET(ratio) THEN $
         oplot,bild3,psym=-6, col=cgcolor('forest green'), THICK=thick
+
+    IF KEYWORD_SET(compare) THEN BEGIN
+        oplot,refbild, psym=-1, col=cgcolor('Black'), THICK=thick, LINE=3
+        oplot,refbild1,psym=-2, col=cgcolor('Red'), THICK=thick, LINE=3
+        oplot,refbild2,psym=-4, col=cgcolor('royal blue'), THICK=thick, LINE=3
+        IF KEYWORD_SET(ratio) THEN $
+            oplot,refbild3,psym=-6, col=cgcolor('forest green'), THICK=thick, LINE=3
+
+        allstr  = compare.REF+'_'+vs
+        aliqstr = compare.REF+'_'+vs+'.LIQ'
+        aicestr = compare.REF+'_'+vs+'.ICE'
+        ratiostr = compare.REF+'_'+vs+'.RATIO'
+        labels = [allstr,aliqstr,aicestr]
+        IF KEYWORD_SET(ratio) THEN labels = [labels, ratiostr]
+        colors = [cgcolor("Black"),cgcolor("Red"),cgcolor("royal blue")]
+        IF KEYWORD_SET(ratio) THEN colors = [colors, cgcolor("forest green")]
+        nlabels = N_ELEMENTS(labels)
+        legend, labels, thick=REPLICATE(thick,nlabels), spos='tr', $
+                charsize=2.0, color=colors, line=REPLICATE(3,nlabels)
+    ENDIF
 
     allstr  = vs
     aliqstr = vs+'.LIQ'
