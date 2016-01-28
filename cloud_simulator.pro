@@ -100,8 +100,10 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
     !EXCEPT=2 ; detects errors/warnings
     DEFSYSV, '!SAVE_DIR', path.FIG
 
-    IF KEYWORD_SET(logfile) THEN $
-        JOURNAL, path.out + 'journal_' + thv.COT_STR + cgTimeStamp() + '.pro'
+    IF KEYWORD_SET(logfile) THEN BEGIN 
+        aTimeStamp = TIMESTAMP(format)
+        JOURNAL, path.out + 'journal_' + thv.COT_STR + aTimeStamp + '.pro'
+    ENDIF
 
     PRINT, FORMAT='(A, A-100)', '** INP:     ', path.INP
     PRINT, FORMAT='(A, A-100)', '** OUT:     ', path.OUT
