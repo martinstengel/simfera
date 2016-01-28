@@ -21,7 +21,7 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
     IF (scops_type EQ 1) THEN st = 'random' ELSE st='max/random'
     ststr = STRTRIM(STRING(scops_type),2)
 
-    file_out = 'SimpSimu_MM'+year+month+'_'+thv_str+'_scops'+ststr+'.nc'
+    file_out = 'ERA_Interim_MM'+year+month+'_'+thv_str+'_scops'+ststr+'.nc'
     clobber  = 1
 
     lon = inp.lon ;degrees_east
