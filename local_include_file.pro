@@ -1,3 +1,4 @@
+@config_vis.pro
 @config_simulator.pro
 @subroutines/aux_tools.pro
 @subroutines/sumup_vars.pro

@@ -1,0 +1,40 @@
+;------------------------------------------------------------------------------
+PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars
+;------------------------------------------------------------------------------
+
+    ; subfolder of file location
+    run = 'v5.1_advanced_scops/'
+    ; input
+    inp = '/cmsaf/cmsaf-cld7/cschlund/output/simulator/' + run
+    ; figure output
+    fig = '/cmsaf/cmsaf-cld7/cschlund/figures/simulator/' + run
+    ; simulator git repository
+    rep = '/home/cschlund/Programme/idl/cloud_simulator/subtools/'
+    ; eps2png bash script
+    eps = rep + 'eps2png.sh '
+
+    ; create figure output path if not existing
+    validres = VALID_DIR( fig )
+    IF(validres EQ 0) THEN creatres = CREATE_DIR( fig )
+
+    ; get file list
+    files = FINDFILE(inp+'*MM*nc', count=count)
+    IF (count GT 0) THEN BEGIN 
+        PRINT, '** ', STRTRIM(count,2), ' InputFiles found'
+    ENDIF ELSE BEGIN 
+        PRINT, '** NO FILES FOUND'
+        RETURN
+    ENDELSE
+
+    ; get variable list
+    IF ~KEYWORD_SET(vars) THEN BEGIN 
+        vars  = ['cer','cot','cwp','ctt','ctp','cfc','cph','cth',$
+                 'lwp','iwp','cot_liq','cot_ice','cer_liq','cer_ice'] 
+        IF KEYWORD_SET(hist1d) THEN vars = ['cer','cot','cwp','ctp','ctt']
+    ENDIF
+
+
+    settings = { inp_pwd:inp, out_pwd:fig, eps2png:eps, $
+                 files:files, nfiles:count, vars:vars}
+
+END

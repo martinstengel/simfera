@@ -24,40 +24,16 @@
 ;   Jan 2016, first version
 ;
 ;******************************************************************************
-PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
-                   HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
-                   MINI=mini, MAXI=maxi, $
-                   YMAX=ymax, VARS=vars, RATIO=ratio, HELP=help
+PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
+                   MINI=mini, MAXI=maxi, YMAX=ymax, VARS=vars, RATIO=ratio, $
+                   NOPNG=nopng, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
 
     ; MODIFY settings
-    IF KEYWORD_SET(run) THEN run = run ELSE $
-        run = 'v5.1_advanced_scops/'
-    IF KEYWORD_SET(inp) THEN inp = inp ELSE $
-        inp = '/cmsaf/cmsaf-cld7/cschlund/output/simulator/'
-    IF KEYWORD_SET(out) THEN out = out ELSE $
-        out = '/cmsaf/cmsaf-cld7/cschlund/figures/simulator/'
-
-    DEFSYSV, '!SAVE_DIR', out + run + 'VIS/'
-
-    IF ~KEYWORD_SET(file) THEN BEGIN
-
-        file = FINDFILE(inp+run+'*MM*nc',count=count)
-        IF (count GT 0) THEN BEGIN 
-            PRINT, '** ', STRTRIM(count,2), ' InputFiles found'
-        ENDIF ELSE BEGIN 
-            PRINT, '** NO FILES FOUND'
-            RETURN
-        ENDELSE
-    ENDIF
-
-    IF ~KEYWORD_SET(vars) THEN BEGIN 
-        vars  = ['cer','cot','cwp','ctt','ctp','cfc','cph','cth',$
-                 'lwp','iwp','cot_liq','cot_ice','cer_liq','cer_ice'] 
-        IF KEYWORD_SET(hist1d) THEN vars = ['cer','cot','cwp','ctp','ctt']
-    ENDIF
-
+    CONFIG_VIS, SETTINGS=set, HIST1D=hist1d, VARS=vars
+    HELP, set
+    DEFSYSV, '!SAVE_DIR', set.OUT_PWD
 
     IF KEYWORD_SET(help) THEN BEGIN
         PRINT, ""
@@ -71,10 +47,6 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
         PRINT, " VIS_SIMULATOR, vars=['cfc'], ref='cci', sat='NOAA18' "
         PRINT, ""
         PRINT, " Optional Keywords:"
-        PRINT, " FILE           full qualified simulator ncfile, default is loop over file list"
-        PRINT, " INP            path to input files for plotting, default is: ", inp
-        PRINT, " OUT            path to output figures, default is: ", !SAVE_DIR
-        PRINT, " RUN            subdirectory of input & output, default is: ", run
         PRINT, " VARS           list of parameters to be plotted, default is: ", vars
         PRINT, " HIST1D         creates 1D histogram plots"
         PRINT, " MAP            creates 2D maps"
@@ -92,16 +64,17 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
     ENDIF
 
 
-    FOR f=0, count-1 DO BEGIN ; loop over files
+    FOR f=0, set.NFILES-1 DO BEGIN ; loop over files
 
-        PRINT, "** Working on: ", file[f]
+        file = set.FILES[f]
+        PRINT, "** Working on: ", file
 
 
         FOR i=0, N_ELEMENTS(vars)-1 DO BEGIN ; loop over variables
 
 
             ; read simulator output file
-            READ_SIM_NCDF, data, FILE=file[f], VAR_NAME=vars[i], $ 
+            READ_SIM_NCDF, data, FILE=file, VAR_NAME=vars[i], $ 
                 GLOB_ATTR=gatt, VAR_ATTR=vatt
 
             source    = STRTRIM(STRING(gatt.SOURCE),2)
@@ -113,7 +86,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
             units     = ' ['+STRTRIM(STRING(vatt.UNITS),2)+']'
             fillvalue = vatt._FILLVALUE
 
-            base = FSC_Base_Filename(file[f])
+            base = FSC_Base_Filename(file)
             xtitle = long_name + units
             figure_title = source + ' (source) for ' + time
 
@@ -141,13 +114,13 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
                     xtitle = ' for ' + time ELSE $
                     xtitle = units + ' for ' + time
 
-                IF (vars[i] EQ 'cer') THEN ymax = 60.
+                IF (vars[i] EQ 'cer') THEN ymax = 50.
                 IF (vars[i] EQ 'cot') THEN ymax = 30.
                 IF (vars[i] EQ 'cwp') THEN ymax = 30.
                 IF (vars[i] EQ 'ctt') THEN ymax = 50.
 
-                READ_SIM_NCDF, h1d, FILE=file[f], VAR_NAME=opt+vars[i]
-                READ_SIM_NCDF, bin, FILE=file[f], VAR_NAME=opt+vars[i]+'_bin_border'
+                READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+vars[i]
+                READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+vars[i]+'_bin_border'
                 
                 save_as = outfile + '.eps'
                 start_save, save_as, size='A4', /LANDSCAPE
@@ -166,9 +139,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
                     YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
                     BIN_BORDERS=bin, COMPARE=compare
 
-                ymax = 0.
-
                 end_save, save_as
+                UNDEFINE, ymax
 
             ENDIF
 
@@ -185,8 +157,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
                 limit = [-90., -180., 90., 180.]
                 void = WHERE(DATA EQ fillvalue, COMPLEMENT=good)
 
-                READ_SIM_NCDF, lon, FILE=file[f], VAR_NAME='lon'
-                READ_SIM_NCDF, lat, FILE=file[f], VAR_NAME='lat'
+                READ_SIM_NCDF, lon, FILE=file, VAR_NAME='lon'
+                READ_SIM_NCDF, lat, FILE=file, VAR_NAME='lat'
                 GET_ERA_GRID, data, lon, lat, grid
 
                 IF ~KEYWORD_SET(mini) THEN mini = MIN(data[good])
@@ -205,6 +177,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
                 MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
 
                 end_save, save_as
+                UNDEFINE, mini, maxi
 
             ENDIF
 
@@ -219,7 +192,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
                 month = STRMID(time, 4, 2) 
 
                 compare_cci_with_clara, year, month, '', algo1='era-i',$
-                    data=vars[i], ccifile=file[f], reference=ref, $
+                    data=vars[i], ccifile=file, reference=ref, $
                     sat=sat, mini=mini, maxi=maxi , limit=limit, $
                     save_dir=!SAVE_DIR, land=land, sea=sea, cov=cov, $
                     other='rainbow', ctable='', level='l3c'
@@ -231,7 +204,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, INP=inp, OUT=out, RUN=run, $
 
     ENDFOR ;loop over files
 
-    SPAWN, './subtools/eps2png.sh '+!SAVE_DIR
+    IF ~KEYWORD_SET(nopng) THEN SPAWN, set.EPS2PNG + !SAVE_DIR
 
     PRINT, "** TOTAL Elapsed Time: ", (SYSTIME(1)-STT)/60., " minutes"
 

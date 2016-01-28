@@ -1,5 +1,6 @@
 # Ignore following files
 config_simulator.pro
+config_vis.pro
 config_doc.tex
 *~
 *test*
