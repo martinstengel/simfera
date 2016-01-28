@@ -1,0 +1,57 @@
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{color,graphics}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{float}
+\usepackage{rotating}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{pdflscape}
+\usepackage{subfig}
+\usepackage{cite}
+\geometry{a4paper,left=2.5cm,right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+
+% run settings
+\graphicspath{
+{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.1_advanced_scops/VIS/}
+}
+\newcommand{\valcot}{0.30}
+\newcommand{\scops}{scops2}
+\newcommand{\yyyymm}{200807}
+\newcommand{\MonthYear}{July 2008}
+\newcommand{\cotthv}{cot_thv_\valcot}
+
+% Compare_CCI__L3C_200807
+\newcommand{\sat}{NOAA-18}
+\newcommand{\era}{ERA-INTERIM}
+\newcommand{\cci}{CC4CL-\sat}
+\newcommand{\clara}{CLARA-A2-\sat}
+\newcommand{\comparecci}{Compare_CCI__L3C_\yyyymm}
+
+
+% figure sizes
+\newcommand{\figwidth}{13cm}
+\newcommand{\halffigwidth}{7.5cm}
+\newcommand{\mapwidth}{16cm}
+\newcommand{\hiswidth}{14cm}
+
+
+% hist1d compare with cci
+\newcommand{\simversion}{Cloud simulator version 5.1 (solid lines).}
+\newcommand{\cciversion}{ESA Cloud\_cci AVHRR 31y time series (dashed lines).}
+\newcommand{\hiscompare}{{\simversion} {\cciversion}}
+
+
+% settings for files
+% ERA_Interim_MM200807_cot_thv_0.30_scops2_hist1d_cer.png
+\newcommand{\hisout}{ERA_Interim_MM\yyyymm_\cotthv_\scops_hist1d}
+% ERA_Interim_MM200807_cot_thv_0.30_scops2_map_cer.png
+\newcommand{\mapout}{ERA_Interim_MM\yyyymm_\cotthv_\scops_map}
+% ERA_Interim_MM200807_cot_thv_0.30_scops2_hist1d_cer_compare_with_cci.png
+\newcommand{\vscci}{compare_with_cci}
+\newcommand{\vsclara2}{compare_with_clara2}
+
