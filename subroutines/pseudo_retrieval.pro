@@ -181,11 +181,10 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, histo, $
 
 
             ; SOLAR cot & cwp & cer
-            night = WHERE( sza GE 75., nnight, COMPLEMENT=day, NCOMPLEMENT=nday)
-            IF ( nnight GT 0 ) THEN BEGIN
-                array_cot[night] = 0.
-                array_cwp[night] = 0.
-                array_cer[night] = 0.
+            IF ( sza[xi,yi] GE 75. ) THEN BEGIN
+                array_cot[*] = 0.
+                array_cwp[*] = 0.
+                array_cer[*] = 0.
             ENDIF
 
 
@@ -218,53 +217,38 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, histo, $
             ENDIF
 
 
-            ; collect HIST1D --------------------------------------------------
-            
-            res = SUMUP_HIST1D(bin_dim=histo.CTP_BIN1D_DIM, $
-                               cph_dim=histo.PHASE_DIM, $
-                               lim_bin=histo.CTP2D, $
-                               var_tmp=array_ctp, $
-                               cfc_tmp=array_cfc, $
-                               cph_tmp=array_cph )
-            means.HIST1D_CTP[xi,yi,*,*] = means.HIST1D_CTP[xi,yi,*,*] + TOTAL(TOTAL(res,1),1)
+            ; collect HISTOS --------------------------------------------------
+            q = WHERE( array_cfc GT 0, n_q )
+            IF ( n_q GT 0 ) THEN BEGIN 
 
-            res = SUMUP_HIST1D(bin_dim=histo.CTT_BIN1D_DIM, $
-                               cph_dim=histo.PHASE_DIM, $
-                               lim_bin=histo.CTT2D, $
-                               var_tmp=array_ctt, $
-                               cfc_tmp=array_cfc, $
-                               cph_tmp=array_cph )
-            means.HIST1D_CTT[xi,yi,*,*] = means.HIST1D_CTT[xi,yi,*,*] + TOTAL(TOTAL(res,1),1)
+                FOR opi=0, n_q-1 DO BEGIN 
+                    
+                    zug_cph=1-array_cph[q[opi]]
 
-            res = SUMUP_HIST1D(bin_dim=histo.COT_BIN1D_DIM, $
-                               cph_dim=histo.PHASE_DIM, $
-                               lim_bin=histo.COT2D, $
-                               var_tmp=array_cot, $
-                               cfc_tmp=array_cfc, $
-                               cph_tmp=array_cph )
-            means.HIST1D_COT[xi,yi,*,*] = means.HIST1D_COT[xi,yi,*,*] + TOTAL(TOTAL(res,1),1)
+                    zug_ctp=(WHERE(histo.CTP1D-array_ctp[q[opi]] GT 0.))[0]-1
+                    means.HIST1D_CTP[xi,yi,zug_ctp,zug_cph]++
 
-            res = SUMUP_HIST1D(bin_dim=histo.CER_BIN1D_DIM, $
-                               cph_dim=histo.PHASE_DIM, $
-                               lim_bin=histo.CER2D, $
-                               var_tmp=array_cer, $
-                               cfc_tmp=array_cfc, $
-                               cph_tmp=array_cph )
-            means.HIST1D_CER[xi,yi,*,*] = means.HIST1D_CER[xi,yi,*,*] + TOTAL(TOTAL(res,1),1)
+                    zug_ctt=(WHERE(histo.CTT1D-array_ctt[q[opi]] GT 0.))[0]-1
+                    means.HIST1D_CTT[xi,yi,zug_ctt,zug_cph]++
 
-            res = SUMUP_HIST1D(bin_dim=histo.CWP_BIN1D_DIM, $
-                               cph_dim=histo.PHASE_DIM, $
-                               lim_bin=histo.CWP2D, $
-                               var_tmp=array_cwp*1000., $
-                               cfc_tmp=array_cfc, $
-                               cph_tmp=array_cph )
-            means.HIST1D_CWP[xi,yi,*,*] = means.HIST1D_CWP[xi,yi,*,*] + TOTAL(TOTAL(res,1),1)
+                    IF(array_cot[q[opi]] GT 0.) THEN BEGIN 
 
+                        zug_cot=(WHERE(histo.COT1D-array_cot[q[opi]] GT 0.))[0]-1
+                        means.HIST1D_COT[xi,yi,zug_cot,zug_cph]++
 
-            ; collect HIST2D --------------------------------------------------
+                        zug_cer=(WHERE(histo.CER1D-array_cer[q[opi]] GT 0.))[0]-1
+                        means.HIST1D_CER[xi,yi,zug_cer,zug_cph]++
 
-            res = SUMUP_HIST2D(histo, array_cot, array_ctp, array_cfc, array_cph)
-            means.HIST2D_COT_CTP[xi,yi,*,*,*] = means.HIST2D_COT_CTP[xi,yi,*,*,*] + TOTAL(TOTAL(res,1),1)
+                        zug_cwp=(WHERE(histo.CWP1D-(array_cwp[q[opi]]*1000.) GT 0.))[0]-1
+                        means.HIST1D_CWP[xi,yi,zug_cwp,zug_cph]++
+
+                        means.HIST2D_COT_CTP[xi,yi,zug_cot,zug_ctp,zug_cph]++
+
+                    ENDIF
+
+                ENDFOR
+
+            ENDIF ; end of collect HISTOS
 
 
         ENDFOR ; latitude
