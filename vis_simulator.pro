@@ -25,8 +25,7 @@
 ;
 ;******************************************************************************
 PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
-                   MINI=mini, MAXI=maxi, YMAX=ymax, VARS=vars, RATIO=ratio, $
-                   NOPNG=nopng, HELP=help
+                   YMAX=ymax, VARS=vars, RATIO=ratio, NOPNG=nopng, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
 
@@ -56,8 +55,6 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
         PRINT, " VERBOSE        increase output verbosity."
         PRINT, " RATIO          adds liquid cloud fraction to HIST1D plot."
         PRINT, " YMAX           set max for y-axis for /HIST1D"
-        PRINT, " MINI           set min value for map_image for /MAP"
-        PRINT, " MAXI           set max value for map_image for /MAP"
         PRINT, " HELP           prints this message."
         PRINT, ""
         RETURN
@@ -161,9 +158,9 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
                 READ_SIM_NCDF, lat, FILE=file, VAR_NAME='lat'
                 GET_ERA_GRID, data, lon, lat, grid
 
-                IF ~KEYWORD_SET(mini) THEN mini = MIN(data[good])
-                IF ~KEYWORD_SET(maxi) THEN maxi = MAX(data[good])
-                
+                mini = set.MINI_MAXI[0,i]
+                maxi = set.MINI_MAXI[1,i]
+
                 MAP_IMAGE, data, grid.LAT2D, grid.LON2D, LIMIT=limit, $
                            CTABLE=33, /BOX_AXES, /MAGNIFY, /GRID, $
                            MINI=mini, MAXI=maxi, $
@@ -177,7 +174,6 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
                 MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
 
                 end_save, save_as
-                UNDEFINE, mini, maxi
 
             ENDIF
 
