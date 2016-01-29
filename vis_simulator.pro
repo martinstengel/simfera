@@ -24,8 +24,9 @@
 ;   Jan 2016, first version
 ;
 ;******************************************************************************
-PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
-                   YMAX=ymax, VARS=vars, RATIO=ratio, NOPNG=nopng, HELP=help
+PRO VIS_SIMULATOR, VERBOSE=verbose, ALL=all, $
+                   HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
+                   VARS=vars, RATIO=ratio, NOPNG=nopng, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
 
@@ -41,12 +42,14 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
         PRINT, ""
         PRINT, " USAGE: "
         PRINT, " VIS_SIMULATOR, /map"
+        PRINT, " VIS_SIMULATOR, /all, ref='cci', sat='NOAA15' "
         PRINT, " VIS_SIMULATOR, vars=['ctp'], /hist1d"
         PRINT, " VIS_SIMULATOR, vars=['cwp','cot'], /hist1d, ref='cci', sat='NOAA18' "
         PRINT, " VIS_SIMULATOR, vars=['cfc'], ref='cci', sat='NOAA18' "
         PRINT, ""
         PRINT, " Optional Keywords:"
         PRINT, " VARS           list of parameters to be plotted, default is: ", vars
+        PRINT, " ALL            creates all figures for given variables"
         PRINT, " HIST1D         creates 1D histogram plots"
         PRINT, " MAP            creates 2D maps"
         PRINT, " REF            compares simulator output with reference data, options: ", $
@@ -54,7 +57,6 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
         PRINT, " SAT            REF requires SAT in some cases, e.g. sat='NOAA18'"
         PRINT, " VERBOSE        increase output verbosity."
         PRINT, " RATIO          adds liquid cloud fraction to HIST1D plot."
-        PRINT, " YMAX           set max for y-axis for /HIST1D"
         PRINT, " HELP           prints this message."
         PRINT, ""
         RETURN
@@ -96,54 +98,70 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
 
 
             ; -----------------------------------------------------------------
-            IF KEYWORD_SET(hist1d) THEN BEGIN
+            IF KEYWORD_SET(hist1d) OR KEYWORD_SET(all) THEN BEGIN
             ; -----------------------------------------------------------------
 
-                opt = 'hist1d_'
-                outfile = !SAVE_DIR + base + '_' + opt + vars[i]
+                CASE vars[i] OF
+                    'cer': BEGIN & ymax=50. & title=units+' for '+time & END
+                    'cot': BEGIN & ymax=30. & title=units+' for '+time & END
+                    'cwp': BEGIN & ymax=30. & title=units+' for '+time & END
+                    'ctt': BEGIN & ymax=50. & title=' for '+time & END
+                    'ctp': BEGIN & ymax=40. & title=' for '+time & END
+                    ELSE: UNDEFINE, ymax, title
+                ENDCASE
 
-                IF KEYWORD_SET(ratio) THEN $
-                    outfile = outfile + '_ratio'
-                IF KEYWORD_SET(ref) THEN $
-                    outfile = outfile + '_compare_with_'+ref
+                IF (ymax NE !NULL AND title NE !NULL) THEN BEGIN
 
-                IF (vars[i] EQ 'ctt' OR vars[i] EQ 'ctp') THEN $
-                    xtitle = ' for ' + time ELSE $
-                    xtitle = units + ' for ' + time
+                    opt = 'hist1d_'
+                    outfile = !SAVE_DIR + base + '_' + opt + vars[i]
+                    IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
 
-                IF (vars[i] EQ 'cer') THEN ymax = 50.
-                IF (vars[i] EQ 'cot') THEN ymax = 30.
-                IF (vars[i] EQ 'cwp') THEN ymax = 30.
-                IF (vars[i] EQ 'ctt') THEN ymax = 50.
+                    READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+vars[i]
+                    READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+vars[i]+'_bin_border'
+                    
+                    save_as = outfile + '.eps'
+                    start_save, save_as, size='A4', /LANDSCAPE
+                    cs = 2.0
 
-                READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+vars[i]
-                READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+vars[i]+'_bin_border'
-                
-                save_as = outfile + '.eps'
-                start_save, save_as, size='A4', /LANDSCAPE
-                cs = 2.0
+                    IF (vars[i] EQ 'cer') THEN varn = 'ref' ELSE varn = vars[i]
 
-                IF (vars[i] EQ 'cer') THEN varn = 'ref' ELSE varn = vars[i]
+                    CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
+                        VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
+                        YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
+                        BIN_BORDERS=bin
 
-                IF KEYWORD_SET(ref) THEN BEGIN
-                    compare = {ref:ref, sat:sat, var:varn, $
-                               year:STRMID(time, 0, 4), $
-                               month:STRMID(time, 4, 2), dat:''}
+                    end_save, save_as
+
+
+                    IF KEYWORD_SET(ref) THEN BEGIN
+                        opt = 'hist1d_'
+                        outfile = !SAVE_DIR + base + '_' + opt + vars[i]
+                        IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
+                        outfile = outfile + '_compare_with_'+ref
+
+                        save_as = outfile + '.eps'
+                        start_save, save_as, size='A4', /LANDSCAPE
+                        cs = 2.0
+
+                        compare = {ref:ref, sat:sat, var:varn, $
+                                   year:STRMID(time, 0, 4), $
+                                   month:STRMID(time, 4, 2), dat:''}
+
+                        CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
+                            VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
+                            YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
+                            BIN_BORDERS=bin, COMPARE=compare
+
+                        end_save, save_as
+                    ENDIF
+
                 ENDIF
-
-                CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
-                    VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
-                    YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
-                    BIN_BORDERS=bin, COMPARE=compare
-
-                end_save, save_as
-                UNDEFINE, ymax
 
             ENDIF
 
 
             ; -----------------------------------------------------------------
-            IF KEYWORD_SET(map) THEN BEGIN
+            IF KEYWORD_SET(map) OR KEYWORD_SET(all) THEN BEGIN
             ; -----------------------------------------------------------------
 
                 opt = 'map_'
@@ -174,12 +192,14 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
                 MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
 
                 end_save, save_as
+                UNDEFINE, limit
 
             ENDIF
 
 
             ; -----------------------------------------------------------------
-            IF KEYWORD_SET(ref) AND ~KEYWORD_SET(hist1d) THEN BEGIN
+            IF KEYWORD_SET(ref) AND ~KEYWORD_SET(hist1d) OR $
+                KEYWORD_SET(all) THEN BEGIN
             ; -----------------------------------------------------------------
 
                 PRINT, "** Compare simulated "+vars[i]+" with "+ref
@@ -188,14 +208,14 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
                 month = STRMID(time, 4, 2) 
 
                 CASE vars[i] OF
-                    'cer': varn = 'ref'
-                    'cer_liq': varn = 'ref_liq'
-                    'cer_ice': varn = 'ref_ice'
-                    ELSE: varn = vars[i]
+                    'cer': cci_varn = 'ref'
+                    'cer_liq': cci_varn = 'ref_liq'
+                    'cer_ice': cci_varn = 'ref_ice'
+                    ELSE: cci_varn = vars[i]
                 ENDCASE
 
                 compare_cci_with_clara, year, month, '', algo1='era-i',$
-                    data=varn, ccifile=file, reference=ref, $
+                    data=cci_varn, ccifile=file, reference=ref, $
                     sat=sat, mini=mini, maxi=maxi , limit=limit, $
                     save_dir=!SAVE_DIR, land=land, sea=sea, cov=cov, $
                     other='rainbow', ctable='', level='l3c'
