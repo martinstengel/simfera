@@ -1,12 +1,13 @@
 
-\section{Inter-comparison with Cloud\_cci L3C results}\label{sec:comparecci_histos}
+\section{Comparison of simulated and observed cloud parameters}\label{sec:sim_vs_obs}
+\subsection{ERA-Interim vs. Cloud\_cci L3C for \MonthYear}
 
 % \begin{figure}[!ht]
 %   \centering
 %   \includegraphics[scale=0.15]{\jhera}
 %   \includegraphics[scale=0.15]{\jhdif}
 %   \includegraphics[scale=0.15]{\jhcci}
-%   \caption[Joint histogram for \MonthYear.]
+%   \caption[Joint histogram.]
 %   {2D histogram of cloud top pressure and cloud optical thickness for \MonthYear. \hiscompare} 
 %   \label{fig:hist2d_ctp_cot}
 % \end{figure}
@@ -15,7 +16,7 @@
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\hiswidth]{{\hisout_ctp_\vscci}.png}
-  \caption[Cloud top pressure histogram for \MonthYear.]
+  \caption[Cloud top pressure histogram.]
   {Cloud top pressure histogram for \MonthYear. \hiscompare} 
   \label{fig:hist1d_ctp}
 \end{figure}
@@ -23,7 +24,7 @@
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\hiswidth]{{\hisout_ctt_\vscci}.png}
-  \caption[Cloud top temperature histogram for \MonthYear.]
+  \caption[Cloud top temperature histogram.]
   {Cloud top temperature histogram for \MonthYear. \hiscompare} 
   \label{fig:hist1d_ctt}
 \end{figure}
@@ -31,7 +32,7 @@
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\hiswidth]{{\hisout_cot_\vscci}.png}
-  \caption[Cloud optical thickness histogram for \MonthYear.]
+  \caption[Cloud optical thickness histogram.]
   {Cloud optical thickness histogram for \MonthYear. \hiscompare} 
   \label{fig:hist1d_cot}
 \end{figure}
@@ -39,16 +40,193 @@
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\hiswidth]{{\hisout_cwp_\vscci}.png}
-  \caption[Cloud water path histogram for \MonthYear.]
+  \caption[Cloud water path histogram.]
   {Cloud water path histogram for \MonthYear. \hiscompare} 
-  \label{fig:hist1d_ref}
+  \label{fig:hist1d_cwp}
 \end{figure}
 
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\hiswidth]{{\hisout_cer_\vscci}.png}
-  \caption[Cloud effective radii histogram for \MonthYear.]
+  \caption[Cloud effective radii histogram.]
   {Cloud effective radii histogram for \MonthYear. \hiscompare} 
-  \label{fig:hist1d_cwp}
+  \label{fig:hist1d_cer}
 \end{figure}
+
+
+% ===== LANDSCAPE ======
+
+\begin{landscape}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_CFC_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CFC_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_CFC_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CFC_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud fraction.]
+  {Monthly mean cloud fraction (CFC) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cfc}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_CPH_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CPH_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_CPH_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CPH_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud phase.]
+  {Monthly mean cloud phase (CPH) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cph}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_CWP_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CWP_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_CWP_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CWP_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud water path.]
+  {Monthly mean cloud water path (CWP) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cwp}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_LWP_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_LWP_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_LWP_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_LWP_\era_\cci_\zonal}.png}
+  \caption[Monthly mean liquid cloud water path.]
+  {Monthly mean liquid cloud water path (LWP) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_lwp}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_IWP_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_IWP_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_IWP_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_IWP_\era_\cci_\zonal}.png}
+  \caption[Monthly mean ice cloud water path.]
+  {Monthly mean ice cloud water path (IWP) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_iwp}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_COT_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_COT_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_COT_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_COT_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud optical thickness.]
+  {Monthly mean cloud optical thickness (COT) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cot}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_COT_LIQ_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_COT_LIQ_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_COT_LIQ_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_COT_LIQ_\era_\cci_\zonal}.png}
+  \caption[Monthly mean liquid cloud optical thickness.]
+  {Monthly mean liquid cloud optical thickness (COT\_LIQ) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cot_liq}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_COT_ICE_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_COT_ICE_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_COT_ICE_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_COT_ICE_\era_\cci_\zonal}.png}
+  \caption[Monthly mean ice cloud optical thickness.]
+  {Monthly mean ice cloud optical thickness (COT\_ICE) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cot_ice}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_REF_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_REF_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_REF_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_REF_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud effective radius.]
+  {Monthly mean cloud effective radius (REF) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cer}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_REF_LIQ_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_REF_LIQ_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_REF_LIQ_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_REF_LIQ_\era_\cci_\zonal}.png}
+  \caption[Monthly mean liquid cloud effective radius.]
+  {Monthly mean liquid cloud effective radius (REF\_LIQ) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cer_liq}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_REF_ICE_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_REF_ICE_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_REF_ICE_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_REF_ICE_\era_\cci_\zonal}.png}
+  \caption[Monthly mean ice cloud effective radius.]
+  {Monthly mean ice cloud effective radius (REF\_ICE) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cer_ice}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_CTP_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CTP_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_CTP_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CTP_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud top pressure.]
+  {Monthly mean cloud top pressure (CTP) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_ctp}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_CTT_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CTT_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_CTT_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CTT_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud top temperature.]
+  {Monthly mean cloud top temperature (CTT) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_ctt}
+\end{figure}
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.36]{{\comparecci_CTH_\era}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CTH_\cci}.png}\\
+  \includegraphics[scale=0.36]{{\comparecci_CTH_\era_\cci_\histo}.png}
+  \includegraphics[scale=0.36]{{\comparecci_CTH_\era_\cci_\zonal}.png}
+  \caption[Monthly mean cloud top height.]
+  {Monthly mean cloud top height (CTH) for \MonthYear. \compcaption} 
+  \label{fig:era_cci_cth}
+\end{figure}
+
+\end{landscape}
+
+% ===== LANDSCAPE ======
