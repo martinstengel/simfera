@@ -1002,3 +1002,155 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
 END
 
 
+;-----------------------------------------------------------------------------
+PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
+                   SAT=sat, REFS=refs, RATIO=ratio
+;-----------------------------------------------------------------------------
+
+    CASE varname OF
+        'cer': BEGIN & ymax=50. & title=units+' for '+time & END
+        'cot': BEGIN & ymax=30. & title=units+' for '+time & END
+        'cwp': BEGIN & ymax=30. & title=units+' for '+time & END
+        'ctt': BEGIN & ymax=50. & title=' for '+time & END
+        'ctp': BEGIN & ymax=40. & title=' for '+time & END
+        ELSE: UNDEFINE, ymax, title
+    ENDCASE
+    
+    IF (ymax NE !NULL AND title NE !NULL) THEN BEGIN
+    
+        opt = 'hist1d_'
+        outfile = save_dir + base + '_' + opt + varname 
+        IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
+    
+        READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+varname
+        READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+varname+'_bin_border'
+        
+        save_as = outfile + '.eps'
+        start_save, save_as, size='A4', /LANDSCAPE
+        cs = 2.0
+    
+        IF (varname EQ 'cer') THEN varn = 'ref' ELSE varn = varname
+    
+        CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
+            VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
+            YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
+            BIN_BORDERS=bin
+    
+        end_save, save_as
+    
+        IF KEYWORD_SET(refs) THEN BEGIN
+            FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+                opt = 'hist1d_'
+                outfile = save_dir + base + '_' + opt + varname
+                IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
+                outfile = outfile + '_compare_with_'+refs[r]
+    
+                save_as = outfile + '.eps'
+                start_save, save_as, size='A4', /LANDSCAPE
+                cs = 2.0
+    
+                compare = {ref:refs[r], sat:sat, var:varn, $
+                           year:STRMID(time, 0, 4), $
+                           month:STRMID(time, 4, 2), dat:''}
+    
+                CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
+                    VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
+                    YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
+                    BIN_BORDERS=bin, COMPARE=compare
+    
+                end_save, save_as
+            ENDFOR
+        ENDIF
+
+    ENDIF
+
+END
+
+
+;-----------------------------------------------------------------------------
+PRO PLOT_SIM_MAPS, file, varname, save_dir, data, fillvalue, mini, maxi, $
+                   base, figure_title, xtitle
+;-----------------------------------------------------------------------------
+    opt = 'map_'
+    outfile = save_dir + base + '_' + opt + varname
+    save_as = outfile + '.eps'
+    start_save, save_as, size='A4', /LANDSCAPE
+
+    limit = [-90., -180., 90., 180.]
+    void = WHERE(data EQ fillvalue, COMPLEMENT=good)
+    
+    READ_SIM_NCDF, lon, FILE=file, VAR_NAME='lon'
+    READ_SIM_NCDF, lat, FILE=file, VAR_NAME='lat'
+    GET_ERA_GRID, data, lon, lat, grid
+    
+    MAP_IMAGE, data, grid.LAT2D, grid.LON2D, LIMIT=limit, $
+               CTABLE=33, /BOX_AXES, /MAGNIFY, /GRID, $
+               MINI=mini, MAXI=maxi, $
+               CHARSIZE=2.0, TITLE=xtitle, VOID_INDEX=void, $
+               FORMAT=('(f8.1)'), N_LEV=6, $
+               FIGURE_TITLE=figure_title
+    MAP_CONTINENTS, /CONTINENTS, /HIRES, $
+        COLOR=cgcolor('Black'), GLINETHICK=2.2
+    MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
+    
+    end_save, save_as
+END
+
+
+;-----------------------------------------------------------------------------
+PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, SAT=sat
+;-----------------------------------------------------------------------------
+    FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+        PRINT, "** Compare simulated "+varname+" with "+refs[r]
+    
+        year = STRMID(time, 0, 4)
+        month = STRMID(time, 4, 2) 
+    
+        CASE varname OF
+            'cer': cci_varn = 'ref'
+            'cer_liq': cci_varn = 'ref_liq'
+            'cer_ice': cci_varn = 'ref_ice'
+            ELSE: cci_varn = varname
+        ENDCASE
+    
+        compare_cci_with_clara, year, month, '', algo1='era-i',$
+            data=cci_varn, ccifile=file, reference=refs[r], $
+            sat=sat, mini=mini, maxi=maxi , limit=limit, $
+            save_dir=save_dir, land=land, sea=sea, cov=cov, $
+            other='rainbow', ctable='', level='l3c'
+    ENDFOR
+END
+
+
+;-----------------------------------------------------------------------------
+PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, REFS=refs, SAT=sat
+;-----------------------------------------------------------------------------
+    PRINT, "** Compare zonal means"
+    
+    year = STRMID(time, 0, 4)
+    month = STRMID(time, 4, 2) 
+    datum = year + month
+    
+    CASE vname OF
+        'cer': varname = 'ref'
+        'cer_liq': varname = 'ref_liq'
+        'cer_ice': varname = 'ref_ice'
+        ELSE: varname = vname
+    ENDCASE
+    
+    plot_zonal_average, year, month, '', $
+        file, varname, algo='era-i', sea=sea, land=land, $
+        limit=limit, mini=mini, maxi=maxi, $
+        found=found, level=level, datum=datum, error=error, $
+        /white_bg, /save_as, oplots=0, addtext='Simulated'
+    
+    IF KEYWORD_SET(refs) THEN BEGIN
+        FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+            plot_zonal_average, year, month, '', $
+                '', varname, algo=refs[r], sea=sea, land=land, $
+                limit=limit, mini=mini, maxi=maxi, satellite=sat, $
+                found=found, level=level, datum=datum, error=error, $
+                /white_bg, /save_as, oplots=r+1
+        ENDFOR
+    ENDIF
+END

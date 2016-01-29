@@ -1,5 +1,5 @@
 ;------------------------------------------------------------------------------
-PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars
+PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars, REFS=refs
 ;------------------------------------------------------------------------------
 
     ; subfolder of file location
@@ -28,10 +28,12 @@ PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars
 
     ; get variable list
     IF ~KEYWORD_SET(vars) THEN BEGIN 
-        vars  = ['cer','cot','cwp','ctt','ctp','cfc','cph','cth',$
-                 'lwp','iwp','cot_liq','cot_ice','cer_liq','cer_ice'] 
-        IF KEYWORD_SET(hist1d) THEN vars = ['cer','cot','cwp','ctp','ctt']
-    ENDIF
+        var_list  = 'cer,cot,cwp,ctt,ctp,cfc,cph,cth,lwp,iwp,cot_liq,cot_ice,cer_liq,cer_ice'
+        IF KEYWORD_SET(hist1d) THEN var_list  = 'cer,cot,cwp,ctt,ctp'
+        vars = STRSPLIT(var_list, /EXTRACT,',')
+    ENDIF ELSE BEGIN
+        vars = STRSPLIT(vars, /EXTRACT,',')
+    ENDELSE
 
     ; set min, max values for plotting
     min_max = FLTARR(2,N_ELEMENTS(vars))
@@ -57,7 +59,17 @@ PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars
         min_max[0,i] = mini & min_max[1,i] = maxi
     ENDFOR
 
-    settings = { inp_pwd:inp, out_pwd:fig, eps2png:eps, $
-                 files:files, nfiles:count, vars:vars, mini_maxi:min_max}
+
+    ; possible reference data for inter-comparison
+    reference_data = 'cci,gac,gac2,myd,mod,myd2,mod2,gwx,cal,isp,pmx,cla'
+    ref_options = STRSPLIT(reference_data, /EXTRACT,',')
+
+    ; get reference list
+    IF KEYWORD_SET(refs) THEN refs = STRSPLIT(refs, /EXTRACT,',')
+
+
+    settings = { inp_pwd:inp, out_pwd:fig, $
+                 eps2png:eps, refdata:ref_options, $
+                 files:files, nfiles:count, mini_maxi:min_max }
 
 END
