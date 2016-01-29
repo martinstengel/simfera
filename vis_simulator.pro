@@ -43,10 +43,10 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, ALL=all, ZONAL=zonal, COMPARE=compare, $
         PRINT, " USAGE: "
         PRINT, " VIS_SIMULATOR, /map"
         PRINT, " VIS_SIMULATOR, /all, refs='cci', sat='NOAA15' "
-        PRINT, " VIS_SIMULATOR, /zonal, refs='cci,gac2', sat='NOAA18' "
+        PRINT, " VIS_SIMULATOR, /zonal, vars='cfc' "
         PRINT, " VIS_SIMULATOR, vars='ctp', /hist1d"
         PRINT, " VIS_SIMULATOR, vars='cwp,cot', /hist1d, refs='cci', sat='NOAA18' "
-        PRINT, " VIS_SIMULATOR, vars='cfc', refs='cci', sat='NOAA18' "
+        PRINT, " VIS_SIMULATOR, /compare, vars='cfc', refs='cci', sat='NOAA18' "
         PRINT, ""
         PRINT, " Optional Keywords:"
         PRINT, " VARS           list of parameters to be plotted, default is: ", vars
