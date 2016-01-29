@@ -191,8 +191,15 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, HIST1D=hist1d, MAP=map, REF=ref, SAT=sat, $
                 year = STRMID(time, 0, 4)
                 month = STRMID(time, 4, 2) 
 
+                CASE vars[i] OF
+                    'cer': varn = 'ref'
+                    'cer_liq': varn = 'ref_liq'
+                    'cer_ice': varn = 'ref_ice'
+                    ELSE: varn = vars[i]
+                ENDCASE
+
                 compare_cci_with_clara, year, month, '', algo1='era-i',$
-                    data=vars[i], ccifile=file, reference=ref, $
+                    data=varn, ccifile=file, reference=ref, $
                     sat=sat, mini=mini, maxi=maxi , limit=limit, $
                     save_dir=!SAVE_DIR, land=land, sea=sea, cov=cov, $
                     other='rainbow', ctable='', level='l3c'
