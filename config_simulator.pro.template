@@ -4,7 +4,7 @@
 ; /cmsaf/cmsaf-cld1/mstengel/ERA_Interim/ERA_simulator/MARS_data/ERA_simulator/
 ;------------------------------------------------------------------------------
 PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
-                      THRESHOLDS=cot_thresholds, HIST_INFO=histinfo, $
+                      SETTINGS=settings, HIST_INFO=histinfo, $
                       CER_INFO=const_reffs, $
                       SYEAR=y1, EYEAR=y2, SMONTH=m1, EMONTH=m2, $
                       TEST=test
@@ -15,10 +15,14 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     ; ========================================================
 
     ; subdirectory for output & figures
-    run = 'v5.2_test/'
+    run = 'v5.2_cph_day_added/'
 
     ; 1=random, 2=max/random
     scops_overlap_type = 2
+
+    ; mpc=0 ... no mixed phase clouds, only separate liquid & ice clouds
+    ; mpc=1 ... all clouds are mixed phase clouds if both water/ice contents exists
+    mpc = 1
 
     ; devmode = ON = 1, will add 'devmode' string to output files
     devmode = 0
@@ -42,12 +46,13 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     ; === DO NOT CHANGE UNLESS YOU KNOW WHAT YOU ARE DOING ===
     ; ========================================================
 
+
     IF KEYWORD_SET(y1) AND ~KEYWORD_SET(y2) THEN y2 = y1
     IF KEYWORD_SET(m1) AND ~KEYWORD_SET(m2) THEN m2 = m1
-    IF ~KEYWORD_SET(y1) THEN y1 = 2008;1979
-    IF ~KEYWORD_SET(y2) THEN y2 = 2008;2014
-    IF ~KEYWORD_SET(m1) THEN m1 = 7;1
-    IF ~KEYWORD_SET(m2) THEN m2 = 7;12
+    IF ~KEYWORD_SET(y1) THEN y1 = 2008      ;1979
+    IF ~KEYWORD_SET(y2) THEN y2 = 2008      ;2014
+    IF ~KEYWORD_SET(m1) THEN m1 = 7         ;1
+    IF ~KEYWORD_SET(m2) THEN m2 = 7         ;12
 
     ; Set list of years to be processed
     years_list = STRTRIM( STRING( INDGEN( y2 - y1 + 1 ) + y1 ), 2 )
@@ -172,19 +177,14 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
 
     ;-- create output structures
 
-    io_paths = {io_paths, $
-                inp:inp_pwd, out:out_pwd, fig:fig_pwd, sst:sstfile }
+    io_paths = {inp:inp_pwd, out:out_pwd, fig:fig_pwd, sst:sstfile }
 
-    time_frame = {time_frame, $
-                  years:years_list, months:months_list, $
-                  ny:nyears, nm:nmonths}
+    time_frame = {years:years_list, months:months_list, ny:nyears, nm:nmonths}
 
-    cot_thresholds = {cot_thresholds, $
-                      scops:scops_overlap_type, $
-                      cot:cot_thv, cot_str:crit_string_cot}
+    settings = {mpc:mpc, scops:scops_overlap_type, $
+                cot:cot_thv, cot_str:crit_string_cot}
 
-    const_reffs = {effective_radii_microns, $
-                   water:reff_water, ice:reff_ice}
+    const_reffs = {effective_radii_microns, water:reff_water, ice:reff_ice}
 
     histinfo = { histograms, $ 
                  phase:phase, phase_dim:phase_dim, $

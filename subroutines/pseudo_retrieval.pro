@@ -3,8 +3,8 @@
 ; OUT: TMP, MEANS
 ; search bottom-up, where is a cloud using COT threshold value
 ;------------------------------------------------------------------------------
-PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, histo, $
-                      means, tmp
+PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
+                      histo, means, tmp
 ;------------------------------------------------------------------------------
 
     ; fill_value
@@ -29,7 +29,7 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, histo, $
 
     ;MST
     ;mpc = 0 ;no mixed phase clouds, only separate liquid and ice clouds
-    mpc = 1 ;all clouds are mixed phase clouds if both water/ice contents exist
+    ;mpc = 1 ;all clouds are mixed phase clouds if both water/ice contents exist
 
 
     ; loop over individual grid cells

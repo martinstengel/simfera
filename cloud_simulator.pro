@@ -47,7 +47,6 @@
 ;******************************************************************************
 PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                      SYEAR=syear, EYEAR=eyear, SMONTH=smonth, EMONTH=emonth, $
-                     AUXMAP=auxmap, INTMAP=intmap, FINMAP=finmap, $
                      RATIO=ratio, CONSTANT_CER=constant_cer, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
@@ -61,7 +60,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                " ""config_simulator.pro"" and modify the settings for your needs."
         PRINT, ""
         PRINT, " USAGE: "
-        PRINT, " CLOUD_SIMULATOR, /test, /log, /ver, /intmap, /auxmap"
+        PRINT, " CLOUD_SIMULATOR, /test, /log, /ver "
         PRINT, " CLOUD_SIMULATOR, sy=2008, sm=7"
         PRINT, " CLOUD_SIMULATOR, sy=1979, ey=2014, sm=1, em=12"
         PRINT, ""
@@ -74,9 +73,6 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
         PRINT, " VERBOSE        increase output verbosity."
         PRINT, " LOGFILE        creates journal logfile."
         PRINT, " TEST           output based on the first day only."
-        PRINT, " AUXMAP         creates maps showing auxiliary data."
-        PRINT, " INTMAP         creates some intermediate results."
-        PRINT, " FINMAP         creates final hist1d & 2d map results."
         PRINT, " RATIO          adds liquid cloud fraction to HIST1D plot."
         PRINT, " HELP           prints this message."
         PRINT, ""
@@ -92,7 +88,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
 
     IF KEYWORD_SET(verbose) THEN PRINT, '** Import user setttings'
 
-    CONFIG_SIMULATOR, PATHS=path, TIMES=time, THRESHOLDS=thv, $ 
+    CONFIG_SIMULATOR, PATHS=path, TIMES=time, SETTINGS=set, $ 
         SYEAR=syear, EYEAR=eyear, SMONTH=smonth, EMONTH=emonth, $ 
         HIST_INFO=his, CER_INFO=cer_info, TEST=test
 
@@ -102,14 +98,15 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
 
     IF KEYWORD_SET(logfile) THEN BEGIN 
         aTimeStamp = TIMESTAMP(format)
-        JOURNAL, path.out + 'journal_' + thv.COT_STR + aTimeStamp + '.pro'
+        JOURNAL, path.out + 'journal_' + set.COT_STR + aTimeStamp + '.pro'
     ENDIF
 
     PRINT, FORMAT='(A, A-100)', '** INP:     ', path.INP
     PRINT, FORMAT='(A, A-100)', '** OUT:     ', path.OUT
     PRINT, FORMAT='(A, A-100)', '** FIG:     ', path.FIG
-    PRINT, FORMAT='(A, F8.3)',  '** COT-thv: ', thv.COT
-    PRINT, FORMAT='(A, A-100)', '** SCOPS:   ', thv.SCOPS
+    PRINT, FORMAT='(A, F8.3)',  '** COT-thv: ', set.COT
+    PRINT, FORMAT='(A, A-100)', '** SCOPS:   ', set.SCOPS
+    PRINT, FORMAT='(A, A-100)', '** MPC:     ', set.MPC
 
     IF KEYWORD_SET(constant_cer) THEN BEGIN 
         mess = "** CWP & COT based on FIXED CER [um]"
@@ -131,14 +128,13 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
             counti = 0
 
             ff = FINDFILE(path.inp+year+month+'/'+'*'+year+month+'*plev')
-
             numff = N_ELEMENTS(ff)
             strff = STRTRIM(numff,2)
             strym = STRING(year) + '/' + STRING(month)
 
-            PRINT, '** ', strff, ' ERA-Interim InputFiles for ', strym
-
             IF(N_ELEMENTS(ff) GT 1) THEN BEGIN
+
+                PRINT, '** ', strff, ' ERA-Interim InputFiles for ', strym
 
                 FOR fidx=0,N_ELEMENTS(ff)-1,1 DO BEGIN ;loop over files
 
@@ -159,15 +155,15 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                         IF(counti EQ 0) THEN BEGIN
 
                             INIT_ERA_GRID, input, grid 
-                            READ_ERA_SSTFILE, path.SST, grid, sst, void, MAP=auxmap
-                            lsm2d = INIT_LSM_ARRAY(grid, sst, void, MAP=auxmap)
+                            READ_ERA_SSTFILE, path.SST, grid, sst, void, MAP=test
+                            lsm2d = INIT_LSM_ARRAY(grid, sst, void, MAP=test)
                             INIT_OUT_ARRAYS, grid, his, means, counts
 
                         ENDIF
                         counti++
 
                         ; initialize solar zenith angle 2D array
-                        sza2d = INIT_SZA_ARRAY(input, grid, MAP=auxmap)
+                        sza2d = INIT_SZA_ARRAY(input, grid, MAP=test)
 
                         ; lwc and iwc weighted by cc
                         incloud = CALC_INCLOUD_CWC( input, grid )
@@ -180,23 +176,12 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                                        VERBOSE=verbose
 
                         ; means (in/out), temps (out)
-                        PSEUDO_RETRIEVAL, input, grid, sza2d, thv.SCOPS, $ 
+                        PSEUDO_RETRIEVAL, input, grid, sza2d, set.SCOPS, $ 
                                           cwp_lay, cot_lay, cer_lay, $ 
-                                          thv.COT, his, means, temps
+                                          set.COT, set.MPC, his, means, temps
 
                         ; sum up cloud parameters
                         SUMUP_VARS, means, counts, temps
-
-                        ; check intermediate results: current_time_slot
-                        IF KEYWORD_SET(intmap) THEN BEGIN
-                            FOR v=0, N_ELEMENTS(vars)-1 DO BEGIN
-                                IF (vars[v] EQ 'ctt') THEN CONTINUE 
-                                IF (vars[v] EQ 'ctp') THEN CONTINUE 
-                                PLOT_INTER_HISTOS, temps, vars[v], his,$
-                                    file1, thv.COT_STR, thv.SCOPS, $
-                                    CONSTANT_CER=constant_cer, RATIO=ratio
-                            ENDFOR
-                        ENDIF
 
                         ; count number of files
                         counts.raw++
@@ -213,35 +198,38 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                 MEAN_VARS, means, counts
 
                 ; plot final hist1d results: ctp, cwp, cer, cot, ctt
-                IF KEYWORD_SET(finmap) THEN BEGIN 
+                IF KEYWORD_SET(test) THEN BEGIN 
 
                     FOR v2=0, N_ELEMENTS(vars2)-1 DO BEGIN
                         ofile = 'ERA_Interim_'+year+month
-                        MAP_MM, grid, means, ofile, vars2[v2], thv.COT_STR, $
-                            thv.SCOPS, CONSTANT_CER=creff
+                        MAP_MM, grid, means, ofile, vars2[v2], set.COT_STR, $
+                            set.SCOPS, set.MPC, CONSTANT_CER=creff
                     ENDFOR
 
                     FOR v=0, N_ELEMENTS(vars)-1 DO BEGIN
                         ofile = 'ERA_Interim_'+year+month
 
                         PLOT_HISTOS_1D, vars[v], means, his, ofile, $
-                            thv.COT_STR, thv.SCOPS, $
+                            set.COT_STR, set.SCOPS, set.MPC, $
                             CONSTANT_CER=constant_cer, RATIO=ratio
 
-                        MAP_MM, grid, means, ofile, vars[v], thv.COT_STR, $
-                            thv.SCOPS, CONSTANT_CER=creff
+                        MAP_MM, grid, means, ofile, vars[v], set.COT_STR, $
+                            set.SCOPS, set.MPC, CONSTANT_CER=creff
                     ENDFOR
 
                 ENDIF
 
                 ; write output files
                 WRITE_MONTHLY_MEAN, path.out, year, month, grid, input, his, $ 
-                    thv.COT_STR, thv.COT, means, counts, thv.SCOPS
+                    set.COT_STR, set.COT, means, counts, set.SCOPS, set.MPC
 
                 ; delete final arrays before next cycle starts
                 UNDEFINE, means, counts
 
-            ENDIF ;end of IF(N_ELEMENTS(ff) GT 1)
+            ENDIF ELSE BEGIN 
+                PRINT, '!!!!!! No ERA-Interim InputFiles found for ', $
+                               strym, ' !!!!!!'
+            ENDELSE
 
            PRINT, "** Elapsed Time: ", (SYSTIME(1)-SMM)/60., " minutes"
 

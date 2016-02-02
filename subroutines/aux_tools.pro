@@ -18,13 +18,14 @@ END
 
 
 ;-----------------------------------------------------------------------------
-FUNCTION GET_FILE_NAME, filename, varname, type, scops_type, flag, $ 
+FUNCTION GET_FILE_NAME, filename, varname, type, scops_type, flag, mpc, $ 
                        CONSTANT_CER=creff, RATIO=ratio
 ;-----------------------------------------------------------------------------
     IF (scops_type EQ 1) THEN st = 'random' ELSE st='max/random'
     ststr = STRTRIM(STRING(scops_type),2)
+    mpstr = STRTRIM(STRING(mpc),2)
     basen = FSC_Base_Filename(filename)
-    obase = !SAVE_DIR + basen + '_' + flag + '_scops' + ststr
+    obase = !SAVE_DIR + basen + '_' + flag + '_scops'+ststr + '_mpc'+mpstr
     result = obase + '_'+type+'_'+varname
     IF KEYWORD_SET(creff) THEN result = result + '_fixed_reffs'
     IF KEYWORD_SET(ratio) THEN result = result + '_ratio'
@@ -660,12 +661,12 @@ END
 
 
 ;-----------------------------------------------------------------------------
-PRO MAP_MM, grd, data, filename, varname, flag, scops_type, $
+PRO MAP_MM, grd, data, filename, varname, flag, scops_type, mpc, $
             TITLE=title, CONSTANT_CER=creff
 ;-----------------------------------------------------------------------------
     !EXCEPT=0
 
-    ofil = GET_FILE_NAME( filename, varname, 'map', scops_type, flag, $
+    ofil = GET_FILE_NAME( filename, varname, 'map', scops_type, flag, mpc, $
                          CONSTANT_CER=creff )
 
     IF (is_file(ofil+'.png')) THEN RETURN
@@ -695,12 +696,12 @@ END
 
 
 ;-----------------------------------------------------------------------------
-PRO PLOT_HISTOS_1D, varname, data, histo, filename, flag, scops_type, $
+PRO PLOT_HISTOS_1D, varname, data, histo, filename, flag, scops_type, mpc, $
                     CONSTANT_CER=creff, RATIO=ratio
 ;-----------------------------------------------------------------------------
 
     ofil = GET_FILE_NAME( filename, varname, 'hist1d', scops_type, flag, $
-                         CONSTANT_CER=creff, RATIO=ratio )
+                          mpc, CONSTANT_CER=creff, RATIO=ratio )
 
     IF (is_file(ofil+'.png')) THEN RETURN
 
@@ -728,10 +729,10 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
-                       CONSTANT_CER=creff, RATIO=ratio
+                       mpc, CONSTANT_CER=creff, RATIO=ratio
 ;-----------------------------------------------------------------------------
 
-    ofil = GET_FILE_NAME( filename, varname, '2Dtmp', scops_type, flag, $
+    ofil = GET_FILE_NAME( filename, varname, '2Dtmp', scops_type, flag, mpc, $
                          CONSTANT_CER=creff, RATIO=ratio )
 
     IF ( is_file( ofil + '.png' ) ) THEN RETURN
