@@ -11,10 +11,12 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
     fillvalue = -999.
 
     ; 2D arrays containing the upper-most cloud information
-    ctp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & ctp_tmp[*,*] = fillvalue
-    cth_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cth_tmp[*,*] = fillvalue
-    ctt_tmp  = FLTARR(grd.XDIM,grd.YDIM) & ctt_tmp[*,*] = fillvalue
-    cph_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cph_tmp[*,*] = fillvalue
+    ctp_tmp     = FLTARR(grd.XDIM,grd.YDIM) & ctp_tmp[*,*]     = fillvalue
+    cth_tmp     = FLTARR(grd.XDIM,grd.YDIM) & cth_tmp[*,*]     = fillvalue
+    ctt_tmp     = FLTARR(grd.XDIM,grd.YDIM) & ctt_tmp[*,*]     = fillvalue
+    cph_tmp     = FLTARR(grd.XDIM,grd.YDIM) & cph_tmp[*,*]     = fillvalue
+    cph_tmp_day = FLTARR(grd.XDIM,grd.YDIM) & cph_tmp_day[*,*] = fillvalue
+
     cfc_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cfc_tmp[*,*] = 0.
     cwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cwp_tmp[*,*] = 0.
     lwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & lwp_tmp[*,*] = 0.
@@ -180,14 +182,6 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
             ENDIF
 
 
-            ; SOLAR cot & cwp & cer
-            IF ( sza[xi,yi] GE 75. ) THEN BEGIN
-                array_cot[*] = 0.
-                array_cwp[*] = 0.
-                array_cer[*] = 0.
-            ENDIF
-
-
             wocl     = WHERE( array_cfc GT 0.5,nwocl)
             wocl_ice = WHERE( array_cfc GT 0.5 AND array_cph LT 0.5, nwocl_ice )
             wocl_liq = WHERE( array_cfc GT 0.5 AND array_cph GT 0.5, nwocl_liq )
@@ -215,6 +209,27 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                 icot_tmp[xi,yi] = MEAN( array_cot[wocl_ice] )
                 iwp_tmp[xi,yi] = MEAN( array_cwp[wocl_ice] ) 
             ENDIF
+
+            ; daytime cph
+            cph_tmp_day[xi,yi] = cph_tmp[xi,yi]
+
+            ; SOLAR cot & cwp & cer
+            IF ( sza[xi,yi] GE 75. ) THEN BEGIN
+                ;all
+                cot_tmp[xi,yi] = fillvalue
+                cwp_tmp[xi,yi] = fillvalue
+                cer_tmp[xi,yi] = fillvalue
+                cph_tmp_day[xi,yi] = fillvalue
+                ;liquid
+                lcer_tmp[xi,yi] = fillvalue
+                lcot_tmp[xi,yi] = fillvalue
+                lwp_tmp[xi,yi]  = fillvalue 
+                ;ice
+                icer_tmp[xi,yi] = fillvalue
+                icot_tmp[xi,yi] = fillvalue
+                iwp_tmp[xi,yi]  = fillvalue 
+            ENDIF
+
 
 
             ; collect HISTOS --------------------------------------------------
@@ -258,7 +273,7 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
 
     ; output structure
     tmp = {temp_arrays, $
-           cfc:cfc_tmp, cph:cph_tmp, $
+           cfc:cfc_tmp, cph:cph_tmp, cph_day:cph_tmp_day, $
            ctt:ctt_tmp, cth:cth_tmp, ctp:ctp_tmp, $
            cwp:cwp_tmp, lwp:lwp_tmp, iwp:iwp_tmp, $
            cot:cot_tmp, cot_liq:lcot_tmp, cot_ice:icot_tmp, $

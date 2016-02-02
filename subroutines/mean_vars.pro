@@ -9,15 +9,24 @@ PRO MEAN_VARS, means, counts
     wo_numi  = WHERE(counts.CTP GT 0, n_wo_numi)
 
     IF(n_wo_numi GT 0) THEN BEGIN
+        ; [m] - > [km]
+        means.CTH[wo_numi] = (means.CTH[wo_numi] / counts.CTP[wo_numi]) /1000.
         means.CTP[wo_numi] = means.CTP[wo_numi] / counts.CTP[wo_numi]
-        means.CTH[wo_numi] = (means.CTH[wo_numi] / counts.CTP[wo_numi]) / 1000. ;[km]
         means.CTT[wo_numi] = means.CTT[wo_numi] / counts.CTP[wo_numi]
         means.CPH[wo_numi] = means.CPH[wo_numi] / counts.CTP[wo_numi]
     ENDIF
 
 
-    ; -- cloud fraction divided by number of files read = raw
-    means.CFC = means.CFC / counts.RAW
+    ; -- cloud fraction
+    tcfc = WHERE(counts.CFC GT 0, ntcfc)
+    IF (ntcfc GT 0) THEN $
+        means.CFC[tcfc] = means.CFC[tcfc] / counts.CFC[tcfc]
+
+
+    ; -- daytime CPH
+    dcph = WHERE(counts.CPH_DAY GT 0, ndcph)
+    IF (ndcph GT 0) THEN $ 
+        means.CPH_DAY[dcph] = means.CPH_DAY[dcph] / counts.CPH_DAY[dcph]
 
 
     ; -- convert LWP,IWP from 'kg/m2' to 'g/m2' (CCI conform), 
@@ -76,11 +85,17 @@ PRO MEAN_VARS, means, counts
         means.CPH[wo_numi0] = -999.
     ENDIF
 
+    dcph0 = WHERE(counts.CPH_DAY EQ 0, nix_cph)
+    IF (nix_cph GT 0) THEN means.CPH_DAY[dcph0] = -999.
+
+    tcfc0 = WHERE(counts.CFC EQ 0, nix_cfc)
+    IF (nix_cfc GT 0) THEN means.CFC[tcfc0] = -999.
+
     idx_liq0 = WHERE(counts.LWP EQ 0, nidx_liq0)
-    IF(nidx_liq0 GT 0) THEN means.LWP[idx_liq0] = -999.
+    IF (nidx_liq0 GT 0) THEN means.LWP[idx_liq0] = -999.
 
     idx_ice0 = WHERE(counts.IWP EQ 0, nidx_ice0)
-    IF(nidx_ice0 GT 0) THEN means.IWP[idx_ice0] = -999.
+    IF (nidx_ice0 GT 0) THEN means.IWP[idx_ice0] = -999.
 
     tcwp0 = WHERE(counts.CWP EQ 0, ntcwp0)
     IF (ntcwp0 GT 0) THEN means.CWP[tcwp0] = -999.

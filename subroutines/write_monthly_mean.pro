@@ -206,8 +206,13 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
 
     vid  = NCDF_VARDEF(id, 'cph', [dim_x_id,dim_y_id,time_id], /FLOAT)
     NCDF_ATTPUT, id, 'cph', '_FillValue', -999.
-    NCDF_ATTPUT, id, 'cph', 'long_name', 'cloud phase'
+    NCDF_ATTPUT, id, 'cph', 'long_name', 'fraction of liquid water clouds'
     NCDF_ATTPUT, id, 'cph', 'units', ' '
+
+    vid  = NCDF_VARDEF(id, 'cph_day', [dim_x_id,dim_y_id,time_id], /FLOAT)
+    NCDF_ATTPUT, id, 'cph_day', '_FillValue', -999.
+    NCDF_ATTPUT, id, 'cph_day', 'long_name', 'daytime fraction of liquid water clouds'
+    NCDF_ATTPUT, id, 'cph_day', 'units', ' '
 
     vid  = NCDF_VARDEF(id, 'cfc', [dim_x_id,dim_y_id,time_id], /FLOAT)
     NCDF_ATTPUT, id, 'cfc', '_FillValue', -999.
@@ -307,6 +312,7 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
     NCDF_VARPUT, id, 'cth', means.cth
     NCDF_VARPUT, id, 'ctt', means.ctt
     NCDF_VARPUT, id, 'cph', means.cph
+    NCDF_VARPUT, id, 'cph_day', means.cph_day
     NCDF_VARPUT, id, 'cfc', means.cfc
     NCDF_VARPUT, id, 'cot', means.cot
     NCDF_VARPUT, id, 'cot_liq', means.cot_liq

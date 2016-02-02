@@ -91,6 +91,8 @@ PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
     cfc = FLTARR(grid.xdim,grid.ydim) & cfc[*,*] = 0
     ; cloud phase
     cph = FLTARR(grid.xdim,grid.ydim) & cph[*,*] = 0
+    ; cloud phase day only
+    cph_day = FLTARR(grid.xdim,grid.ydim) & cph_day[*,*] = 0
     ; cloud top temperature
     ctt = FLTARR(grid.xdim,grid.ydim) & ctt[*,*] = 0
     ; cloud top height
@@ -131,7 +133,8 @@ PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
     hist2d_cot_ctp[*,*,*,*] = 0l
 
     ; -- counts
-    numb_raw = 0l ; files & for cfc
+    numb_raw = 0l ; files
+    numb_cfc = LONARR(grid.xdim,grid.ydim) & numb_cfc[*,*] = 0
     numb_ctp = LONARR(grid.xdim,grid.ydim) & numb_ctp[*,*] = 0
     numb_cwp = LONARR(grid.xdim,grid.ydim) & numb_cwp[*,*] = 0
     numb_lwp = LONARR(grid.xdim,grid.ydim) & numb_lwp[*,*] = 0
@@ -142,6 +145,7 @@ PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
     numb_cer = LONARR(grid.xdim,grid.ydim) & numb_cer[*,*] = 0
     numb_cer_liq = LONARR(grid.xdim,grid.ydim) & numb_cer_liq[*,*] = 0
     numb_cer_ice = LONARR(grid.xdim,grid.ydim) & numb_cer_ice[*,*] = 0
+    numb_cph_day = LONARR(grid.xdim,grid.ydim) & numb_cph_day[*,*] = 0
 
 
     ; -- create structure
@@ -152,14 +156,14 @@ PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
                hist1d_cwp:hist1d_cwp, $ 
                hist1d_cot:hist1d_cot, $ 
                hist1d_cer:hist1d_cer, $ 
-               cfc:cfc, cph:cph, ctt:ctt, $
-               cth:cth, ctp:ctp, cwp:cwp, $
-               lwp:lwp, iwp:iwp, $
+               cfc:cfc, cph:cph, cph_day:cph_day, ctt:ctt, $
+               cth:cth, ctp:ctp, cwp:cwp, lwp:lwp, iwp:iwp, $
                cot:cot, cot_liq:cot_liq, cot_ice:cot_ice, $
                cer:cer, cer_liq:cer_liq, cer_ice:cer_ice }
 
     counts = { counts_monthly_means,$ 
                raw:numb_raw, $
+               cfc:numb_cfc, $
                ctp:numb_ctp, $
                cwp:numb_cwp, $
                lwp:numb_lwp, $
@@ -169,7 +173,8 @@ PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
                cot_ice:numb_cot_ice, $
                cer:numb_cer, $
                cer_liq:numb_cer_liq, $
-               cer_ice:numb_cer_ice }
+               cer_ice:numb_cer_ice, $
+               cph_day:numb_cph_day }
 
 END
 

@@ -5,10 +5,6 @@
 PRO SUMUP_VARS, means, counts, temps
 ;------------------------------------------------------------------------------
 
-    ; no condition for cloud fraction [0;1]: clear or cloudy
-    ; fillvalue = 0., thus counts = raw = number of files read
-    means.CFC = means.CFC + temps.CFC
-
     wo_ctp = WHERE( (temps.CTP GT 10.) AND (temps.CTH GT 0.)  AND $
                     (temps.CPH GE 0.), nwo_ctp )
 
@@ -18,6 +14,15 @@ PRO SUMUP_VARS, means, counts, temps
     means.CPH[wo_ctp] = means.CPH[wo_ctp] + temps.CPH[wo_ctp]
     counts.CTP[wo_ctp] = counts.CTP[wo_ctp] + 1l
 
+    ; CFC
+    wo_cfc = WHERE(temps.CFC GT 0., nwo_cfc)
+    means.CFC[wo_cfc] = means.CFC[wo_cfc] + temps.CFC[wo_cfc]
+    counts.CFC[wo_cfc] = counts.CFC[wo_cfc] + 1l
+
+    ; daytime CPH
+    wo_cph = WHERE(temps.CPH_DAY GE 0., nwo_cph)
+    means.CPH_DAY[wo_cph] = means.CPH_DAY[wo_cph] + temps.CPH_DAY[wo_cph]
+    counts.CPH_DAY[wo_cph] = counts.CPH_DAY[wo_cph] + 1l
 
     ; TOTAL CER 
     wo_cer = WHERE(temps.CER GT 0., nwo_cer)
