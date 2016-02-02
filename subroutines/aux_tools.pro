@@ -951,12 +951,12 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
                 found=found1)
     ENDIF
 
+    IF ~KEYWORD_SET(xtitle) THEN xtit = data_name ELSE xtit = xtitle
+
     plot,[0,0],[1,1],yr=[0,ymax],xr=[0,N_ELEMENTS(bild)-1],$
-        xticks=N_ELEMENTS(xtickname)-1, $
+        xticks=N_ELEMENTS(xtickname)-1, col=cgcolor('black'), $
         xtickname = strcompress(string(xtickname,f='(f20.1)'),/rem), $
-        ;xtickname = strcompress(string(xtickname,f='(f20)'),/rem), $
-        xtitle=data_name+xtitle,ytitle=ytitle,xminor=2, $
-        charsize=cs, col=cgcolor('black')
+        xtitle=xtit, ytitle=ytitle, xminor=2, charsize=cs
 
     lsty = 0
     thick = 4
@@ -983,7 +983,7 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
         IF KEYWORD_SET(ratio) THEN colors = [colors, cgcolor("forest green")]
         nlabels = N_ELEMENTS(labels)
         legend, labels, thick=REPLICATE(thick,nlabels), spos='tr', $
-                charsize=2.0, color=colors, line=REPLICATE(3,nlabels)
+                charsize=cs, color=colors, line=REPLICATE(3,nlabels)
     ENDIF
 
     allstr  = vs
@@ -997,7 +997,7 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
     nlabels = N_ELEMENTS(labels)
 
     legend, labels, thick=REPLICATE(thick,nlabels), spos=lp, $
-            charsize=2.0, color=colors
+            charsize=cs, color=colors
 
 END
 
@@ -1008,15 +1008,15 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
 ;-----------------------------------------------------------------------------
 
     CASE varname OF
-        'cer': BEGIN & ymax=50. & title=units+' for '+time & END
-        'cot': BEGIN & ymax=30. & title=units+' for '+time & END
-        'cwp': BEGIN & ymax=30. & title=units+' for '+time & END
-        'ctt': BEGIN & ymax=50. & title=' for '+time & END
-        'ctp': BEGIN & ymax=40. & title=' for '+time & END
-        ELSE: UNDEFINE, ymax, title
+        'cer': ymax=50.
+        'cot': ymax=30.
+        'cwp': ymax=30.
+        'ctt': ymax=50.
+        'ctp': ymax=40.
+        ELSE: UNDEFINE, ymax
     ENDCASE
     
-    IF (ymax NE !NULL AND title NE !NULL) THEN BEGIN
+    IF (ymax NE !NULL) THEN BEGIN
     
         opt = 'hist1d_'
         outfile = save_dir + base + '_' + opt + varname 
@@ -1026,8 +1026,8 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
         READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+varname+'_bin_border'
         
         save_as = outfile + '.eps'
-        start_save, save_as, size='A4', /LANDSCAPE
-        cs = 2.0
+        start_save, save_as, size=[35,20]
+        cs = 2.3
     
         IF (varname EQ 'cer') THEN varn = 'ref' ELSE varn = varname
     
@@ -1046,8 +1046,8 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
                 outfile = outfile + '_compare_with_'+refs[r]
     
                 save_as = outfile + '.eps'
-                start_save, save_as, size='A4', /LANDSCAPE
-                cs = 2.0
+                start_save, save_as, size=[35,20]
+                cs = 2.3
     
                 compare = {ref:refs[r], sat:sat, var:varn, $
                            year:STRMID(time, 0, 4), $
@@ -1098,7 +1098,8 @@ END
 
 
 ;-----------------------------------------------------------------------------
-PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, SAT=sat
+PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, $
+                           mini, maxi, SAT=sat
 ;-----------------------------------------------------------------------------
     FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
         PRINT, "** Compare simulated "+varname+" with "+refs[r]
@@ -1113,36 +1114,45 @@ PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, SAT=sat
             ELSE: cci_varn = varname
         ENDCASE
     
-        compare_cci_with_clara, year, month, '', algo1='era-i',$
-            data=cci_varn, ccifile=file, reference=refs[r], $
-            sat=sat, mini=mini, maxi=maxi , limit=limit, $
-            save_dir=save_dir, land=land, sea=sea, cov=cov, $
-            other='rainbow', ctable='', level='l3c'
+        compare_cci_with_clara, year, month, '', ALGO1='era-i',$
+            DATA=cci_varn, CCIFILE=file, REFERENCE=refs[r], $
+            SAT=sat, MINI=mini, MAXI=maxi , LIMIT=limit, $
+            SAVE_DIR=save_dir, LAND=land, SEA=sea, COV=cov, $
+            OTHER='rainbow', CTABLE='', LEVEL='l3c'
     ENDFOR
 END
 
 
 ;-----------------------------------------------------------------------------
-PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, REFS=refs, SAT=sat
+PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
+                            mini, maxi, REFS=refs, SAT=sat
 ;-----------------------------------------------------------------------------
     PRINT, "** Compare zonal means"
-    
+
+    opt = 'zonal_'
+    outfile = save_dir + base + '_' + opt + vname
+    save_as = outfile + '.eps'
+    start_save, save_as, size=[32,20]
+
     year = STRMID(time, 0, 4)
     month = STRMID(time, 4, 2) 
     datum = year + month
     
     CASE vname OF
-        'cer': varname = 'ref'
-        'cer_liq': varname = 'ref_liq'
-        'cer_ice': varname = 'ref_ice'
-        ELSE: varname = vname
+        'cer':      BEGIN & maxv=maxi & varname = 'ref' & END
+        'cer_liq':  BEGIN & maxv=maxi & varname = 'ref_liq' & END
+        'cer_ice':  BEGIN & maxv=maxi & varname = 'ref_ice' & END
+        'cfc' :     BEGIN & maxv=maxi+maxi/10. & varname=vname & END
+        'cph' :     BEGIN & maxv=maxi+maxi/10. & varname=vname & END
+        ELSE:       BEGIN & varname=vname & maxv=maxi & END
     ENDCASE
     
+    opl = 0
     plot_zonal_average, year, month, '', $
         file, varname, algo='era-i', sea=sea, land=land, $
-        limit=limit, mini=mini, maxi=maxi, $
+        limit=limit, mini=mini, maxi=maxv, $
         found=found, level=level, datum=datum, error=error, $
-        /white_bg, /save_as, oplots=0, addtext='Simulated'
+        oplots=opl, addtext='Simulated', /simulator
     
     IF KEYWORD_SET(refs) THEN BEGIN
         FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
@@ -1150,7 +1160,10 @@ PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, REFS=refs, SAT=sat
                 '', varname, algo=refs[r], sea=sea, land=land, $
                 limit=limit, mini=mini, maxi=maxi, satellite=sat, $
                 found=found, level=level, datum=datum, error=error, $
-                /white_bg, /save_as, oplots=r+1
+                oplots=r+opl+1, /simulator
         ENDFOR
     ENDIF
+
+    end_save, save_as
+
 END

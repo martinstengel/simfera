@@ -1,5 +1,5 @@
 ;------------------------------------------------------------------------------
-PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars, REFS=refs
+PRO CONFIG_VIS, settings, FILE=file, HIST1D=hist1d, VARS=vars, REFS=refs
 ;------------------------------------------------------------------------------
 
     ; subfolder of file location
@@ -17,13 +17,18 @@ PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars, REFS=refs
     validres = VALID_DIR( fig )
     IF(validres EQ 0) THEN creatres = CREATE_DIR( fig )
 
-    ; get file list
-    files = FINDFILE(inp+'*MM*nc', count=count)
-    IF (count GT 0) THEN BEGIN 
-        PRINT, '** ', STRTRIM(count,2), ' InputFiles found'
-    ENDIF ELSE BEGIN 
-        PRINT, '** NO FILES FOUND'
-        RETURN
+    IF ~KEYWORD_SET(file) THEN BEGIN 
+        ; get file list
+        files = FINDFILE(inp+'*MM*nc', count=count)
+        IF (count GT 0) THEN BEGIN 
+            PRINT, '** ', STRTRIM(count,2), ' InputFiles found'
+        ENDIF ELSE BEGIN 
+            PRINT, '** NO FILES FOUND'
+            RETURN
+        ENDELSE
+    ENDIF ELSE BEGIN
+        files = [file]
+        count = N_ELEMENTS(files)
     ENDELSE
 
     ; get variable list
@@ -40,20 +45,20 @@ PRO CONFIG_VIS, SETTINGS=settings, HIST1D=hist1d, VARS=vars, REFS=refs
     FOR i=0, N_ELEMENTS(vars)-1 DO BEGIN 
         mini = 0. & maxi = 0.
         case vars[i] of
-		'cwp'	 : begin     & mini =   0. & maxi =   500.  & end
-		'lwp'	 : begin     & mini =   0. & maxi =   500.  & end
-		'iwp'	 : begin     & mini =   0. & maxi =   500.  & end
-		'cth'	 : begin     & mini =   0. & maxi =    20.  & end
-		'cot'	 : begin     & mini =   0. & maxi =    60.  & end
-		'cot_liq': begin     & mini =   0. & maxi =    60.  & end
-		'cot_ice': begin     & mini =   0. & maxi =    60.  & end
-		'cer'	 : begin     & mini =   0. & maxi =    60.  & end
-		'cer_liq': begin     & mini =   0. & maxi =    60.  & end
-		'cer_ice': begin     & mini =   0. & maxi =    60.  & end
-		'cfc'	 : begin     & mini =   0. & maxi =     1.  & end
-		'cph'	 : begin     & mini =   0. & maxi =     1.  & end
-		'ctt'	 : begin     & mini = 150. & maxi =   350.  & end
-		'ctp'	 : begin     & mini =  10. & maxi =  1100.  & end
+		'cwp'	 : begin  & mini =   0. & maxi =   500. & end
+		'lwp'	 : begin  & mini =   0. & maxi =   500. & end
+		'iwp'	 : begin  & mini =   0. & maxi =   500. & end
+		'cth'	 : begin  & mini =   0. & maxi =    15. & end
+		'cot'	 : begin  & mini =   0. & maxi =    50. & end
+		'cot_liq': begin  & mini =   0. & maxi =    50. & end
+		'cot_ice': begin  & mini =   0. & maxi =    50. & end
+		'cer'	 : begin  & mini =   0. & maxi =    50. & end
+		'cer_liq': begin  & mini =   0. & maxi =    50. & end
+		'cer_ice': begin  & mini =   0. & maxi =    50. & end
+		'cfc'	 : begin  & mini =   0. & maxi =     1. & end
+		'cph'	 : begin  & mini =   0. & maxi =     1. & end
+		'ctt'	 : begin  & mini = 200. & maxi =   330. & end
+		'ctp'	 : begin  & mini =  10. & maxi =  1000. & end
 		else	 : 
 	endcase
         min_max[0,i] = mini & min_max[1,i] = maxi
