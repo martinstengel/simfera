@@ -11,13 +11,13 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
     fillvalue = -999.
 
     ; 2D arrays containing the upper-most cloud information
+    cfc_tmp     = FLTARR(grd.XDIM,grd.YDIM) & cfc_tmp[*,*]     = fillvalue
     ctp_tmp     = FLTARR(grd.XDIM,grd.YDIM) & ctp_tmp[*,*]     = fillvalue
     cth_tmp     = FLTARR(grd.XDIM,grd.YDIM) & cth_tmp[*,*]     = fillvalue
     ctt_tmp     = FLTARR(grd.XDIM,grd.YDIM) & ctt_tmp[*,*]     = fillvalue
     cph_tmp     = FLTARR(grd.XDIM,grd.YDIM) & cph_tmp[*,*]     = fillvalue
     cph_tmp_day = FLTARR(grd.XDIM,grd.YDIM) & cph_tmp_day[*,*] = fillvalue
 
-    cfc_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cfc_tmp[*,*] = 0.
     cwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cwp_tmp[*,*] = 0.
     lwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & lwp_tmp[*,*] = 0.
     iwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & iwp_tmp[*,*] = 0.

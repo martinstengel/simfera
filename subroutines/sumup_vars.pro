@@ -15,7 +15,7 @@ PRO SUMUP_VARS, means, counts, temps
     counts.CTP[wo_ctp] = counts.CTP[wo_ctp] + 1l
 
     ; CFC
-    wo_cfc = WHERE(temps.CFC GT 0., nwo_cfc)
+    wo_cfc = WHERE(temps.CFC GE 0., nwo_cfc)
     means.CFC[wo_cfc] = means.CFC[wo_cfc] + temps.CFC[wo_cfc]
     counts.CFC[wo_cfc] = counts.CFC[wo_cfc] + 1l
 
