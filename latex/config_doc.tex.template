@@ -39,6 +39,7 @@
 \newcommand{\sat}{NOAA-18}
 \newcommand{\era}{ERA-INTERIM}
 \newcommand{\cci}{CC4CL-\sat}
+\newcommand{\clara}{CLARA-A2-\sat}
 \newcommand{\comparecci}{Compare_CCI__L3C_\yyyymm}
 \newcommand{\zonal}{zonalmean}
 \newcommand{\histo}{2dhist}
@@ -48,8 +49,13 @@ while the upper right map shows the satellite-based {\cci} product.
 Both data sets are presented as a scatter histogram in the lower left figure,
 and the zonal means are given in the lower right figure.}
 
+% ZONAL MEAN INTER-COMPARISON
+\newcommand{\zonout}{\filebasename\yyyymm_\cotthv_\scops_zonal}
+\newcommand{\zoncompare}{Simulated product (black solid line) 
+inter-compared with {\cci} and {\clara}.}
+
 % FIGURE SIZES
 \newcommand{\figwidth}{13cm}
 \newcommand{\halffigwidth}{7.5cm}
 \newcommand{\mapwidth}{16cm}
-\newcommand{\hiswidth}{14cm}
+\newcommand{\hiswidth}{15cm}

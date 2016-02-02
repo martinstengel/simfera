@@ -1,151 +1,151 @@
 
-\section{Description of the cloud simulator}\label{simpsimu}
+%\section{Description of the cloud simulator}\label{simpsimu}
 
-%The simplified simulator calculates global monthly means of Cloud\_cci-like (i.e.
-%pseudo-satellite) parameters based on reanalysis data.
-%In the case of evaluating ERA-Interim cloud parameters, it works as follows:
-%\begin{enumerate}[label=(\alph*)]
-%% \begin{enumerate}[label=(\Alph*)]
-%% \begin{enumerate}[label=(\roman*)]
-%
-%
-% \item\label{it:readdata} 
-%The simulator starts with reading 6-hourly (00, 06, 12, 18 UTC)
-%three-dimensional analysis fields of the
-%\begin{itemize}
-%	\item pressure level $P_{lev}$,
-%	\item liquid water content $LWC$,
-%	\item ice water content $IWC$,
-%	\item cloud cover $CC$,
-%	\item geopotential height $h_{geo}$, and
-%	\item temperature $T$,
-%\end{itemize}
-%along with longitude $x$, latitude $y$, and pressure level $z$ information. 
-%A detailed description of the ERA-Interim data is given
-%in section~\ref{sec:era}.
-%The following steps address the things needed to ``simulate'' the observational process.
-%In other words, \textbf{what would a satellite see if the atmosphere had the clouds
-%of a climate model}?
-%
-%
-%%  \item\label{it:cwc_inc} In the next step a cloud-cover-weighted cloud water content
-%% at each pressure level, $z$, is computed in the case of cloud occurrence
-%% (i.e. $CC > 0$):
-%% \begin{equation}\label{eq:incloud-cwc}
-%%    CWC^{inc}(x,y,z) = \frac{CWC(x,y,z)}{CC(x,y,z)}
-%% \end{equation}
-%% with $inc$ denoting ``in-cloud'' and $CWC$ is either $LWC$ or $IWC$ providing
-%% $LWC^{inc}$ or $IWC^{inc}$, respectively.
-%
-%
-% \item\label{it:cwp_lay} 
-%First of all, the \textbf{cloud water path for each layer} has to be calculated
-%\begin{equation}\label{eq:cwp_lay}
-%  CWP_{lay}(x,y,z') = CWC_{lay}(x,y,z') \cdotp \frac{\Delta P_{lev}(x,y,z')}{9.81}
-%\end{equation}
-%with $z'$ denoting the layer level ($z' = n_{z} - 1$; $n_{z}$ number of pressure levels),
-%$\Delta P_{lev}$ being the pressure difference between two pressure levels, and
-%the cloud water content per layer
-%\begin{equation}\label{eq:cwc_lay}
-%  CWC_{lay}(x,y,z') = \frac{1}{n} \sum\limits_{i=1}^n CWC(x,y,z_{i})\\[1.5ex]
-%\end{equation}
-%Depending on the thermodynamic phase, $CWC$ is either $LWC$ or $IWC$.
-%Since a layer is defined as the region between two pressure levels, $n$ is equal 2.
-%Thus, Eq.~\ref{eq:cwp_lay} provides the cloud liquid and ice water path for each
-%layer, respectively.
-%
-%
-%  \item\label{it:cot_inc_lay} 
-%The next step aims at the computation of the
-%\textbf{in-cloud cloud optical thickness per layer}.
-%The word ``in-cloud'' refers to the part of the model grid cell, which is covered by clouds. 
-%Therefore, a cloud-cover-weighted cloud water content at each pressure level is required
-%\begin{equation}\label{eq:incloud-cwc}
-%   CWC^{inc}(x,y,z) = \frac{CWC(x,y,z)}{CC(x,y,z)}
-%\end{equation}
-%because it is used to derive the in-cloud cloud water content per layer
-%\begin{equation}\label{eq:cwc_inc_lay}
-%  CWC^{inc}_{lay}(x,y,z') = \frac{1}{n} \sum\limits_{i=1}^n CWC^{inc}(x,y,z_{i})
-%\end{equation}
-%which in turn is used to calculate the in-cloud cloud water path for each layer
-%\begin{equation}\label{eq:cwp_inc_lay}
-%  CWP^{inc}_{lay}(x,y,z') = CWC^{inc}_{lay}(x,y,z') \cdotp \frac{\Delta P_{lev}(x,y,z')}{9.81}
-%\end{equation}
-%Eq.~\ref{eq:cwp_inc_lay} is then applied to derive the 
-%in-cloud cloud optical thickness per layer, which is defined as
-%\begin{equation}\label{eq:cot_inc_lay}
-%  \tau^{inc}_{lay}(x,y,z') = \frac{3}{4} \frac{CWP^{inc}_{lay}(x,y,z') \cdotp Q_{ext}}{r_{eff} \cdotp \rho}
-%\end{equation}
-%following the same approach as used in CC4CL \cite{Han94}.
-%Depending on the phase $CWP^{inc}_{lay}$ indicates either $LWP^{inc}_{lay}$ or
-%$IWP^{inc}_{lay}$. $Q_{ext}$ denotes the extinction coefficient, which is assumed to be 2
-%for water and 2.1 for ice. 
-%\color{red}The cloud effective radius $r_{eff}$ is assumed to be 12 $\mu$m
-%for water and 30 $\mu$m for ice, which are the a priori values used in CC4CL. \color{black}
-%The density $\rho$ is 1 g m$^{-3}$ for water and 0.9167 g m$^{-3}$ for ice.
-%Thus, Eq.~\ref{eq:cot_inc_lay} provides the in-cloud liquid and ice 
-%cloud optical thickness for each layer, respectively.
-%For the sake of convenience, $\tau^{inc}_{lay}$ will be referred to as $\tau$ from now on. 
-%
-% \item\label{it:search4cloud} 
-%Afterwards the simulator iteratively searches bottom-up for the uppermost cloud layer 
-%by means of a threshold approach applied 
-%to the vertically integrated total in-cloud cloud optical thickness
-%\begin{equation}
-%\tau^{total}(x,y) = \sum\limits_{i=0}^{k} \tau^{liq}(x,y,z_{i}) + \tau^{ice}(x,y,z_{i})
-%\end{equation}
-%where $k$ is ranging from $(n_{z}-2)$ until 1.
-%This means that in the first iteration $\tau^{total}$ represents 
-%the vertical integration between the top of the model atmosphere
-%and the last but two pressure level $0<i<n_{z}-2$. 
-%In the next iteration, $k$ ranges from $i=0$ until $i=z-3$ and so on,
-%until the last iteration considering the uppermost layer $0<i<1$ of the model atmosphere.
-%If the given threshold is exceeded, the following cloud parameters are 
-%aggregated on a 0.5 degree longitude-latitude grid:
-%\color{red}
-%\begin{center}
-%\begin{tabular}{llll}
-%\textbullet & Cloud top pressure & $CTP(x,y) = P_{lev}(x,y,z)$ & [hPa]\\[2.0ex]
-%\textbullet & Cloud top height & $CTH(x,y) = h_{geo}(x,y,z)$ & [km]\\[2.0ex]
-%\textbullet & Cloud top temperature & $CTT(x,y) = T(x,y,z)$ & [K] \\[2.0ex]
-%\textbullet & Total column liquid water path &
-%$LWP(x,y) = \sum\limits_{i=z_{0}}^z LWP_{lay}(x,y,i)$ & [g/m$^{2}$] \\[2.0ex]
-%\textbullet & Total column ice water path &
-%$IWP(x,y) = \sum\limits_{i=z_{0}}^z IWP_{lay}(x,y,i)$ & [g/m$^{2}$] \\[2.0ex]
-%\textbullet & Cloud phase &
-%$CPH(x,y) = \frac{LWP_{lay}(x,y,z)}{LWP_{lay}(x,y,z) +IWP_{lay}(x,y,z)}$ & [0;1]\\[2.0ex]
-%\textbullet & Cloud fraction & $CFR(x,y) = max[CC(x,y,z_{0}:z)]$ & [0;1] \\
-%\end{tabular}
-%\end{center}
-%
-%In order to simulate the binary cloud mask (clear, cloudy) and cloud phase (liquid, ice)
-%derived in the pre-processing of CC4CL (see Section~\ref{sec:cloudcci}), both the cloud
-%fraction and cloud phase are rounded to its closest integer (i.e. 0 or 1) for each grid
-%cell.\\
-%Then, the cloud water path is reset depending on the cloud phase of the uppermost layer,
-%i.e. if the cloud phase equals 0 (1), then the liquid (ice) water path is set to zero and
-%the ice (liquid) water path is the sum of $LWP$ and $IWP$.
-%This adaption is necessary because passive spaceborne instruments are not capable to
-%retrieve information about the different levels within a cloud as compared to model
-%data. Hence, the simulator has to take into account that a satellite sensor provides
-%the vertical integrated liquid (ice) water content of existing cloud layers based on the
-%thermodynamic phase of the uppermost cloud layer that could be identified by the retrieval
-%system.
-%
-% \item\label{it:scaleCOT} Scale COT: max=100 and thus CWP
-%
-% \item\label{it:sunlitCOT} COT and CWP for sunlit region only
-%
-%\color{black}
-%
-%\end{enumerate}
-%
-%% Finally, 4 analyses per day per month are collected (i.e. iterating (a) $\rightarrow$ (e))
-%% and summed up creating monthly gridded averages of original reanalysis (based on
-%% thv$_{ori}$) and pseudo-satellite (based on thv$_{sat}$) cloud parameters stored in a
-%% netCDF4 file.\\
-%
-%\textbf{Open issues}
-%\begin{itemize}
-%\item Cloud overlap (multi-layer clouds)?
-%\end{itemize}
+The simplified simulator calculates global monthly means of Cloud\_cci-like (i.e.
+pseudo-satellite) parameters based on reanalysis data.
+In the case of evaluating ERA-Interim cloud parameters, it works as follows:
+\begin{enumerate}[label=(\alph*)]
+% \begin{enumerate}[label=(\Alph*)]
+% \begin{enumerate}[label=(\roman*)]
+
+
+ \item\label{it:readdata} 
+The simulator starts with reading 6-hourly (00, 06, 12, 18 UTC)
+three-dimensional analysis fields of the
+\begin{itemize}
+	\item pressure level $P_{lev}$,
+	\item liquid water content $LWC$,
+	\item ice water content $IWC$,
+	\item cloud cover $CC$,
+	\item geopotential height $h_{geo}$, and
+	\item temperature $T$,
+\end{itemize}
+along with longitude $x$, latitude $y$, and pressure level $z$ information. 
+A detailed description of the ERA-Interim data is given
+in section~\ref{sec:era}.
+The following steps address the things needed to ``simulate'' the observational process.
+In other words, \textbf{what would a satellite see if the atmosphere had the clouds
+of a climate model}?
+
+
+%  \item\label{it:cwc_inc} In the next step a cloud-cover-weighted cloud water content
+% at each pressure level, $z$, is computed in the case of cloud occurrence
+% (i.e. $CC > 0$):
+% \begin{equation}\label{eq:incloud-cwc}
+%    CWC^{inc}(x,y,z) = \frac{CWC(x,y,z)}{CC(x,y,z)}
+% \end{equation}
+% with $inc$ denoting ``in-cloud'' and $CWC$ is either $LWC$ or $IWC$ providing
+% $LWC^{inc}$ or $IWC^{inc}$, respectively.
+
+
+ \item\label{it:cwp_lay} 
+First of all, the \textbf{cloud water path for each layer} has to be calculated
+\begin{equation}\label{eq:cwp_lay}
+  CWP_{lay}(x,y,z') = CWC_{lay}(x,y,z') \cdotp \frac{\Delta P_{lev}(x,y,z')}{9.81}
+\end{equation}
+with $z'$ denoting the layer level ($z' = n_{z} - 1$; $n_{z}$ number of pressure levels),
+$\Delta P_{lev}$ being the pressure difference between two pressure levels, and
+the cloud water content per layer
+\begin{equation}\label{eq:cwc_lay}
+  CWC_{lay}(x,y,z') = \frac{1}{n} \sum\limits_{i=1}^n CWC(x,y,z_{i})\\[1.5ex]
+\end{equation}
+Depending on the thermodynamic phase, $CWC$ is either $LWC$ or $IWC$.
+Since a layer is defined as the region between two pressure levels, $n$ is equal 2.
+Thus, Eq.~\ref{eq:cwp_lay} provides the cloud liquid and ice water path for each
+layer, respectively.
+
+
+  \item\label{it:cot_inc_lay} 
+The next step aims at the computation of the
+\textbf{in-cloud cloud optical thickness per layer}.
+The word ``in-cloud'' refers to the part of the model grid cell, which is covered by clouds. 
+Therefore, a cloud-cover-weighted cloud water content at each pressure level is required
+\begin{equation}\label{eq:incloud-cwc}
+   CWC^{inc}(x,y,z) = \frac{CWC(x,y,z)}{CC(x,y,z)}
+\end{equation}
+because it is used to derive the in-cloud cloud water content per layer
+\begin{equation}\label{eq:cwc_inc_lay}
+  CWC^{inc}_{lay}(x,y,z') = \frac{1}{n} \sum\limits_{i=1}^n CWC^{inc}(x,y,z_{i})
+\end{equation}
+which in turn is used to calculate the in-cloud cloud water path for each layer
+\begin{equation}\label{eq:cwp_inc_lay}
+  CWP^{inc}_{lay}(x,y,z') = CWC^{inc}_{lay}(x,y,z') \cdotp \frac{\Delta P_{lev}(x,y,z')}{9.81}
+\end{equation}
+Eq.~\ref{eq:cwp_inc_lay} is then applied to derive the 
+in-cloud cloud optical thickness per layer, which is defined as
+\begin{equation}\label{eq:cot_inc_lay}
+  \tau^{inc}_{lay}(x,y,z') = \frac{3}{4} \frac{CWP^{inc}_{lay}(x,y,z') \cdotp Q_{ext}}{r_{eff} \cdotp \rho}
+\end{equation}
+following the same approach as used in CC4CL \cite{Han94}.
+Depending on the phase $CWP^{inc}_{lay}$ indicates either $LWP^{inc}_{lay}$ or
+$IWP^{inc}_{lay}$. $Q_{ext}$ denotes the extinction coefficient, which is assumed to be 2
+for water and 2.1 for ice. 
+\color{red}The cloud effective radius $r_{eff}$ is assumed to be 12 $\mu$m
+for water and 30 $\mu$m for ice, which are the a priori values used in CC4CL. \color{black}
+The density $\rho$ is 1 g m$^{-3}$ for water and 0.9167 g m$^{-3}$ for ice.
+Thus, Eq.~\ref{eq:cot_inc_lay} provides the in-cloud liquid and ice 
+cloud optical thickness for each layer, respectively.
+For the sake of convenience, $\tau^{inc}_{lay}$ will be referred to as $\tau$ from now on. 
+
+ \item\label{it:search4cloud} 
+Afterwards the simulator iteratively searches bottom-up for the uppermost cloud layer 
+by means of a threshold approach applied 
+to the vertically integrated total in-cloud cloud optical thickness
+\begin{equation}
+\tau^{total}(x,y) = \sum\limits_{i=0}^{k} \tau^{liq}(x,y,z_{i}) + \tau^{ice}(x,y,z_{i})
+\end{equation}
+where $k$ is ranging from $(n_{z}-2)$ until 1.
+This means that in the first iteration $\tau^{total}$ represents 
+the vertical integration between the top of the model atmosphere
+and the last but two pressure level $0<i<n_{z}-2$. 
+In the next iteration, $k$ ranges from $i=0$ until $i=z-3$ and so on,
+until the last iteration considering the uppermost layer $0<i<1$ of the model atmosphere.
+If the given threshold is exceeded, the following cloud parameters are 
+aggregated on a 0.5 degree longitude-latitude grid:
+\color{red}
+\begin{center}
+\begin{tabular}{llll}
+\textbullet & Cloud top pressure & $CTP(x,y) = P_{lev}(x,y,z)$ & [hPa]\\[2.0ex]
+\textbullet & Cloud top height & $CTH(x,y) = h_{geo}(x,y,z)$ & [km]\\[2.0ex]
+\textbullet & Cloud top temperature & $CTT(x,y) = T(x,y,z)$ & [K] \\[2.0ex]
+\textbullet & Total column liquid water path &
+$LWP(x,y) = \sum\limits_{i=z_{0}}^z LWP_{lay}(x,y,i)$ & [g/m$^{2}$] \\[2.0ex]
+\textbullet & Total column ice water path &
+$IWP(x,y) = \sum\limits_{i=z_{0}}^z IWP_{lay}(x,y,i)$ & [g/m$^{2}$] \\[2.0ex]
+\textbullet & Cloud phase &
+$CPH(x,y) = \frac{LWP_{lay}(x,y,z)}{LWP_{lay}(x,y,z) +IWP_{lay}(x,y,z)}$ & [0;1]\\[2.0ex]
+\textbullet & Cloud fraction & $CFR(x,y) = max[CC(x,y,z_{0}:z)]$ & [0;1] \\
+\end{tabular}
+\end{center}
+
+In order to simulate the binary cloud mask (clear, cloudy) and cloud phase (liquid, ice)
+derived in the pre-processing of CC4CL (see Section~\ref{sec:cloudcci}), both the cloud
+fraction and cloud phase are rounded to its closest integer (i.e. 0 or 1) for each grid
+cell.\\
+Then, the cloud water path is reset depending on the cloud phase of the uppermost layer,
+i.e. if the cloud phase equals 0 (1), then the liquid (ice) water path is set to zero and
+the ice (liquid) water path is the sum of $LWP$ and $IWP$.
+This adaption is necessary because passive spaceborne instruments are not capable to
+retrieve information about the different levels within a cloud as compared to model
+data. Hence, the simulator has to take into account that a satellite sensor provides
+the vertical integrated liquid (ice) water content of existing cloud layers based on the
+thermodynamic phase of the uppermost cloud layer that could be identified by the retrieval
+system.
+
+ \item\label{it:scaleCOT} Scale COT: max=100 and thus CWP
+
+ \item\label{it:sunlitCOT} COT and CWP for sunlit region only
+
+\color{black}
+
+\end{enumerate}
+
+% Finally, 4 analyses per day per month are collected (i.e. iterating (a) $\rightarrow$ (e))
+% and summed up creating monthly gridded averages of original reanalysis (based on
+% thv$_{ori}$) and pseudo-satellite (based on thv$_{sat}$) cloud parameters stored in a
+% netCDF4 file.\\
+
+\textbf{Open issues}
+\begin{itemize}
+\item Cloud overlap (multi-layer clouds)?
+\end{itemize}
