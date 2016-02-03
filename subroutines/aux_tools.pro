@@ -645,19 +645,21 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
         ; consider fill_values
         ref_all = ( ref_liq>0 ) + ( ref_ice>0 )
 
+        IF (compare.VAR EQ 'cer') THEN dname = 'ref' ELSE dname = compare.VAR
+
         ; prepare plotting results
         refbild = get_1d_rel_hist_from_1d_hist( ref_all, $
-                    'hist1d_'+compare.VAR, algo=compare.REF, $
+                    'hist1d_'+dname, algo=compare.REF, $
                     land=land, sea=sea, arctic=arctic, antarctic=antarctic, $
                     ytitle = ytitle, hist_name=data_name, found=found1)
 
         refbild1 = get_1d_rel_hist_from_1d_hist( ref_liq, $
-                    'hist1d_'+compare.VAR+'_liq', algo=compare.REF, $
+                    'hist1d_'+dname+'_liq', algo=compare.REF, $
                     land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                     ytitle = ytitle, hist_name=data_name, found=found1)
 
         refbild2 = get_1d_rel_hist_from_1d_hist( ref_ice, $
-                    'hist1d_'+compare.VAR+'_ice', algo=compare.REF, $
+                    'hist1d_'+dname+'_ice', algo=compare.REF, $
                     land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                     ytitle = ytitle, hist_name=data_name, found=found1)
 
@@ -666,7 +668,7 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
                                  algo=compare.REF, level='l3c', $
                                  data='hist1d_' + compare.VAR) 
             refbild3 = get_1d_rel_hist_from_1d_hist( ref_total, $
-                    'hist1d_'+compare.VAR+'_ratio', algo=compare.REF, $
+                    'hist1d_'+dname+'_ratio', algo=compare.REF, $
                     land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                     ytitle = ytitle, hist_name=data_name, found=found1)
         ENDIF
@@ -677,26 +679,28 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
     bild_ice = reform(res[*,*,*,1])
     bild_all = ( bild_liq>0 ) + ( bild_ice>0 )
 
-    bild = get_1d_rel_hist_from_1d_hist( bild_all, 'hist1d_'+vn, $
+    IF (vn EQ 'cer') THEN dname = 'ref' ELSE dname = vn
+
+    bild = get_1d_rel_hist_from_1d_hist( bild_all, 'hist1d_'+dname, $
                 algo='era-i', land=land, sea=sea, arctic=arctic, $
                 antarctic=antarctic, ytitle = ytitle, hist_name=data_name, $
                 found=found1)
 
     bild1 = get_1d_rel_hist_from_1d_hist( bild_liq, $
-                'hist1d_'+vn+'_liq', algo='era-i', $
+                'hist1d_'+dname+'_liq', algo='era-i', $
                 land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                 ytitle = ytitle, hist_name=data_name, $
                 found=found1)
 
     bild2 = get_1d_rel_hist_from_1d_hist( bild_ice, $
-                'hist1d_'+vn+'_ice', algo='era-i', $
+                'hist1d_'+dname+'_ice', algo='era-i', $
                 land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                 ytitle = ytitle, hist_name=data_name, $
                 found=found1)
 
     IF KEYWORD_SET(ratio) THEN BEGIN
         bild3 = get_1d_rel_hist_from_1d_hist( res, $
-                'hist1d_'+vn+'_ratio', algo='era-i', $
+                'hist1d_'+dname+'_ratio', algo='era-i', $
                 land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                 ytitle = ytitle, hist_name=data_name, $
                 found=found1)
@@ -755,7 +759,7 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
-                   SAT=sat, REFS=refs, RATIO=ratio
+                   SAT=sat, REFS=refs, RATIO=ratio, CCIOLD=cciold
 ;-----------------------------------------------------------------------------
     CASE varname OF
         'cer': ymax=50.
@@ -777,8 +781,8 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
     start_save, save_as, size=[35,20]
     cs = 2.3
     
-    IF (varname EQ 'cer') THEN varn = 'ref' ELSE varn = varname
-    
+    varn = varname
+
     CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
         VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
         YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
@@ -797,6 +801,8 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
             start_save, save_as, size=[35,20]
             cs = 2.3
     
+            IF (varname EQ 'cer') THEN varn = 'cer' ELSE varn = varname
+
             compare = {ref:refs[r], sat:sat, var:varn, $
                        year:STRMID(time, 0, 4), $
                        month:STRMID(time, 4, 2), dat:''}
@@ -847,7 +853,7 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, $
-                           mini, maxi, SAT=sat
+                           mini, maxi, SAT=sat, CCIOLD=cciold
 ;-----------------------------------------------------------------------------
     IF (varname EQ 'hist2d_cot_ctp') THEN RETURN
 
@@ -855,13 +861,16 @@ PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, $
     
         year = STRMID(time, 0, 4)
         month = STRMID(time, 4, 2) 
-    
-        CASE varname OF
-            'cer': cci_varn = 'ref'
-            'cer_liq': cci_varn = 'ref_liq'
-            'cer_ice': cci_varn = 'ref_ice'
-            ELSE: cci_varn = varname
-        ENDCASE
+        cci_varn = varname
+
+        IF KEYWORD_SET(cciold) OR (refs[r] NE 'cci') THEN BEGIN
+            CASE vname OF
+                'cer':      cci_varn = 'ref'
+                'cer_liq':  cci_varn = 'ref_liq'
+                'cer_ice':  cci_varn = 'ref_ice'
+                ELSE:
+            ENDCASE
+        ENDIF
     
         compare_cci_with_clara, year, month, '', ALGO1='era-i',$
             DATA=cci_varn, CCIFILE=file, REFERENCE=refs[r], $
@@ -874,7 +883,7 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
-                            mini, maxi, REFS=refs, SAT=sat
+                            mini, maxi, REFS=refs, SAT=sat, CCIOLD=cciold
 ;-----------------------------------------------------------------------------
     IF (vname EQ 'hist2d_cot_ctp') THEN RETURN
 
@@ -888,28 +897,62 @@ PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
     datum = year + month
     
     CASE vname OF
-        'cer':      BEGIN & maxv=maxi & varname = 'ref' & END
-        'cer_liq':  BEGIN & maxv=maxi & varname = 'ref_liq' & END
-        'cer_ice':  BEGIN & maxv=maxi & varname = 'ref_ice' & END
-        'cfc' :     BEGIN & maxv=maxi+maxi/10. & varname=vname & END
-        'cph' :     BEGIN & maxv=maxi+maxi/10. & varname=vname & END
-        ELSE:       BEGIN & varname=vname & maxv=maxi & END
+        'cfc' : maxv=maxi+maxi/10.
+        'cph' : maxv=maxi+maxi/10.
+        ELSE: maxv=maxi
     ENDCASE
     
     opl = 0
     plot_zonal_average, year, month, '', $
-        file, varname, algo='era-i', sea=sea, land=land, $
+        file, vname, algo='era-i', sea=sea, land=land, $
         limit=limit, mini=mini, maxi=maxv, $
         found=found, level=level, datum=datum, error=error, $
         oplots=opl, addtext='Simulated', /simulator
     
     IF KEYWORD_SET(refs) THEN BEGIN
         FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+
+            availability = 1
+            varname = vname
+
+            IF (varname EQ 'cth') THEN BEGIN ;modis
+                CASE refs[r] OF
+                    'mod':  availability = -1
+                    'mod2': availability = -1
+                    'myd':  availability = -1
+                    'myd2': availability = -1
+                    'pmx':  availability = -1
+                    ELSE:
+                ENDCASE
+            ENDIF
+
+            IF (refs[r] EQ 'pmx') THEN BEGIN ;patmos
+                CASE varname OF
+                    'cer': availability = -1
+                    'cth': availability = -1
+                    'cwp': availability = -1
+                    'cph': availability = -1
+                    ELSE:
+                ENDCASE
+            ENDIF
+
+            IF (availability EQ -1) THEN CONTINUE
+
+            IF KEYWORD_SET(cciold) OR (refs[r] NE 'cci') THEN BEGIN
+                CASE vname OF
+                    'cer':      varname = 'ref'
+                    'cer_liq':  varname = 'ref_liq'
+                    'cer_ice':  varname = 'ref_ice'
+                    ELSE:
+                ENDCASE
+            ENDIF
+
             plot_zonal_average, year, month, '', $
                 '', varname, algo=refs[r], sea=sea, land=land, $
-                limit=limit, mini=mini, maxi=maxi, satellite=sat, $
+                limit=limit, satellite=sat, $
                 found=found, level=level, datum=datum, error=error, $
                 oplots=r+opl+1, /simulator
+
         ENDFOR
     ENDIF
 

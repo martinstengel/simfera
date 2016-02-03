@@ -74,7 +74,7 @@ PRO CONFIG_VIS, settings, FILE=file, VARS=vars, REFS=refs, PATTERN=pattern
 
 
     ; possible reference data for inter-comparison
-    reference_data = 'cci,gac,gac2,myd,mod,myd2,mod2,gwx,cal,isp,pmx,cla'
+    reference_data = 'cci,gac,gac2,myd,mod,myd2,mod2,pmx'
     ref_options = STRSPLIT(reference_data, /EXTRACT,',')
 
     ; get reference list

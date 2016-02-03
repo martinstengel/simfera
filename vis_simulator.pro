@@ -27,6 +27,7 @@
 PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
                    ALL=all, ZONAL=zonal, COMPARE=compare, JCH=jch, $
                    HIST1D=hist1d, MAP=map, REFS=refs, SAT=sat, $
+                   CCIOLD=cciold, $
                    VARS=vars, RATIO=ratio, NOPNG=nopng, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
@@ -112,7 +113,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
 
             IF KEYWORD_SET(hist1d) OR KEYWORD_SET(all) THEN $
                 PLOT_SIM_HIST, file, vars[i], !SAVE_DIR, base, xtitle, $
-                               units, time, SAT=sat, REFS=refs, RATIO=ratio
+                               units, time, SAT=sat, REFS=refs, RATIO=ratio, $
+                               CCIOLD=cciold
 
 
             IF KEYWORD_SET(map) OR KEYWORD_SET(all) THEN $ 
@@ -122,14 +124,20 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
 
             IF KEYWORD_SET(compare) OR KEYWORD_SET(all) THEN $
                 PLOT_SIM_COMPARE_WITH, file, refs, vars[i], !SAVE_DIR, $
-                                       time, mini, maxi, SAT=sat
+                                       time, mini, maxi, SAT=sat, CCIOLD=cciold
 
 
-            IF KEYWORD_SET(zonal) OR KEYWORD_SET(all) THEN $
+            IF KEYWORD_SET(zonal) OR KEYWORD_SET(all) THEN BEGIN
+                IF KEYWORD_SET(refs) THEN BEGIN
+                    list = 'cci,gac2,mod2,myd2,pmx'
+                    ref_list = STRSPLIT(list, /EXTRACT, ',')
+                ENDIF
                 PLOT_SIM_COMPARE_ZONAL, file, vars[i], time, !SAVE_DIR, base,$
-                                        mini, maxi, REFS=refs, SAT=sat
+                                        mini, maxi, REFS=ref_list, SAT=sat, $
+                                        CCIOLD=cciold
+            ENDIF
 
-            IF KEYWORD_SET(jch) OR KEYWORD_SET(all) THEN $ 
+            IF KEYWORD_SET(jch) OR KEYWORD_SET(all) THEN $
                 PLOT_SIM_COMPARE_JCH, file, vars[i], time, !SAVE_DIR, base, $
                                       mini, maxi, fillvalue, $
                                       REFS=refs, SAT=sat

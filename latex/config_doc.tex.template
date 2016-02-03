@@ -14,11 +14,17 @@
 \usepackage{cite}
 \geometry{a4paper,left=2.5cm,right=2.5cm, top=2.5cm, bottom=2.5cm}
 
+
+% CC4CL VERSION
+\newcommand{\fv}{fv2.0}
+\newcommand{\cerstring}{CER}
+%\newcommand{\fv}{fv1.4}
+%\newcommand{\cerstring}{REF}
+
 % GRAPHIC PATH
-\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.2_cph_day_added/}}
+\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.2_cph_day_added/compare_with_cc4cl_fv2.0/}}
 
 % SIMULATOR RUN SETTINGS
-\newcommand{\fv}{fv1.4}
 \newcommand{\filebase}{ERA_Interim_MM}
 \newcommand{\valcot}{0.30}
 \newcommand{\scops}{scops2}
