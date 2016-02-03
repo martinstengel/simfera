@@ -1,9 +1,9 @@
 ;------------------------------------------------------------------------------
-PRO CONFIG_VIS, settings, FILE=file, HIST1D=hist1d, VARS=vars, REFS=refs
+PRO CONFIG_VIS, settings, FILE=file, VARS=vars, REFS=refs, PATTERN=pattern
 ;------------------------------------------------------------------------------
 
     ; subfolder of file location
-    run = 'v5.1_advanced_scops/'
+    run = 'v5.2_cph_day_added/'
     ; input
     inp = '/cmsaf/cmsaf-cld7/cschlund/output/simulator/' + run
     ; figure output
@@ -19,7 +19,12 @@ PRO CONFIG_VIS, settings, FILE=file, HIST1D=hist1d, VARS=vars, REFS=refs
 
     IF ~KEYWORD_SET(file) THEN BEGIN 
         ; get file list
-        files = FINDFILE(inp+'*MM*nc', count=count)
+        IF KEYWORD_SET(pattern) THEN BEGIN
+            files = FINDFILE(inp+pattern, count=count)
+        ENDIF ELSE BEGIN
+            files = FINDFILE(inp+'*MM*nc', count=count)
+        ENDELSE
+
         IF (count GT 0) THEN BEGIN 
             PRINT, '** ', STRTRIM(count,2), ' InputFiles found'
         ENDIF ELSE BEGIN 
@@ -33,8 +38,10 @@ PRO CONFIG_VIS, settings, FILE=file, HIST1D=hist1d, VARS=vars, REFS=refs
 
     ; get variable list
     IF ~KEYWORD_SET(vars) THEN BEGIN 
-        var_list  = 'cer,cot,cwp,ctt,ctp,cfc,cph,cth,lwp,iwp,cot_liq,cot_ice,cer_liq,cer_ice'
-        IF KEYWORD_SET(hist1d) THEN var_list  = 'cer,cot,cwp,ctt,ctp'
+        var_list = 'hist2d_cot_ctp'
+        var_list = var_list + ',cer,cot,cwp,ctt,ctp'
+        var_list = var_list + ',cfc,cph,cth,lwp,iwp'
+        var_list = var_list + ',cot_liq,cot_ice,cer_liq,cer_ice'
         vars = STRSPLIT(var_list, /EXTRACT,',')
     ENDIF ELSE BEGIN
         vars = STRSPLIT(vars, /EXTRACT,',')
@@ -59,6 +66,7 @@ PRO CONFIG_VIS, settings, FILE=file, HIST1D=hist1d, VARS=vars, REFS=refs
 		'cph'	 : begin  & mini =   0. & maxi =     1. & end
 		'ctt'	 : begin  & mini = 200. & maxi =   330. & end
 		'ctp'	 : begin  & mini =  10. & maxi =  1000. & end
+                'hist2d_cot_ctp' : begin & mini = 1. & maxi = 10. & end
 		else	 : 
 	endcase
         min_max[0,i] = mini & min_max[1,i] = maxi

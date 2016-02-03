@@ -15,25 +15,19 @@
 \geometry{a4paper,left=2.5cm,right=2.5cm, top=2.5cm, bottom=2.5cm}
 
 % GRAPHIC PATH
-\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.1_advanced_scops/}}
+\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.2_cph_day_added/}}
 
 % SIMULATOR RUN SETTINGS
-\newcommand{\filebasename}{ERA_Interim_MM}
+\newcommand{\fv}{fv1.4}
+\newcommand{\filebase}{ERA_Interim_MM}
 \newcommand{\valcot}{0.30}
 \newcommand{\scops}{scops2}
+\newcommand{\mpc}{mpc1}
 \newcommand{\yyyymm}{200807}
 \newcommand{\MonthYear}{July 2008}
 \newcommand{\cotthv}{cot_thv_\valcot}
-
-% SIMULATOR OUTPUT PLOTS
-\newcommand{\hisout}{\filebasename\yyyymm_\cotthv_\scops_hist1d}
-\newcommand{\mapout}{\filebasename\yyyymm_\cotthv_\scops_map}
-\newcommand{\vscci}{compare_with_cci}
-
-% HIST1D PLOTS COMPARED WITH CCI
-\newcommand{\simversion}{Cloud simulator version 5.1 (solid lines). }
-\newcommand{\cciversion}{ESA Cloud\_cci AVHRR 31y time series (dashed lines). }
-\newcommand{\hiscompare}{\simversion \cciversion}
+\newcommand{\obase}{\filebase\yyyymm_\cotthv_\scops_\mpc}
+\newcommand{\pseudo}{pseudo-satellite}
 
 % COMPARE WITH REFERENCE DATA PLOTS
 \newcommand{\sat}{NOAA-18}
@@ -49,10 +43,49 @@ while the upper right map shows the satellite-based {\cci} product.
 Both data sets are presented as a scatter histogram in the lower left figure,
 and the zonal means are given in the lower right figure.}
 
+% SIMULATOR OUTPUT PLOTS
+\newcommand{\hisout}{\obase_hist1d}
+\newcommand{\mapout}{\obase_map}
+\newcommand{\vscci}{compare_with_cci}
+
+% HIST1D PLOTS COMPARED WITH CCI
+\newcommand{\simversion}{the cloud simulator (solid lines)}
+\newcommand{\cciversion}{{\cci} (dashed lines)}
+\newcommand{\hiscaption}{for {\MonthYear} displaying the results 
+derived from {\simversion} and {\cciversion}.}
+
+% HIST2D PLOTS COMPARED WITH CCI
+\newcommand{\jchera}{\obase_hist2d.png}
+\newcommand{\jchcci}{\obase_hist2d_cci.png}
+\newcommand{\jcheraliq}{\obase_hist2d_liq.png}
+\newcommand{\jchcciliq}{\obase_hist2d_liq_cci.png}
+\newcommand{\jcheraice}{\obase_hist2d_ice.png}
+\newcommand{\jchcciice}{\obase_hist2d_ice_cci.png}
+\newcommand{\jchcaption}{Joint cloud property histograms for {\MonthYear}
+derived from the cloud simulator (left column) and the {\cci} retrieval (right column).
+The figures show the relative occurrences of cloud types w.r.t. ISCCP COT-CTP classification: 
+for all clouds (upper row), for water clouds only (middle row), 
+and for ice clouds only (lower row).}
+
+\newcommand{\jchdiff}{\obase_diff_sim-cci_hist2d.png}
+\newcommand{\jchdiffliq}{\obase_diff_sim-cci_liq_hist2d.png}
+\newcommand{\jchdiffice}{\obase_diff_sim-cci_ice_hist2d.png}
+\newcommand{\jchdiffcaption}{Joint cloud property histograms for {\MonthYear}
+derived from the cloud simulator and the {\cci} retrieval.
+The figures show the difference between the {\pseudo} and observed
+relative occurrences of cloud types w.r.t. ISCCP cloud classification scheme: 
+for all clouds, for water clouds only, and for ice clouds only.}
+
+\newcommand{\isccp}{Cloud classification scheme proposed by ISCCP-D2 dataset
+as a function of cloud optical thickness and cloud top pressure.
+High clouds: Cirrus (Ci), Cirrostratus (Cs) and Deep Convection (Cb).
+Middle clouds: Altocumulus (Ac), Altostratus (As) and Nimbostratus (Ns).
+Low clouds: Cumulus (Cu), Stratocumulus (Sc) and Stratus (St).}
+
 % ZONAL MEAN INTER-COMPARISON
-\newcommand{\zonout}{\filebasename\yyyymm_\cotthv_\scops_zonal}
-\newcommand{\zoncompare}{Simulated product (black solid line) 
-inter-compared with {\cci} and {\clara}.}
+\newcommand{\zonout}{\obase_zonal}
+\newcommand{\zoncompare}{obtained from the cloud simulator 
+(black solid line) with {\cci} and {\clara}.}
 
 % FIGURE SIZES
 \newcommand{\figwidth}{13cm}

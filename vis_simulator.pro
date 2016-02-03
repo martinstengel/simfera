@@ -18,14 +18,14 @@
 ;   Graphics
 ;
 ; CALLING SEQUENCE:
-;   vis_simulator, /map
+;   see help below
 ;
 ; MODIFICATION HISTORY:
 ;   Jan 2016, first version
 ;
 ;******************************************************************************
-PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, $
-                   ALL=all, ZONAL=zonal, COMPARE=compare, $
+PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
+                   ALL=all, ZONAL=zonal, COMPARE=compare, JCH=jch, $
                    HIST1D=hist1d, MAP=map, REFS=refs, SAT=sat, $
                    VARS=vars, RATIO=ratio, NOPNG=nopng, HELP=help
 ;******************************************************************************
@@ -35,7 +35,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, $
     IF KEYWORD_SET(refs) AND ~KEYWORD_SET(sat) THEN sat = 'NOAA18'
 
     ; MODIFY settings
-    CONFIG_VIS, cfg, FILE=file, HIST1D=hist1d, VARS=vars, REFS=refS
+    CONFIG_VIS, cfg, FILE=file, VARS=vars, REFS=refs, PATTERN=pattern
     HELP, cfg
     DEFSYSV, '!SAVE_DIR', cfg.OUT_PWD
 
@@ -46,6 +46,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, $
         PRINT, ""
         PRINT, " USAGE: "
         PRINT, " VIS_SIMULATOR, /map"
+        PRINT, " VIS_SIMULATOR, /map, pattern='*200807*nc' "
+        PRINT, " VIS_SIMULATOR, /jch, refs='cci', sat'NOAA18' "
         PRINT, " VIS_SIMULATOR, /map, file='/path/to/file.nc'"
         PRINT, " VIS_SIMULATOR, /all, refs='cci', sat='NOAA15' "
         PRINT, " VIS_SIMULATOR, /zonal, vars='ctt', refs='cci,gac2,pmx', sat='NOAA18'"
@@ -55,6 +57,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, $
         PRINT, ""
         PRINT, " Optional Keywords:"
         PRINT, " FILE           full qualified filename"
+        PRINT, " PATTERN        search pattern for specific file(s)"
         PRINT, " VARS           list of parameters to be plotted, default is: ", vars
         PRINT, " MAP            creates 2D maps"
         PRINT, " HIST1D         creates 1D histogram plots"
@@ -62,6 +65,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, $
         PRINT, " ZONAL          creates zonal mean plot, optional incl.: ",$
                                 "options are: ", cfg.REFDATA
         PRINT, " ALL            creates all figures for given variables (default is CCI NOAA18)"
+        PRINT, " JCH            creates hist2d, i.e. joint cloud histogram: cot_ctp_hist2d"
         PRINT, " REFS           options are: ", cfg.REFDATA
         PRINT, " SAT            REF requires SAT in some cases, e.g. sat='NOAA18'"
         PRINT, " VERBOSE        increase output verbosity."
@@ -124,6 +128,11 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, $
             IF KEYWORD_SET(zonal) OR KEYWORD_SET(all) THEN $
                 PLOT_SIM_COMPARE_ZONAL, file, vars[i], time, !SAVE_DIR, base,$
                                         mini, maxi, REFS=refs, SAT=sat
+
+            IF KEYWORD_SET(jch) OR KEYWORD_SET(all) THEN $ 
+                PLOT_SIM_COMPARE_JCH, file, vars[i], time, !SAVE_DIR, base, $
+                                      mini, maxi, fillvalue, $
+                                      REFS=refs, SAT=sat
 
 
         ENDFOR ; loop over variables

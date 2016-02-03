@@ -315,247 +315,6 @@ PRO SPLIT_ERA_FILENAME, FILE=file, BASE=basename, DIR=dir, EXT=ext, $
 END
 
 
-;------------------------------------------------------------------------------
-FUNCTION SUMUP_HIST1D, bin_dim=bin1d_dim, cph_dim=phase_dim, lim_bin=bbins, $
-                       var_tmp=var, liq_tmp=liq, ice_tmp=ice, cfc_tmp=cfc, $
-                       cph_tmp=phase
-;------------------------------------------------------------------------------
-; -- NOTE --
-; simulator -> 0=ice,    1=liquid
-; cc4cl     -> 0=liquid, 1=ice
-;------------------------------------------------------------------------------
-
-    IF KEYWORD_SET(liq) AND KEYWORD_SET(ice)  $
-        AND ~KEYWORD_SET(phase) THEN BEGIN 
-
-        dims = SIZE(liq, /DIM)
-
-    ENDIF ELSE IF KEYWORD_SET(var) $
-        AND KEYWORD_SET(phase) THEN BEGIN
-
-        dims = SIZE(var, /DIM)
-
-    ENDIF
-
-    IF ( N_ELEMENTS(dims) EQ 1 ) THEN dims = [dims[0],1]
-
-    ; counts [lon,lat]
-    cnts = LONARR(dims[0],dims[1])
-    cnts[*,*] = 0l 
-
-    ; hist1d [lon,lat,bins,phase] = [720,361,15,2]
-    vmean = LONARR(dims[0],dims[1],bin1d_dim,phase_dim) 
-    vmean[*,*,*,*] = 0l
-
-    ; last bin
-    gu_last = bin1d_dim-1
-
-    FOR gu=0, gu_last DO BEGIN 
-
-        ; consider also last bin-border via GE & LE
-        IF ( gu EQ gu_last ) THEN BEGIN
-
-            IF KEYWORD_SET(liq) AND KEYWORD_SET(ice) $
-                AND ~KEYWORD_SET(phase) THEN BEGIN
-
-                wohi_ice = WHERE( ice GE bbins[0,gu] AND $ 
-                                  ice LE bbins[1,gu] AND $
-                                  cfc GT 0. , nwohi_ice )
-
-                wohi_liq = WHERE( liq GE bbins[0,gu] AND $ 
-                                  liq LE bbins[1,gu] AND $
-                                  cfc GT 0. , nwohi_liq )
-
-
-            ENDIF ELSE IF KEYWORD_SET(var) AND KEYWORD_SET(phase) THEN BEGIN
-
-                wohi_ice = WHERE( var GE bbins[0,gu] AND $ 
-                                  var LE bbins[1,gu] AND $
-                                  cfc EQ 1. AND phase EQ 0., $
-                                  nwohi_ice )
-
-                wohi_liq = WHERE( var GE bbins[0,gu] AND $ 
-                                  var LE bbins[1,gu] AND $
-                                  cfc EQ 1. AND phase EQ 1., $
-                                  nwohi_liq )
-
-            ENDIF
-
-        ; between GE & LT
-        ENDIF ELSE BEGIN
-
-            IF KEYWORD_SET(liq) AND KEYWORD_SET(ice) $
-                AND ~KEYWORD_SET(phase) THEN BEGIN
-
-                wohi_ice = WHERE( ice GE bbins[0,gu] AND $ 
-                                  ice LT bbins[1,gu] AND $
-                                  ice GT 0. AND $
-                                  cfc GT 0. , nwohi_ice )
-
-                wohi_liq = WHERE( liq GE bbins[0,gu] AND $ 
-                                  liq LT bbins[1,gu] AND $
-                                  liq GT 0. AND $
-                                  cfc GT 0. , nwohi_liq )
-
-
-            ENDIF ELSE IF KEYWORD_SET(var) AND KEYWORD_SET(phase) THEN BEGIN
-                
-                wohi_ice = WHERE( var GE bbins[0,gu] AND $ 
-                                  var LT bbins[1,gu] AND $
-                                  var GT 0. AND $
-                                  cfc EQ 1. AND phase EQ 0., $
-                                  nwohi_ice )
-
-                wohi_liq = WHERE( var GE bbins[0,gu] AND $ 
-                                  var LT bbins[1,gu] AND $
-                                  var GT 0. AND $
-                                  cfc EQ 1. AND phase EQ 1., $
-                                  nwohi_liq )
-
-            ENDIF
-
-        ENDELSE
-
-
-        IF ( nwohi_ice GT 0 ) THEN BEGIN
-            cnts[wohi_ice] = 1l
-            vmean[*,*,gu,1] = vmean[*,*,gu,1] + cnts
-            cnts[*,*] = 0l 
-        ENDIF
-
-
-        IF ( nwohi_liq GT 0 ) THEN BEGIN
-            cnts[wohi_liq] = 1l
-            vmean[*,*,gu,0] = vmean[*,*,gu,0] + cnts
-            cnts[*,*] = 0l 
-        ENDIF
-
-
-    ENDFOR
-
-    RETURN, vmean
-
-END
-
-
-;------------------------------------------------------------------------------
-FUNCTION SUMUP_HIST2D, hist, cot, ctp, cfc, cph
-;------------------------------------------------------------------------------
-; sum up 2d histograms: 
-; -- NOTE --
-; simulator -> 0=ice,    1=liquid
-; cc4cl     -> 0=liquid, 1=ice
-;------------------------------------------------------------------------------
-
-    dims = SIZE(cot, /DIM)
-    IF ( N_ELEMENTS(dims) EQ 1 ) THEN dims = [dims[0],1]
-
-    ; counts [lon,lat]
-    cnts = LONARR(dims[0],dims[1])
-    cnts[*,*] = 0l 
-
-    ; hist2d [lon,lat,cotbins,ctpbins,phase] = [720,361,13,15,2]
-    vmean = LONARR(dims[0], dims[1], hist.cot_bin1d_dim, $
-                   hist.ctp_bin1d_dim, hist.phase_dim) 
-    vmean[*,*,*,*] = 0l
-
-    ; last bins
-    ctp_last = hist.ctp_bin1d_dim-1
-    cot_last = hist.cot_bin1d_dim-1
-
-    FOR ictp=0, ctp_last DO BEGIN 
-        FOR jcot=0, cot_last DO BEGIN
-
-            ; consider also last COT & CTP bin-border via GE & LE
-            IF ( jcot EQ cot_last AND ictp EQ ctp_last) THEN BEGIN
-
-                wohi_ice = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LE hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LE hist.ctp2d[1,ictp] AND $
-                                  cfc EQ 1. AND cph EQ 0., nwohi_ice )
-
-                wohi_liq = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LE hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LE hist.ctp2d[1,ictp] AND $
-                                  cfc EQ 1. AND cph EQ 1., nwohi_liq )
-
-
-            ; consider also last COT bin-border via GE & LE
-            ENDIF ELSE IF ( jcot EQ cot_last ) THEN BEGIN
-
-                wohi_ice = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LE hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LT hist.ctp2d[1,ictp] AND $
-                                  cfc EQ 1. AND cph EQ 0., nwohi_ice )
-
-                wohi_liq = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LE hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LT hist.ctp2d[1,ictp] AND $
-                                  cfc EQ 1. AND cph EQ 1., nwohi_liq )
-
-
-            ; consider also last CTP bin-border via GE & LE
-            ENDIF ELSE IF ( ictp EQ ctp_last) THEN BEGIN
-
-
-                wohi_ice = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LT hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LE hist.ctp2d[1,ictp] AND $
-                                  cfc EQ 1. AND cph EQ 0., nwohi_ice )
-
-                wohi_liq = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LT hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LE hist.ctp2d[1,ictp] AND $
-                                  cfc EQ 1. AND cph EQ 1., nwohi_liq )
-
-
-            ; between GE & LT
-            ENDIF ELSE BEGIN
-
-                wohi_ice = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LT hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LT hist.ctp2d[1,ictp] AND $
-                                  cot GT 0. AND ctp GT 0. AND $
-                                  cfc EQ 1. AND cph EQ 0., nwohi_ice )
-
-                wohi_liq = WHERE( cot GE hist.cot2d[0,jcot] AND $ 
-                                  cot LT hist.cot2d[1,jcot] AND $
-                                  ctp GE hist.ctp2d[0,ictp] AND $
-                                  ctp LT hist.ctp2d[1,ictp] AND $
-                                  cot GT 0. AND ctp GT 0. AND $
-                                  cfc EQ 1. AND cph EQ 1., nwohi_liq )
-
-            ENDELSE
-
-            ; hist2d [lon,lat,cotbins,ctpbins,phase] = [720,361,13,15,2]
-
-            IF ( nwohi_ice GT 0 ) THEN BEGIN
-                cnts[wohi_ice] = 1l
-                vmean[*,*,jcot,ictp,1] = vmean[*,*,jcot,ictp,1] + cnts
-                cnts[*,*] = 0l 
-            ENDIF
-
-            IF ( nwohi_liq GT 0 ) THEN BEGIN
-                cnts[wohi_liq] = 1l
-                vmean[*,*,jcot,ictp,0] = vmean[*,*,jcot,ictp,0] + cnts
-                cnts[*,*] = 0l 
-            ENDIF
-
-        ENDFOR
-    ENDFOR
-
-    RETURN, vmean
-
-END
-
-
 ;-----------------------------------------------------------------------------
 PRO PLOT_ERA_SST, FILENAME=filename, DATA=sst, $
                   LATITUDE=lat, LONGITUDE=lon, VOID=void_index
@@ -791,15 +550,6 @@ PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
     legend, ['binsize='+STRTRIM(STRING(auxplt.BIN_SIZE,FORMAT='(I)'),2)], $
         thick=4., spos=lg, charsize=cs, color=[cgcolor("black")]
     
-    ; -- HIST1D: cloud_cci binsizes ---
-    res = SUMUP_HIST1D( bin_dim=auxplt.BIN_DIM, lim_bin=auxplt.LIM_BIN, $
-                        cph_dim=cph_dim, cfc_tmp=data.CFC, $
-                        liq_tmp=varplt.LIQ, ice_tmp=varplt.ICE )
-
-    CREATE_1DHIST, RESULT=res, VARNAME=auxplt.CCI_STR, YMAX=auxplt.YMAX, $
-        VARSTRING=varstring, CHARSIZE=1.6, XTITLE=datutc, RATIO=ratio, $
-        LEGEND_POSITION=auxplt.LEGPOS, BIN_BORDERS=auxplt.BIN_BORDER
-
     cgText, 0.52, 0.49, Alignment=0.5, /Normal, 'SCOPS.type='+st, chars=cs
 
     ; end plotting
@@ -1007,62 +757,57 @@ END
 PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
                    SAT=sat, REFS=refs, RATIO=ratio
 ;-----------------------------------------------------------------------------
-
     CASE varname OF
         'cer': ymax=50.
         'cot': ymax=30.
         'cwp': ymax=30.
         'ctt': ymax=50.
         'ctp': ymax=40.
-        ELSE: UNDEFINE, ymax
+        ELSE: RETURN
     ENDCASE
     
-    IF (ymax NE !NULL) THEN BEGIN
+    opt = 'hist1d_'
+    outfile = save_dir + base + '_' + opt + varname 
+    IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
     
-        opt = 'hist1d_'
-        outfile = save_dir + base + '_' + opt + varname 
-        IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
+    READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+varname
+    READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+varname+'_bin_border'
     
-        READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+varname
-        READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+varname+'_bin_border'
-        
-        save_as = outfile + '.eps'
-        start_save, save_as, size=[35,20]
-        cs = 2.3
+    save_as = outfile + '.eps'
+    start_save, save_as, size=[35,20]
+    cs = 2.3
     
-        IF (varname EQ 'cer') THEN varn = 'ref' ELSE varn = varname
+    IF (varname EQ 'cer') THEN varn = 'ref' ELSE varn = varname
     
-        CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
-            VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
-            YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
-            BIN_BORDERS=bin
+    CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
+        VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
+        YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
+        BIN_BORDERS=bin
     
-        end_save, save_as
+    end_save, save_as
     
-        IF KEYWORD_SET(refs) THEN BEGIN
-            FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
-                opt = 'hist1d_'
-                outfile = save_dir + base + '_' + opt + varname
-                IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
-                outfile = outfile + '_compare_with_'+refs[r]
+    IF KEYWORD_SET(refs) THEN BEGIN
+        FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+            opt = 'hist1d_'
+            outfile = save_dir + base + '_' + opt + varname
+            IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
+            outfile = outfile + '_compare_with_'+refs[r]
     
-                save_as = outfile + '.eps'
-                start_save, save_as, size=[35,20]
-                cs = 2.3
+            save_as = outfile + '.eps'
+            start_save, save_as, size=[35,20]
+            cs = 2.3
     
-                compare = {ref:refs[r], sat:sat, var:varn, $
-                           year:STRMID(time, 0, 4), $
-                           month:STRMID(time, 4, 2), dat:''}
+            compare = {ref:refs[r], sat:sat, var:varn, $
+                       year:STRMID(time, 0, 4), $
+                       month:STRMID(time, 4, 2), dat:''}
     
-                CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
-                    VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
-                    YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
-                    BIN_BORDERS=bin, COMPARE=compare
+            CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
+                VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
+                YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
+                BIN_BORDERS=bin, COMPARE=compare
     
-                end_save, save_as
-            ENDFOR
-        ENDIF
-
+            end_save, save_as
+        ENDFOR
     ENDIF
 
 END
@@ -1072,6 +817,8 @@ END
 PRO PLOT_SIM_MAPS, file, varname, save_dir, data, fillvalue, mini, maxi, $
                    base, figure_title, xtitle
 ;-----------------------------------------------------------------------------
+    IF (varname EQ 'hist2d_cot_ctp') THEN RETURN
+
     opt = 'map_'
     outfile = save_dir + base + '_' + opt + varname
     save_as = outfile + '.eps'
@@ -1102,8 +849,9 @@ END
 PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, $
                            mini, maxi, SAT=sat
 ;-----------------------------------------------------------------------------
+    IF (varname EQ 'hist2d_cot_ctp') THEN RETURN
+
     FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
-        PRINT, "** Compare simulated "+varname+" with "+refs[r]
     
         year = STRMID(time, 0, 4)
         month = STRMID(time, 4, 2) 
@@ -1128,7 +876,7 @@ END
 PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
                             mini, maxi, REFS=refs, SAT=sat
 ;-----------------------------------------------------------------------------
-    PRINT, "** Compare zonal means"
+    IF (vname EQ 'hist2d_cot_ctp') THEN RETURN
 
     opt = 'zonal_'
     outfile = save_dir + base + '_' + opt + vname
@@ -1168,3 +916,125 @@ PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
     end_save, save_as
 
 END
+
+
+
+;-----------------------------------------------------------------------------
+PRO PLOT_SIM_COMPARE_JCH, file, vname, time, save_dir, base, $
+                          mini, maxi, fillvalue, REFS=refs, SAT=sat
+;-----------------------------------------------------------------------------
+    CASE vname OF
+        'hist2d_cot_ctp': opt = '_hist2d' 
+        ELSE: RETURN
+    ENDCASE
+
+    set_colors, other='rainbow', ctable=ctable, $
+                brewer=brewer, col_tab=col_tab
+
+    year = STRMID(time, 0, 4)
+    month = STRMID(time, 4, 2)
+    outfile = save_dir + base + opt
+
+    ; read pseudo-satellite data
+    READ_SIM_NCDF, h2d, FILE=file, VAR_NAME=vname
+    data_liq = REFORM(h2d[*,*,*,*,0])
+    data_ice = REFORM(h2d[*,*,*,*,1])
+    data_all = ( data_liq>0 ) + ( data_ice>0 )
+
+    ; get data name
+    era_alg = sat_name('era-i','', year=year, month=month)
+
+    ; get relative occurrences
+    era_liq = get_2d_rel_hist_from_jch( data_liq, 'era-i', $ 
+        dem=dem, land=land, sea=sea, limit=limit, $ 
+        antarctic=antarctic, arctic=arctic, $ 
+        lon=lon, lat=lat, fillvalue=fillvalue, found=found )
+
+    era_ice = get_2d_rel_hist_from_jch( data_ice, 'era-i', $ 
+        dem=dem, land=land, sea=sea, limit=limit, $ 
+        antarctic=antarctic, arctic=arctic, $ 
+        lon=lon, lat=lat, fillvalue=fillvalue, found=found )
+
+    era_all = get_2d_rel_hist_from_jch( data_all, 'era-i', $ 
+        dem=dem, land=land, sea=sea, limit=limit, $ 
+        antarctic=antarctic, arctic=arctic, $ 
+        lon=lon, lat=lat, fillvalue=fillvalue, found=found )
+
+
+    ; sim-plots
+    plot_2d_rel_hist, era_liq, era_alg+' (liquid)', $ 
+        col_tab=col_tab, brewer=brewer, $
+        mini=mini, maxi=maxi, save_as=outfile+'_liq.eps'
+
+    plot_2d_rel_hist, era_ice, era_alg+' (ice)', $ 
+        col_tab=col_tab, brewer=brewer, $
+        mini=mini, maxi=maxi, save_as=outfile+'_ice.eps'
+
+    plot_2d_rel_hist, era_all, era_alg, $ 
+        col_tab=col_tab, brewer=brewer, $
+        mini=mini, maxi=maxi, save_as=outfile+'.eps'
+
+
+    IF KEYWORD_SET(refs) THEN BEGIN
+        FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+
+            ; get reference data name
+            ref_alg = sat_name(refs[r], sat, year=year, month=month)
+
+            ; get data
+            ref_liq = GET_DATA( year, month, sat=sat, algo=refs[r], $ 
+                nan_fillv=fillvalue, level='l3c', data=vname+'_liq' )
+            ref_ice = GET_DATA( year, month, sat=sat, algo=refs[r], $ 
+                nan_fillv=fillvalue, level='l3c', data=vname+'_ice' )
+            ref_all = ( ref_liq>0 ) + ( ref_ice>0 )
+
+            ; get relative occurrences
+            ref_liq_bild = get_2d_rel_hist_from_jch( ref_liq, refs[r], $ 
+                dem=dem, land=land, sea=sea, limit=limit, $ 
+                antarctic=antarctic, arctic=arctic, $ 
+                lon=lon, lat=lat, fillvalue=fillvalue, found=found )
+
+            ref_ice_bild = get_2d_rel_hist_from_jch( ref_ice, refs[r], $ 
+                dem=dem, land=land, sea=sea, limit=limit, $ 
+                antarctic=antarctic, arctic=arctic, $ 
+                lon=lon, lat=lat, fillvalue=fillvalue, found=found )
+
+            ref_all_bild = get_2d_rel_hist_from_jch( ref_all, refs[r], $ 
+                dem=dem, land=land, sea=sea, limit=limit, $ 
+                antarctic=antarctic, arctic=arctic, $ 
+                lon=lon, lat=lat, fillvalue=fillvalue, found=found )
+
+            ; ref-plots
+            plot_2d_rel_hist, ref_liq_bild, ref_alg+' (liquid)', $ 
+                col_tab=col_tab, brewer=brewer, mini=mini, maxi=maxi, $
+                save_as=outfile+'_liq_'+refs[r]+'.eps'
+
+            plot_2d_rel_hist, ref_ice_bild, ref_alg+' (ice)', $ 
+                col_tab=col_tab, brewer=brewer, mini=mini, maxi=maxi, $
+                save_as=outfile+'_ice_'+refs[r]+'.eps'
+
+            plot_2d_rel_hist, ref_all_bild, ref_alg, $
+                col_tab=col_tab, brewer=brewer, mini=mini, maxi=maxi, $
+                save_as=outfile+'_'+refs[r]+'.eps'
+
+            ; diff-plots
+            plot_2d_rel_hist, era_all, era_alg, $
+                bild2=ref_all_bild, name2=ref_alg, /difference, $ 
+                col_tab=4, brewer=brewer, mini=-maxi, maxi=maxi, $ 
+                save_as=save_dir+base+'_diff_sim-'+refs[r]+'.eps'
+
+            plot_2d_rel_hist, era_ice, era_alg, $
+                bild2=ref_ice_bild, name2=ref_alg+' (ice)', /difference, $
+                col_tab=4, brewer=brewer, mini=-maxi, maxi=maxi, $ 
+                save_as=save_dir+base+'_diff_sim-'+refs[r]+'_ice.eps'
+
+            plot_2d_rel_hist, era_liq, era_alg, $
+                bild2=ref_liq_bild, name2=ref_alg+' (liq)', /difference, $
+                col_tab=4, brewer=brewer, mini=-maxi, maxi=maxi, $ 
+                save_as=save_dir+base+'_diff_sim-'+refs[r]+'_liq.eps'
+
+        ENDFOR
+    ENDIF
+END
+
+
