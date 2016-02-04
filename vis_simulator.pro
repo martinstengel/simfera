@@ -27,8 +27,8 @@
 PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
                    ALL=all, ZONAL=zonal, COMPARE=compare, JCH=jch, $
                    HIST1D=hist1d, MAP=map, REFS=refs, SAT=sat, $
-                   CCIOLD=cciold, $
-                   VARS=vars, RATIO=ratio, NOPNG=nopng, HELP=help
+                   CCIOLD=cciold, VARS=vars, RATIO=ratio, NOPNG=nopng, $
+                   HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
 
@@ -36,7 +36,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
     IF KEYWORD_SET(refs) AND ~KEYWORD_SET(sat) THEN sat = 'NOAA18'
 
     ; MODIFY settings
-    CONFIG_VIS, cfg, FILE=file, VARS=vars, REFS=refs, PATTERN=pattern
+    CONFIG_VIS, cfg, FILE=file, VARS=vars, REFS=refs, PATTERN=pattern, $
+                     CCIOLD=cciold
     HELP, cfg
     DEFSYSV, '!SAVE_DIR', cfg.OUT_PWD
 
@@ -46,14 +47,15 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
                " COMPARES IT WITH REFERENCE DATA ***"
         PRINT, ""
         PRINT, " USAGE: "
+        PRINT, " VIS_SIMULATOR, /all, pattern='*200807_*nc', ",$
+                               "ref='cci,gac2,mod2,myd2,pmx', /nopng "
         PRINT, " VIS_SIMULATOR, /map"
-        PRINT, " VIS_SIMULATOR, /map, pattern='*200807*nc' "
         PRINT, " VIS_SIMULATOR, /jch, refs='cci', sat'NOAA18' "
         PRINT, " VIS_SIMULATOR, /map, file='/path/to/file.nc'"
         PRINT, " VIS_SIMULATOR, /all, refs='cci', sat='NOAA15' "
         PRINT, " VIS_SIMULATOR, /zonal, vars='ctt', refs='cci,gac2,pmx', sat='NOAA18'"
         PRINT, " VIS_SIMULATOR, /hist1d, vars='ctp,cot'"
-        PRINT, " VIS_SIMULATOR, /hist1d, refs='cci', sat='NOAA18' "
+        PRINT, " VIS_SIMULATOR, /hist1d, refs='cci,gac2,mod2,myd2', sat='NOAA18' "
         PRINT, " VIS_SIMULATOR, /compare, refs='cci', sat='NOAA18' "
         PRINT, ""
         PRINT, " Optional Keywords:"
@@ -71,6 +73,9 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
         PRINT, " SAT            REF requires SAT in some cases, e.g. sat='NOAA18'"
         PRINT, " VERBOSE        increase output verbosity."
         PRINT, " RATIO          adds liquid cloud fraction to HIST1D plot."
+        PRINT, " CCIOLD         takes ESA Cloud_cci data, which are hard-coded ",$
+                               "in validation_tool_box.pro ",$
+                               "= AVHRR 31y time series processed in summer 2015"
         PRINT, " HELP           prints this message."
         PRINT, ""
         RETURN
@@ -113,8 +118,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
 
             IF KEYWORD_SET(hist1d) OR KEYWORD_SET(all) THEN $
                 PLOT_SIM_HIST, file, vars[i], !SAVE_DIR, base, xtitle, $
-                               units, time, SAT=sat, REFS=refs, RATIO=ratio, $
-                               CCIOLD=cciold
+                               units, time, cfg.CCI_PWD, $
+                               SAT=sat, REFS=refs, RATIO=ratio
 
 
             IF KEYWORD_SET(map) OR KEYWORD_SET(all) THEN $ 
@@ -124,7 +129,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
 
             IF KEYWORD_SET(compare) OR KEYWORD_SET(all) THEN $
                 PLOT_SIM_COMPARE_WITH, file, refs, vars[i], !SAVE_DIR, $
-                                       time, mini, maxi, SAT=sat, CCIOLD=cciold
+                                       time, mini, maxi, cfg.CCI_PWD, $
+                                       SAT=sat
 
 
             IF KEYWORD_SET(zonal) OR KEYWORD_SET(all) THEN BEGIN
@@ -133,13 +139,13 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
                     ref_list = STRSPLIT(list, /EXTRACT, ',')
                 ENDIF
                 PLOT_SIM_COMPARE_ZONAL, file, vars[i], time, !SAVE_DIR, base,$
-                                        mini, maxi, REFS=ref_list, SAT=sat, $
-                                        CCIOLD=cciold
+                                        mini, maxi, cfg.CCI_PWD, $
+                                        REFS=ref_list, SAT=sat
             ENDIF
 
             IF KEYWORD_SET(jch) OR KEYWORD_SET(all) THEN $
                 PLOT_SIM_COMPARE_JCH, file, vars[i], time, !SAVE_DIR, base, $
-                                      mini, maxi, fillvalue, $
+                                      mini, maxi, fillvalue, cfg.CCI_PWD, $
                                       REFS=refs, SAT=sat
 
 

@@ -1,4 +1,61 @@
 ;-----------------------------------------------------------------------------
+FUNCTION GET_AVAILABILITY, var_name, ref_algo
+;-----------------------------------------------------------------------------
+    CASE ref_algo OF
+        'pmx': BEGIN
+            CASE var_name OF
+                'hist2d_cot_ctp': avail = -1
+                'hist1d_ctp': avail = -1
+                'hist1d_ctt': avail = -1
+                'hist1d_cwp': avail = -1
+                'hist1d_cot': avail = -1
+                'hist1d_cer': avail = -1
+                'cwp': avail = -1
+                'cth': avail = -1
+                'cer': avail = -1
+                'cph': avail = -1
+                ELSE: avail = 1
+            ENDCASE
+            END
+        'mod': BEGIN
+            CASE var_name OF
+                'hist2d_cot_ctp': avail = -1
+                'hist1d_ctp'    : avail = -1
+                'cth': avail = -1
+                ELSE: avail = 1
+            ENDCASE
+            END
+        'mod2': BEGIN
+            CASE var_name OF
+                'hist2d_cot_ctp': avail = -1
+                'hist1d_ctp'    : avail = -1
+                'cth': avail = -1
+                ELSE: avail = 1
+            ENDCASE
+            END
+        'myd': BEGIN
+            CASE var_name OF
+                'hist2d_cot_ctp': avail = -1
+                'hist1d_ctp'    : avail = -1
+                'cth': avail = -1
+                ELSE: avail = 1
+            ENDCASE
+            END
+        'myd2': BEGIN
+            CASE var_name OF
+                'hist2d_cot_ctp': avail = -1
+                'hist1d_ctp'    : avail = -1
+                'cth': avail = -1
+                ELSE: avail = 1
+            ENDCASE
+            END
+        ELSE: avail = 1
+    ENDCASE
+    RETURN, avail
+END
+
+
+;-----------------------------------------------------------------------------
 FUNCTION GET_DATE_UTC, filename
 ;-----------------------------------------------------------------------------
     IF (filename.EndsWith('.nc') EQ 1) THEN BEGIN
@@ -638,9 +695,11 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
         ; get reference data
         ref_liq = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
                            algo=compare.REF, level='l3c', $
+                           dirname=compare.DIRNAME, $
                            data='hist1d_' + compare.VAR + '_liq') 
         ref_ice = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
                            algo=compare.REF, level='l3c', $
+                           dirname=compare.DIRNAME, $
                            data='hist1d_' + compare.VAR + '_ice') 
         ; consider fill_values
         ref_all = ( ref_liq>0 ) + ( ref_ice>0 )
@@ -666,6 +725,7 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
         IF KEYWORD_SET(ratio) THEN BEGIN
             ref_total = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
                                  algo=compare.REF, level='l3c', $
+                                 dirname=compare.DIRNAME, $
                                  data='hist1d_' + compare.VAR) 
             refbild3 = get_1d_rel_hist_from_1d_hist( ref_total, $
                     'hist1d_'+dname+'_ratio', algo=compare.REF, $
@@ -759,7 +819,7 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
-                   SAT=sat, REFS=refs, RATIO=ratio, CCIOLD=cciold
+                   cci_pwd, SAT=sat, REFS=refs, RATIO=ratio
 ;-----------------------------------------------------------------------------
     CASE varname OF
         'cer': ymax=50.
@@ -780,7 +840,6 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
     save_as = outfile + '.eps'
     start_save, save_as, size=[35,20]
     cs = 2.3
-    
     varn = varname
 
     CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
@@ -792,6 +851,23 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
     
     IF KEYWORD_SET(refs) THEN BEGIN
         FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+
+            is = GET_AVAILABILITY(opt+varname, refs[r])
+            IF (is EQ -1) THEN CONTINUE
+
+            CASE varname of
+                'cer' : BEGIN
+                    IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
+                        varn='cer' ELSE varn='ref'
+                    END
+                ELSE: varn = varname 
+            ENDCASE
+
+            CASE refs[r] OF
+                'cci': dirn = cci_pwd
+                ELSE: dirn = ''
+            ENDCASE
+
             opt = 'hist1d_'
             outfile = save_dir + base + '_' + opt + varname
             IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
@@ -801,9 +877,7 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
             start_save, save_as, size=[35,20]
             cs = 2.3
     
-            IF (varname EQ 'cer') THEN varn = 'cer' ELSE varn = varname
-
-            compare = {ref:refs[r], sat:sat, var:varn, $
+            compare = {ref:refs[r], sat:sat, var:varn, dirname:dirn, $
                        year:STRMID(time, 0, 4), $
                        month:STRMID(time, 4, 2), dat:''}
     
@@ -853,37 +927,52 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, $
-                           mini, maxi, SAT=sat, CCIOLD=cciold
+                           mini, maxi, cci_pwd, SAT=sat
 ;-----------------------------------------------------------------------------
     IF (varname EQ 'hist2d_cot_ctp') THEN RETURN
 
     FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
     
+        is = GET_AVAILABILITY(varname, refs[r])
+        IF (is EQ -1) THEN CONTINUE
+
         year = STRMID(time, 0, 4)
         month = STRMID(time, 4, 2) 
-        cci_varn = varname
 
-        IF KEYWORD_SET(cciold) OR (refs[r] NE 'cci') THEN BEGIN
-            CASE vname OF
-                'cer':      cci_varn = 'ref'
-                'cer_liq':  cci_varn = 'ref_liq'
-                'cer_ice':  cci_varn = 'ref_ice'
-                ELSE:
-            ENDCASE
-        ENDIF
-    
+        CASE varname of
+            'cer' : BEGIN
+                IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
+                    cci_varn=varname ELSE cci_varn='ref'
+                END
+            'cer_liq' : BEGIN
+                IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
+                    cci_varn=varname ELSE cci_varn='ref_liq'
+                END
+            'cer_ice' : BEGIN
+                IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
+                    cci_varn=varname ELSE cci_varn='ref_ice'
+                END
+            ELSE: cci_varn = varname 
+        ENDCASE
+
+        CASE refs[r] OF
+            'cci': dirn = cci_pwd
+            ELSE: dirn = ''
+        ENDCASE
+
         compare_cci_with_clara, year, month, '', ALGO1='era-i',$
             DATA=cci_varn, CCIFILE=file, REFERENCE=refs[r], $
             SAT=sat, MINI=mini, MAXI=maxi , LIMIT=limit, $
             SAVE_DIR=save_dir, LAND=land, SEA=sea, COV=cov, $
-            OTHER='rainbow', CTABLE='', LEVEL='l3c'
+            OTHER='rainbow', CTABLE='', LEVEL='l3c', DIRNAME2=dirn
+
     ENDFOR
 END
 
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
-                            mini, maxi, REFS=refs, SAT=sat, CCIOLD=cciold
+                            mini, maxi, cci_pwd, REFS=refs, SAT=sat
 ;-----------------------------------------------------------------------------
     IF (vname EQ 'hist2d_cot_ctp') THEN RETURN
 
@@ -912,46 +1001,30 @@ PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
     IF KEYWORD_SET(refs) THEN BEGIN
         FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
 
-            availability = 1
-            varname = vname
+            is = GET_AVAILABILITY(vname, refs[r])
+            IF (is EQ -1) THEN CONTINUE
 
-            IF (varname EQ 'cth') THEN BEGIN ;modis
-                CASE refs[r] OF
-                    'mod':  availability = -1
-                    'mod2': availability = -1
-                    'myd':  availability = -1
-                    'myd2': availability = -1
-                    'pmx':  availability = -1
-                    ELSE:
-                ENDCASE
-            ENDIF
-
-            IF (refs[r] EQ 'pmx') THEN BEGIN ;patmos
-                CASE varname OF
-                    'cer': availability = -1
-                    'cth': availability = -1
-                    'cwp': availability = -1
-                    'cph': availability = -1
-                    ELSE:
-                ENDCASE
-            ENDIF
-
-            IF (availability EQ -1) THEN CONTINUE
-
-            IF KEYWORD_SET(cciold) OR (refs[r] NE 'cci') THEN BEGIN
+            IF ((STRLEN(cci_pwd) EQ 0) OR (refs[r] NE 'cci')) THEN BEGIN
                 CASE vname OF
                     'cer':      varname = 'ref'
                     'cer_liq':  varname = 'ref_liq'
                     'cer_ice':  varname = 'ref_ice'
-                    ELSE:
+                    ELSE: varname = vname
                 ENDCASE
-            ENDIF
+            ENDIF ELSE BEGIN
+                varname = vname
+            ENDELSE
+
+            CASE refs[r] OF
+                'cci': dirn = cci_pwd 
+                ELSE: dirn = ''
+            ENDCASE
 
             plot_zonal_average, year, month, '', $
                 '', varname, algo=refs[r], sea=sea, land=land, $
                 limit=limit, satellite=sat, $
                 found=found, level=level, datum=datum, error=error, $
-                oplots=r+opl+1, /simulator
+                oplots=r+opl+1, /simulator, dirname=dirn
 
         ENDFOR
     ENDIF
@@ -964,7 +1037,8 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_COMPARE_JCH, file, vname, time, save_dir, base, $
-                          mini, maxi, fillvalue, REFS=refs, SAT=sat
+                          mini, maxi, fillvalue, cci_pwd, $
+                          REFS=refs, SAT=sat
 ;-----------------------------------------------------------------------------
     CASE vname OF
         'hist2d_cot_ctp': opt = '_hist2d' 
@@ -1021,13 +1095,23 @@ PRO PLOT_SIM_COMPARE_JCH, file, vname, time, save_dir, base, $
     IF KEYWORD_SET(refs) THEN BEGIN
         FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
 
+            is = GET_AVAILABILITY(vname, refs[r])
+            IF (is EQ -1) THEN CONTINUE
+
+            CASE refs[r] OF
+                'cci': dirn = cci_pwd
+                ELSE: dirn = ''
+            ENDCASE
+
             ; get reference data name
             ref_alg = sat_name(refs[r], sat, year=year, month=month)
 
             ; get data
             ref_liq = GET_DATA( year, month, sat=sat, algo=refs[r], $ 
+                dirname=dirn, $
                 nan_fillv=fillvalue, level='l3c', data=vname+'_liq' )
             ref_ice = GET_DATA( year, month, sat=sat, algo=refs[r], $ 
+                dirname=dirn, $
                 nan_fillv=fillvalue, level='l3c', data=vname+'_ice' )
             ref_all = ( ref_liq>0 ) + ( ref_ice>0 )
 
