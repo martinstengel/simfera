@@ -1,5 +1,6 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage[section]{placeins}
 \usepackage{color,graphics}
 \usepackage{graphicx}
 \usepackage{verbatim}
@@ -14,6 +15,9 @@
 \usepackage{cite}
 \geometry{a4paper,left=2.5cm,right=2.5cm, top=2.5cm, bottom=2.5cm}
 
+\newcommand{\docauthor}{cornelia.schlundt@dwd.de}
+\newcommand{\doctitle}{Evaluation of ERA-Interim reanalysis data 
+using a cloud simulator adapted to CC4CL}
 
 % CC4CL VERSION
 \newcommand{\fv}{fv2.0}
@@ -90,8 +94,9 @@ Low clouds: Cumulus (Cu), Stratocumulus (Sc) and Stratus (St).}
 
 % ZONAL MEAN INTER-COMPARISON
 \newcommand{\zonout}{\obase_zonal}
-\newcommand{\zoncompare}{obtained from the cloud simulator 
-(black solid line) with {\cci} and {\clara}.}
+\newcommand{\szoncaption}{Comparison of monthly zonal mean of}
+\newcommand{\ezoncaption}{obtained from the cloud simulator 
+(black solid line) with other reference data sets.}
 
 % FIGURE SIZES
 \newcommand{\figwidth}{13cm}

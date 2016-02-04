@@ -3,20 +3,18 @@
 
 \begin{document}
 
-\title{Evaluation of ERA-Interim reanalysis data\\ based on a cloud simulator}
-\author{cornelia.schlundt@dwd.de}
+\title{\doctitle}
+\author{\docauthor}
 \date{\today}
 \maketitle
-
 \tableofcontents
-
 %\newpage
 %\listoffigures
-
 %\newpage
 %\listoftables
+\newpage
 
-%\newpage
+
 %\section{Introduction}\label{sec:intro}
 %\input{./content/intro}
 %
@@ -28,20 +26,23 @@
 %\input{./content/cloud_simulator}
 
 
-\newpage
-\section{Simulator results}\label{sec:sim_results}
-\subsection{Pseudo-satellite products for \MonthYear}
-\input{./content/simulated_results}
+%\FloatBarrier
+%\section{Simulator results}\label{sec:sim_results}
+%\subsection{Pseudo-satellite products for \MonthYear}
+%\input{./content/simulated_results}
 
-\newpage
+\FloatBarrier
 %\section{Comparison of simulated and observed cloud parameters}\label{sec:sim_vs_obs}
 \section{Comparison of {\era} vs. {\cci}-{\fv}}\label{sec:sim_vs_obs}
 \subsection{Histograms}
 \input{./content/compare_with_cci_hist2d}
 \input{./content/compare_with_cci_hist1d}
+
+\FloatBarrier
 \subsection{L3C}
 \input{./content/compare_with_cci}
 
+\FloatBarrier
 \subsection{Zonal mean inter-comparison for \MonthYear}
 \input{./content/compare_zonal_mean}
 
