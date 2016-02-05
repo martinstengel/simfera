@@ -4,11 +4,12 @@
 ; search bottom-up, where is a cloud using COT threshold value
 ;------------------------------------------------------------------------------
 PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
-                      histo, means, tmp
+                      histo, means, tmp, TEST=test
 ;------------------------------------------------------------------------------
 
     ; fill_value
     fillvalue = -999.
+    sv_cnt = 0
 
     ; 2D arrays containing the upper-most cloud information
     cfc_tmp     = FLTARR(grd.XDIM,grd.YDIM) & cfc_tmp[*,*]     = fillvalue
@@ -141,7 +142,6 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
             ENDFOR ; END SCOPS -------------------------------------------------
             
 
-
             wothin = WHERE( matrix_tcot lt thv, n_wothin )
             matrix_cot2 = matrix_cot
 
@@ -153,7 +153,24 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                 matrix_cer[wothin]=-1.
             ENDIF
 
-
+            ; make scops snapshots
+            IF (KEYWORD_SET(test) AND (inp.HOUR EQ '00') AND (sv_cnt LT 10)) THEN BEGIN
+                sv = sza[xi,yi]
+                IF (TOTAL(matrix_cfc) GT 70 AND (sv GT 16 AND sv LT 18) $
+                    AND (inp.lon[xi] LT 179.)) THEN BEGIN
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cfc, $ 
+                        'scops cloud fraction', scops_type, mpc, thv, sv_cnt
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cph, $
+                        'scops cloud phase', scops_type, mpc, thv, sv_cnt
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cwp, $
+                        'scops cloud water path', scops_type, mpc, thv, sv_cnt
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cot, $
+                        'scops cloud optical thickness', scops_type, mpc, thv, sv_cnt
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cer, $
+                        'scops cloud effective radius', scops_type, mpc, thv, sv_cnt
+                    sv_cnt++
+                ENDIF
+            ENDIF
 
             ; get subcolumn values
             FOR icol=0, ncol-1 DO BEGIN

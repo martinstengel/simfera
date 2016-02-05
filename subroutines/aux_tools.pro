@@ -58,7 +58,7 @@ END
 ;-----------------------------------------------------------------------------
 FUNCTION GET_DATE_UTC, filename
 ;-----------------------------------------------------------------------------
-    IF (filename.EndsWith('.nc') EQ 1) THEN BEGIN
+    IF (STRPOS(filename,'.nc') GE 0) THEN BEGIN
         base = FSC_Base_Filename(filename)
         splt = STRSPLIT(base, /EXTRACT, '_')
         time = STRSPLIT(splt[4],/EXTRACT,'+')
@@ -373,6 +373,29 @@ END
 
 
 ;-----------------------------------------------------------------------------
+PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
+                          scops, mpc, thv, cnt
+;-----------------------------------------------------------------------------
+    t = '_thv'+STRTRIM(STRING(thv, FORMAT='(F4.2)'),2)
+    s = '_scops'+STRTRIM(STRING(scops),2)
+    m = '_mpc'+STRTRIM(STRING(mpc),2)
+    p = '_'+STRJOIN(STRSPLIT(target, /EXTRACT), '_')
+    v = STRTRIM(STRING(cnt),2)
+    fbase = inp.FILENAME + t + s + m + p + v
+    save_as = !SAVE_DIR  + fbase + '.eps'
+    start_save, save_as, size='A4', /LANDSCAPE
+    lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.2)'),2)
+    latstr = STRTRIM(STRING(inp.lat[yi], FORMAT='(F8.2)'),2)
+    szastr = STRTRIM(STRING(sza[xi,yi], FORMAT='(F8.2)'),2)
+    pixel = 'SZA: '+szastr+', Longitue: '+lonstr+', Latitude: '+latstr
+    view2d, data, /cool, /color, chars=2.1, title = pixel, $
+        bar_title=target, xtitle='Subcolumn', ytitle='Z-Level', bar_nlev=6
+    end_save, save_as
+    cs_eps2png, save_as
+END
+
+
+;-----------------------------------------------------------------------------
 PRO PLOT_ERA_SST, FILENAME=filename, DATA=sst, $
                   LATITUDE=lat, LONGITUDE=lon, VOID=void_index
 ;-----------------------------------------------------------------------------
@@ -462,7 +485,7 @@ PRO PLOT_SZA2D, FILENAME=filename, DATA=sza2d, $
                CTABLE=33, /FLIP_COLOURS, $
                /BOX_AXES, /MAGNIFY, /GRID, $
                MINI=0., MAXI=180., CHARSIZE=2.2, $
-               TITLE='SZA [deg]', $
+               TITLE='SZA [deg]', N_LEV=6, $
                FIGURE_TITLE=title
 
     MAP_CONTINENTS, /CONTINENTS, /HIRES, $

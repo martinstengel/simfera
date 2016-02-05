@@ -169,16 +169,14 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                         incloud = CALC_INCLOUD_CWC( input, grid )
 
                         ; calculate: CWP/COT/CER per layer based in incloud CWC
-                        CALC_CLD_VARS, incloud.LWC, incloud.IWC, $
-                                       input, grid, lsm2d, cer_info, $
-                                       cwp_lay, cot_lay, cer_lay, $
-                                       CONSTANT_CER=constant_cer, $
-                                       VERBOSE=verbose
+                        CALC_CLD_VARS, incloud.LWC, incloud.IWC, input, grid, $
+                            lsm2d, cer_info, cwp_lay, cot_lay, cer_lay, $ 
+                            CONSTANT_CER=constant_cer, VERBOSE=verbose
 
                         ; means (in/out), temps (out)
                         PSEUDO_RETRIEVAL, input, grid, sza2d, set.SCOPS, $ 
-                                          cwp_lay, cot_lay, cer_lay, $ 
-                                          set.COT, set.MPC, his, means, temps
+                            cwp_lay, cot_lay, cer_lay, set.COT, set.MPC, $
+                            his, means, temps, TEST=test
 
                         ; sum up cloud parameters
                         SUMUP_VARS, means, counts, temps
