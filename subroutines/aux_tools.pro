@@ -391,7 +391,6 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
     view2d, data, /cool, /color, chars=2.1, title = pixel, $
         bar_title=target, xtitle='Subcolumn', ytitle='Z-Level', bar_nlev=6
     end_save, save_as
-    cs_eps2png, save_as
 END
 
 
@@ -424,7 +423,6 @@ PRO PLOT_ERA_SST, FILENAME=filename, DATA=sst, $
     MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
 
     end_save, save_as
-    cs_eps2png, save_as
 
 END
 
@@ -461,7 +459,6 @@ PRO PLOT_LSM2D, FILENAME=filename, DATA=lsm, $
     MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
 
     end_save, save_as
-    cs_eps2png, save_as
 
 END
 
@@ -494,7 +491,6 @@ PRO PLOT_SZA2D, FILENAME=filename, DATA=sza2d, $
     MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
 
     end_save, save_as
-    cs_eps2png, save_as
 
 END
 
@@ -529,7 +525,6 @@ PRO MAP_MM, grd, data, filename, varname, flag, scops_type, mpc, $
     MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2
 
     end_save, save_as
-    cs_eps2png, save_as
 
 END
 
@@ -561,7 +556,6 @@ PRO PLOT_HISTOS_1D, varname, data, histo, filename, flag, scops_type, mpc, $
 
     ; end plotting
     end_save, save_as
-    cs_eps2png, save_as
 
 END
 
@@ -634,7 +628,6 @@ PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
 
     ; end plotting
     end_save, save_as
-    cs_eps2png, save_as
     !P.MULTI = 0
 
 END
@@ -698,7 +691,6 @@ PRO PLOT_SOLAR_VARS, DATA=data, GRID=grd, FLAG=flg, FILE=fil, VOID=void,$
     MAP_GRID, COLOR=cgcolor('Black'), MLINETHICK=2.2, /BOX_AXES, CHARS=cs
 
     end_save, save_as
-    cs_eps2png, save_as
 
     !P.MULTI = 0
 END

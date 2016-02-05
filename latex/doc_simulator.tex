@@ -12,43 +12,45 @@
 %\listoffigures
 %\newpage
 %\listoftables
+
+
 \newpage
+\section{Introduction}\label{sec:intro}
+\input{./content/intro}
 
+\newpage
+\section{Description of datasets}\label{sec:datasets}
+\input{./content/data_description}
 
-%\section{Introduction}\label{sec:intro}
-%\input{./content/intro}
-%
-%\section{Description of datasets}\label{sec:datasets}
-%\input{./content/data_description}
-%
-%\newpage
-%\section{Description of the cloud simulator}\label{cld_sim}
-%\input{./content/cloud_simulator}
+\newpage
+\section{Description of the cloud simulator}\label{cld_sim}
+\input{./content/cloud_simulator}
 
 
 %\FloatBarrier
 %\section{Simulator results}\label{sec:sim_results}
 %\subsection{Pseudo-satellite products for \MonthYear}
 %\input{./content/simulated_results}
-
-\FloatBarrier
-%\section{Comparison of simulated and observed cloud parameters}\label{sec:sim_vs_obs}
-\section{Comparison of {\era} vs. {\cci}-{\fv}}\label{sec:sim_vs_obs}
-\subsection{Histograms}
-\input{./content/compare_with_cci_hist2d}
-\input{./content/compare_with_cci_hist1d}
-
-\FloatBarrier
-\subsection{L3C}
-\input{./content/compare_with_cci}
-
-\FloatBarrier
-\subsection{Zonal mean inter-comparison for \MonthYear}
-\input{./content/compare_zonal_mean}
+%
+%\FloatBarrier
+%%\section{Comparison of simulated and observed cloud parameters}\label{sec:sim_vs_obs}
+%\section{Comparison of {\era} vs. {\cci}-{\fv}}\label{sec:sim_vs_obs}
+%\subsection{Histograms}
+%\input{./content/compare_with_cci_hist2d}
+%\input{./content/compare_with_cci_hist1d}
+%
+%\FloatBarrier
+%\subsection{L3C}
+%\input{./content/compare_with_cci}
+%
+%\FloatBarrier
+%\subsection{Zonal mean inter-comparison for \MonthYear}
+%\input{./content/compare_zonal_mean}
 
 \newpage
-\bibliography{simulator}
-% \bibliographystyle{plain}
+\addcontentsline{toc}{section}{References}
 \bibliographystyle{apalike}
+%\bibliographystyle{plain}
+\bibliography{./doc_simulator}
 
 \end{document}
