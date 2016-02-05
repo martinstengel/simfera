@@ -95,7 +95,7 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
 
                        IF (nfb_ice GT 0) THEN BEGIN 
                            matrix_cot[ci[0:nfb_ice-1],zi] = cot.ICE[xi,yi,zi] 
-                           matrix_cwp[ci[0:nfb_ice-1],zi] = cot.ICE[xi,yi,zi]
+                           matrix_cwp[ci[0:nfb_ice-1],zi] = cwp.ICE[xi,yi,zi]
                            matrix_cer[ci[0:nfb_ice-1],zi] = cer.ICE[xi,yi,zi]
                            matrix_cfc[ci[0:nfb_ice-1],zi] = 1
                            matrix_cph[ci[0:nfb_ice-1],zi] = 0
