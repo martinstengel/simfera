@@ -7,6 +7,7 @@ global atmospheric reanalysis produced by ECMWF.
 The clouds simulator reads the 6-hourly (00, 06, 12, 18 UTC) 
 ERA-Interim files per month containing gridbox mean vertical profiles of
 \begin{itemize}
+    \setlength\itemsep{0.2em}
     \item pressure level $P_{lev}$,
     \item liquid water content $LWC$,
     \item ice water content $IWC$,
@@ -19,25 +20,33 @@ The following steps address the things needed to ``simulate'' the observational 
 In other words, \textbf{what would a satellite see if the atmosphere had the clouds
 of a climate model}?
 
-%; means (in/out), temps (out)
-%PSEUDO_RETRIEVAL, input, grid, sza2d, set.SCOPS, $ 
-%    cwp_lay, cot_lay, cer_lay, set.COT, set.MPC, $
-%    his, means, temps, TEST=test
-%
-%; sum up cloud parameters
-%SUMUP_VARS, means, counts, temps
 
 \subsection{Calculation of cloud effective radius, optical thickness and water path}
-In the first step the cloud (liquid and ice) water content at each model level
-is weighted by its cloud cover providing the so-called ``in-cloud'' cloud water content.
-This cloud-cover-weighted product is then used for computing the ``in-cloud''
-effective radius, optical thickness and water path for each model layer.
+First of all, the cloud liquid and ice water content at each model level
+is weighted by its cloud cover computing the so-called ``in-cloud'' 
+liquid and ice water content, respectively.
+This cloud-cover-weighted product is then used for deriving the ``in-cloud''
+effective radius, optical thickness and water path for each model layer 
+(i.e. vertical area between two pressure levels) depending on the thermodynamic phase.
+
 
 \subsubsection{Water droplet effective radius}
-In ERA-Interim the liquid cloud effective radius is calculated following the method
-described by Martin et al. (1994).
+The parameterization of liquid water effective radius in ERA-Interim 
+follows \citet{Martin1994} and is defined as function of 
+liquid water content and the cloud droplet number concentration, 
+which in turn depends on the wind speed.
+%ZRADLP = effective radius (microns)
+%ZLWC = liquid water content (g m-2)
+%ZNTOT = cloud droplet number concentration (dependent on wind speed in ERAI parametrization, but
+%you could choose fixed values for land and ocean  e.g. (300 and 100 respectively)  
+%ZD=0.33 ! for ocean
+%ZD=0.43 ! for land
+
 
 \subsubsection{Ice crystal effective radius}
+The ice particle effective radius is parameterized as a function of 
+temperature and ice water content and is based on \citet{Sun1999}, 
+revised by \citet{Sun2001}.
 
 
 \subsection{Pseudo retrieval}
@@ -91,8 +100,8 @@ described by Martin et al. (1994).
 %  \end{minipage}
 %  \caption[Down-scaled cloud paramters.]
 %  {These figures show the sub-column distribution of
-%cloud fraction, phase, effective radius, optical thickness and water path 
-%derived from the corresponding grid-box mean profiles. 
+%cloud fraction, phase, effective radius [$\mu$], optical thickness 
+%and water path [kg/m$^{2}$] derived from the corresponding grid-box mean profiles. 
 %The left and right columns demonstrates two different grid cells
 %at 00 UTC on 1$^{st}$ of \MonthYear.}
 %  \label{fig:scops}
