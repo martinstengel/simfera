@@ -384,12 +384,41 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
     fbase = inp.FILENAME + t + s + m + p + v
     save_as = !SAVE_DIR  + fbase + '.eps'
     start_save, save_as, size='A4', /LANDSCAPE
+
     lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.2)'),2)
     latstr = STRTRIM(STRING(inp.lat[yi], FORMAT='(F8.2)'),2)
     szastr = STRTRIM(STRING(sza[xi,yi], FORMAT='(F8.2)'),2)
     pixel = 'SZA: '+szastr+', Longitue: '+lonstr+', Latitude: '+latstr
-    view2d, data, /cool, /color, chars=2.1, title = pixel, $
-        bar_title=target, xtitle='Subcolumn', ytitle='Z-Level', bar_nlev=6
+    ;ytick = REVERSE(STRTRIM(STRING(inp.PLEVEL/100., FORMAT='(F6.1)'),2))
+    ytick = REVERSE(inp.PLEVEL/100.)
+    ytstr = FLTARR(ROUND(N_ELEMENTS(ytick)/2.))
+    j = 0
+    FOR i=0, N_ELEMENTS(ytick)-1 DO BEGIN
+        IF ((i MOD 2) EQ 0) THEN BEGIN
+            ytstr[j] = ytick[i] & j++
+        ENDIF ELSE BEGIN 
+            CONTINUE
+        ENDELSE
+    ENDFOR
+
+    ytickname = STRTRIM(STRING(ytstr,FORMAT='(I4)'),2)
+    bar_nlev = 6
+    IF (target EQ 'scops cloud fraction') THEN $
+        col_table = -10 ELSE col_table = 2
+
+    IF (target EQ 'scops cloud fraction' OR $
+        target EQ 'scops cloud phase') THEN BEGIN
+        void = WHERE(data LT 0.)
+    ENDIF ELSE BEGIN
+        void = WHERE(data LE 0.)
+    ENDELSE
+
+    view2d, data, col_table=col_table, /color, chars=2.3, title = pixel, $
+        bar_title=target, xtitle='Subcolumn', /xstyle, /ystyle, $
+        ytitle='Pressure level [hPa]', ytickname=ytickname, $
+        yticks=N_ELEMENTS(ytickname)-1, no_data_idx=void, $
+        bar_tickname=bar_tickname, bar_nlev=bar_nlev
+
     end_save, save_as
 END
 

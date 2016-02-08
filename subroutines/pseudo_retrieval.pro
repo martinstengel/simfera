@@ -162,15 +162,15 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                 sv = sza[xi,yi]
                 IF (TOTAL(matrix_cfc) GT 70 AND (sv GT 16 AND sv LT 18) $
                     AND (inp.lon[xi] LT 179.)) THEN BEGIN
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cfc, $ 
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, ROTATE(matrix_cfc,7), $ 
                         'scops cloud fraction', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cph, $
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, ROTATE(matrix_cph,7), $
                         'scops cloud phase', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cwp, $
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, ROTATE(matrix_cwp,7), $
                         'scops cloud water path', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cot, $
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, ROTATE(matrix_cot,7), $
                         'scops cloud optical thickness', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, matrix_cer, $
+                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, ROTATE(matrix_cer,7), $
                         'scops cloud effective radius', scops_type, mpc, thv, sv_cnt
                     sv_cnt++
                 ENDIF
