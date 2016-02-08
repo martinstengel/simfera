@@ -71,5 +71,23 @@ PRO SUMUP_VARS, means, counts, temps
     means.IWP[wo_iwp] = means.IWP[wo_iwp] + temps.IWP[wo_iwp]
     counts.IWP[wo_iwp] = counts.IWP[wo_iwp] + 1l
 
-END
 
+    ; TOTAL CWP allsky
+    wo_cwp_as = WHERE(temps.CWP_ALLSKY GE 0., nwo_cwp_as)
+    means.CWP_ALLSKY[wo_cwp_as] = means.CWP_ALLSKY[wo_cwp_as] $
+                                + temps.CWP_ALLSKY[wo_cwp_as]
+    counts.CWP_ALLSKY[wo_cwp_as] = counts.CWP_ALLSKY[wo_cwp_as] + 1l
+
+    ; LWP allsky
+    wo_lwp_as = WHERE(temps.LWP_ALLSKY GE 0., nwo_lwp_as)
+    means.LWP_ALLSKY[wo_lwp_as] = means.LWP_ALLSKY[wo_lwp_as] $
+                                + temps.LWP_ALLSKY[wo_lwp_as]
+    counts.LWP_ALLSKY[wo_lwp_as] = counts.LWP_ALLSKY[wo_lwp_as] + 1l
+
+    ; IWP allsky
+    wo_iwp_as = WHERE(temps.IWP_ALLSKY GE 0., nwo_iwp_as)
+    means.IWP_ALLSKY[wo_iwp_as] = means.IWP_ALLSKY[wo_iwp_as] $
+                                + temps.IWP_ALLSKY[wo_iwp_as]
+    counts.IWP_ALLSKY[wo_iwp_as] = counts.IWP_ALLSKY[wo_iwp_as] + 1l
+
+END

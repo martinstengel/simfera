@@ -243,10 +243,38 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
     NCDF_ATTPUT, id, 'cwp', 'long_name', 'cloud water path'
     NCDF_ATTPUT, id, 'cwp', 'units', 'g/m^2'
 
+    vid  = NCDF_VARDEF(id, 'cwp_allsky', [dim_x_id,dim_y_id,time_id], /FLOAT)
+    NCDF_ATTPUT, id, 'cwp_allsky', '_FillValue', -999.
+    NCDF_ATTPUT, id, 'cwp_allsky', 'long_name', 'cloud water path'
+    NCDF_ATTPUT, id, 'cwp_allsky', 'units', 'g/m^2'
+
     vid  = NCDF_VARDEF(id, 'lwp', [dim_x_id,dim_y_id,time_id], /FLOAT)
     NCDF_ATTPUT, id, 'lwp', '_FillValue', -999.
     NCDF_ATTPUT, id, 'lwp', 'long_name', 'cloud liquid water path'
     NCDF_ATTPUT, id, 'lwp', 'units', 'g/m^2'
+
+    vid  = NCDF_VARDEF(id, 'lwp_allsky', [dim_x_id,dim_y_id,time_id], /FLOAT)
+    NCDF_ATTPUT, id, 'lwp_allsky', '_FillValue', -999.
+    NCDF_ATTPUT, id, 'lwp_allsky', 'long_name', 'cloud liquid water path'
+    NCDF_ATTPUT, id, 'lwp_allsky', 'units', 'g/m^2'
+
+    vid  = NCDF_VARDEF(id, 'nobs_lwp', [dim_x_id,dim_y_id,time_id], /LONG)
+    NCDF_ATTPUT, id, 'nobs_lwp', 'long_name', 'number of observations'
+    NCDF_ATTPUT, id, 'nobs_lwp', 'units', ' '
+
+    vid  = NCDF_VARDEF(id, 'iwp', [dim_x_id,dim_y_id,time_id], /FLOAT)
+    NCDF_ATTPUT, id, 'iwp', '_FillValue', -999.
+    NCDF_ATTPUT, id, 'iwp', 'long_name', 'cloud ice water path'
+    NCDF_ATTPUT, id, 'iwp', 'units', 'g/m^2'
+
+    vid  = NCDF_VARDEF(id, 'iwp_allsky', [dim_x_id,dim_y_id,time_id], /FLOAT)
+    NCDF_ATTPUT, id, 'iwp_allsky', '_FillValue', -999.
+    NCDF_ATTPUT, id, 'iwp_allsky', 'long_name', 'cloud ice water path'
+    NCDF_ATTPUT, id, 'iwp_allsky', 'units', 'g/m^2'
+
+    vid  = NCDF_VARDEF(id, 'nobs_iwp', [dim_x_id,dim_y_id,time_id], /LONG)
+    NCDF_ATTPUT, id, 'nobs_iwp', 'long_name', 'number of observations'
+    NCDF_ATTPUT, id, 'nobs_iwp', 'units', ' '
 
     vid  = NCDF_VARDEF(id, 'cer', [dim_x_id,dim_y_id,time_id], /FLOAT)
     NCDF_ATTPUT, id, 'cer', '_FillValue', -999.
@@ -262,19 +290,6 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
     NCDF_ATTPUT, id, 'cer_ice', '_FillValue', -999.
     NCDF_ATTPUT, id, 'cer_ice', 'long_name', 'ice effective radius'
     NCDF_ATTPUT, id, 'cer_ice', 'units', 'micrometer'
-
-    vid  = NCDF_VARDEF(id, 'nobs_lwp', [dim_x_id,dim_y_id,time_id], /LONG)
-    NCDF_ATTPUT, id, 'nobs_lwp', 'long_name', 'number of observations'
-    NCDF_ATTPUT, id, 'nobs_lwp', 'units', ' '
-
-    vid  = NCDF_VARDEF(id, 'iwp', [dim_x_id,dim_y_id,time_id], /FLOAT)
-    NCDF_ATTPUT, id, 'iwp', '_FillValue', -999.
-    NCDF_ATTPUT, id, 'iwp', 'long_name', 'cloud ice water path'
-    NCDF_ATTPUT, id, 'iwp', 'units', 'g/m^2'
-
-    vid  = NCDF_VARDEF(id, 'nobs_iwp', [dim_x_id,dim_y_id,time_id], /LONG)
-    NCDF_ATTPUT, id, 'nobs_iwp', 'long_name', 'number of observations'
-    NCDF_ATTPUT, id, 'nobs_iwp', 'units', ' '
 
     NCDF_CONTROL, id, /ENDEF ;Exit define mode
 
@@ -321,8 +336,11 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
     NCDF_VARPUT, id, 'cer_liq', means.cer_liq
     NCDF_VARPUT, id, 'cer_ice', means.cer_ice
     NCDF_VARPUT, id, 'cwp', means.cwp
+    NCDF_VARPUT, id, 'cwp_allsky', means.cwp_allsky
     NCDF_VARPUT, id, 'lwp', means.lwp
+    NCDF_VARPUT, id, 'lwp_allsky', means.lwp_allsky
     NCDF_VARPUT, id, 'iwp', means.iwp
+    NCDF_VARPUT, id, 'iwp_allsky', means.iwp_allsky
     NCDF_VARPUT, id, 'nobs', counts.ctp
     NCDF_VARPUT, id, 'nobs_lwp', counts.lwp
     NCDF_VARPUT, id, 'nobs_iwp', counts.iwp

@@ -43,6 +43,7 @@
 ;   C. Schlundt, Jan 2016: Cloud_cci variable names implemented
 ;   C. Schlundt, Jan 2016: SZA < 75 equals daytime (previously 80 deg)
 ;   M. Stengel,  Jan 2016: pseudo_retrieval, i.e. SCOPS and more
+;   M. Stengel,  Feb 2016: cph_day, cwp_allsky, lwp_allsky, iwp_allsky added
 ;
 ;******************************************************************************
 PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
@@ -225,8 +226,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                 UNDEFINE, means, counts
 
             ENDIF ELSE BEGIN 
-                PRINT, '!!!!!! No ERA-Interim InputFiles found for ', $
-                               strym, ' !!!!!!'
+                PRINT, '! NO ERA-Interim InputFiles found for ', strym, ' !'
             ENDELSE
 
            PRINT, "** Elapsed Time: ", (SYSTIME(1)-SMM)/60., " minutes"

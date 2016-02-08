@@ -19,9 +19,13 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
     cph_tmp     = FLTARR(grd.XDIM,grd.YDIM) & cph_tmp[*,*]     = fillvalue
     cph_tmp_day = FLTARR(grd.XDIM,grd.YDIM) & cph_tmp_day[*,*] = fillvalue
 
-    cwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cwp_tmp[*,*] = 0.
-    lwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & lwp_tmp[*,*] = 0.
-    iwp_tmp  = FLTARR(grd.XDIM,grd.YDIM) & iwp_tmp[*,*] = 0.
+    cwp_tmp         = FLTARR(grd.XDIM,grd.YDIM) & cwp_tmp[*,*] = 0.
+    cwp_tmp_allsky  = FLTARR(grd.XDIM,grd.YDIM) & cwp_tmp_allsky[*,*] = 0.
+    lwp_tmp         = FLTARR(grd.XDIM,grd.YDIM) & lwp_tmp[*,*] = 0.
+    lwp_tmp_allsky  = FLTARR(grd.XDIM,grd.YDIM) & lwp_tmp_allsky[*,*] = 0.
+    iwp_tmp         = FLTARR(grd.XDIM,grd.YDIM) & iwp_tmp[*,*] = 0.
+    iwp_tmp_allsky  = FLTARR(grd.XDIM,grd.YDIM) & iwp_tmp_allsky[*,*] = 0.
+
     cot_tmp  = FLTARR(grd.XDIM,grd.YDIM) & cot_tmp[*,*] = 0.
     lcot_tmp = FLTARR(grd.XDIM,grd.YDIM) & lcot_tmp[*,*] = 0.
     icot_tmp = FLTARR(grd.XDIM,grd.YDIM) & icot_tmp[*,*] = 0.
@@ -208,6 +212,7 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
             IF (nwocl gt 0) THEN BEGIN 
                 cot_tmp[xi,yi] = MEAN( array_cot[wocl] )
                 cwp_tmp[xi,yi] = MEAN( array_cwp[wocl] )
+                cwp_tmp_allsky[xi,yi] = cwp_tmp[xi,yi]*nwocl/ncol
                 cer_tmp[xi,yi] = MEAN( array_cer[wocl] )
                 ctp_tmp[xi,yi] = MEAN( array_ctp[wocl] )
                 cth_tmp[xi,yi] = MEAN( array_cth[wocl] )
@@ -219,12 +224,14 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                 lcer_tmp[xi,yi] = MEAN( array_cer[wocl_liq] )
                 lcot_tmp[xi,yi] = MEAN( array_cot[wocl_liq] )
                 lwp_tmp[xi,yi] = MEAN( array_cwp[wocl_liq] ) 
+                lwp_tmp_allsky[xi,yi] = lwp_tmp[xi,yi]*nwocl_liq/ncol
             ENDIF
 
             IF (nwocl_ice gt 0) THEN BEGIN 
                 icer_tmp[xi,yi] = MEAN( array_cer[wocl_ice] )
                 icot_tmp[xi,yi] = MEAN( array_cot[wocl_ice] )
                 iwp_tmp[xi,yi] = MEAN( array_cwp[wocl_ice] ) 
+                iwp_tmp_allsky[xi,yi] = iwp_tmp[xi,yi]*nwocl_ice/ncol 
             ENDIF
 
             ; daytime cph
@@ -235,16 +242,19 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                 ;all
                 cot_tmp[xi,yi] = fillvalue
                 cwp_tmp[xi,yi] = fillvalue
+                cwp_tmp_allsky[xi,yi] = fillvalue
                 cer_tmp[xi,yi] = fillvalue
                 cph_tmp_day[xi,yi] = fillvalue
                 ;liquid
                 lcer_tmp[xi,yi] = fillvalue
                 lcot_tmp[xi,yi] = fillvalue
                 lwp_tmp[xi,yi]  = fillvalue 
+                lwp_tmp_allsky[xi,yi]  = fillvalue
                 ;ice
                 icer_tmp[xi,yi] = fillvalue
                 icot_tmp[xi,yi] = fillvalue
                 iwp_tmp[xi,yi]  = fillvalue 
+                iwp_tmp_allsky[xi,yi]  = fillvalue
             ENDIF
 
 
@@ -293,6 +303,9 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
            cfc:cfc_tmp, cph:cph_tmp, cph_day:cph_tmp_day, $
            ctt:ctt_tmp, cth:cth_tmp, ctp:ctp_tmp, $
            cwp:cwp_tmp, lwp:lwp_tmp, iwp:iwp_tmp, $
+           cwp_allsky:cwp_tmp_allsky, $
+           lwp_allsky:lwp_tmp_allsky, $
+           iwp_allsky:iwp_tmp_allsky, $
            cot:cot_tmp, cot_liq:lcot_tmp, cot_ice:icot_tmp, $
            cer:cer_tmp, cer_liq:lcer_tmp, cer_ice:icer_tmp }
 

@@ -31,12 +31,10 @@ PRO MEAN_VARS, means, counts
 
     ; -- convert LWP,IWP from 'kg/m2' to 'g/m2' (CCI conform), 
     ;    i.e. multiply with 1000.
-
     tcwp = WHERE(counts.CWP GT 0, ntcwp)
     IF (ntcwp GT 0) THEN $
         means.CWP[tcwp] = (means.CWP[tcwp] / counts.CWP[tcwp])*1000.
 
-    ; -- LWP & IWP grid mean
     idx_liq = WHERE(counts.LWP GT 0, nidx_liq)
     IF(nidx_liq GT 0) THEN $
         means.LWP[idx_liq] = (means.LWP[idx_liq] / counts.LWP[idx_liq])*1000.
@@ -44,6 +42,23 @@ PRO MEAN_VARS, means, counts
     idx_ice = WHERE(counts.IWP GT 0, nidx_ice)
     IF(nidx_ice GT 0) THEN $
         means.IWP[idx_ice] = (means.IWP[idx_ice] / counts.IWP[idx_ice])*1000.
+
+    ; -- allsky cwp, lwp, iwp
+    tcwp_as = WHERE(counts.CWP_ALLSKY GT 0, ntcwp_as)
+    IF (ntcwp_as GT 0) THEN $
+        means.CWP_ALLSKY[tcwp_as] = (means.CWP_ALLSKY[tcwp_as] / $
+                                    counts.CWP_ALLSKY[tcwp_as])*1000.
+
+    idx_liq_as = WHERE(counts.LWP_ALLSKY GT 0, nidx_liq_as)
+    IF(nidx_liq_as GT 0) THEN $
+        means.LWP_ALLSKY[idx_liq_as] = (means.LWP_ALLSKY[idx_liq_as] / $
+                                       counts.LWP_ALLSKY[idx_liq_as])*1000.
+
+    idx_ice_as = WHERE(counts.IWP_ALLSKY GT 0, nidx_ice_as)
+    IF(nidx_ice_as GT 0) THEN $
+        means.IWP_ALLSKY[idx_ice_as] = (means.IWP_ALLSKY[idx_ice_as] / $
+                                       counts.IWP_ALLSKY[idx_ice_as])*1000.
+
 
 
     ; -- cloud optical thickness
@@ -91,14 +106,23 @@ PRO MEAN_VARS, means, counts
     tcfc0 = WHERE(counts.CFC EQ 0, nix_cfc)
     IF (nix_cfc GT 0) THEN means.CFC[tcfc0] = -999.
 
+    tcwp0 = WHERE(counts.CWP EQ 0, ntcwp0)
+    IF (ntcwp0 GT 0) THEN means.CWP[tcwp0] = -999.
+
     idx_liq0 = WHERE(counts.LWP EQ 0, nidx_liq0)
     IF (nidx_liq0 GT 0) THEN means.LWP[idx_liq0] = -999.
 
     idx_ice0 = WHERE(counts.IWP EQ 0, nidx_ice0)
     IF (nidx_ice0 GT 0) THEN means.IWP[idx_ice0] = -999.
 
-    tcwp0 = WHERE(counts.CWP EQ 0, ntcwp0)
-    IF (ntcwp0 GT 0) THEN means.CWP[tcwp0] = -999.
+    tcwp0_as = WHERE(counts.CWP_ALLSKY EQ 0, ntcwp0_as)
+    IF (ntcwp0_as GT 0) THEN means.CWP_ALLSKY[tcwp0_as] = -999.
+
+    idx_liq0_as = WHERE(counts.LWP_ALLSKY EQ 0, nidx_liq0_as)
+    IF (nidx_liq0_as GT 0) THEN means.LWP_ALLSKY[idx_liq0_as] = -999.
+
+    idx_ice0_as = WHERE(counts.IWP_ALLSKY EQ 0, nidx_ice0_as)
+    IF (nidx_ice0_as GT 0) THEN means.IWP_ALLSKY[idx_ice0_as] = -999.
 
     tcot0 = WHERE(counts.COT EQ 0, ntcot0)
     IF (ntcot0 GT 0) THEN means.COT[tcot0] = -999.

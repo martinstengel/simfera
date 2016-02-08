@@ -2,7 +2,7 @@
 FUNCTION INIT_LSM_ARRAY, grd, sst, void, MAP=map 
 ;---------------------------------------------------------------
 
-    lsm2d = INTARR(grd.xdim,grd.ydim)
+    lsm2d = INTARR(grd.XDIM,grd.YDIM)
     lsm2d[*,*] = -999
 
     land = WHERE( sst EQ MAX(sst[void]) )
@@ -32,8 +32,8 @@ FUNCTION INIT_SZA_ARRAY, data, grd, MAP=map
 
     jul_day = DOY(data.YEAR, data.MONTH, data.DAY)
 
-    utc2d = FLTARR(grd.xdim,grd.ydim) & utc2d[*,*] = data.HOUR
-    day2d = FLTARR(grd.xdim,grd.ydim) & day2d[*,*] = jul_day
+    utc2d = FLTARR(grd.XDIM,grd.YDIM) & utc2d[*,*] = data.HOUR
+    day2d = FLTARR(grd.XDIM,grd.YDIM) & day2d[*,*] = jul_day
 
     ZENSUN, day2d, utc2d, grd.lat2d, grd.lon2d, sza2d
 
@@ -87,77 +87,75 @@ END
 PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
 ;-------------------------------------------------------------------
 
-    ; cloud fraction
-    cfc = FLTARR(grid.xdim,grid.ydim) & cfc[*,*] = 0
-    ; cloud phase
-    cph = FLTARR(grid.xdim,grid.ydim) & cph[*,*] = 0
-    ; cloud phase day only
-    cph_day = FLTARR(grid.xdim,grid.ydim) & cph_day[*,*] = 0
-    ; cloud top temperature
-    ctt = FLTARR(grid.xdim,grid.ydim) & ctt[*,*] = 0
-    ; cloud top height
-    cth = FLTARR(grid.xdim,grid.ydim) & cth[*,*] = 0
-    ; cloud top pressure
-    ctp = FLTARR(grid.xdim,grid.ydim) & ctp[*,*] = 0
-    ; cloud water path = lwp + iwp
-    cwp = FLTARR(grid.xdim,grid.ydim) & cwp[*,*] = 0
-    ; liquid water path
-    lwp = FLTARR(grid.xdim,grid.ydim) & lwp[*,*] = 0
-    ; ice water path
-    iwp = FLTARR(grid.xdim,grid.ydim) & iwp[*,*] = 0
-    ; cloud optical thickness
-    cot = FLTARR(grid.xdim,grid.ydim) & cot[*,*] = 0
-    cot_liq = FLTARR(grid.xdim,grid.ydim) & cot_liq[*,*] = 0
-    cot_ice = FLTARR(grid.xdim,grid.ydim) & cot_ice[*,*] = 0
-    ; cloud effective radius
-    cer = FLTARR(grid.xdim,grid.ydim) & cer[*,*] = 0
-    cer_liq = FLTARR(grid.xdim,grid.ydim) & cer_liq[*,*] = 0
-    cer_ice = FLTARR(grid.xdim,grid.ydim) & cer_ice[*,*] = 0
+    cfc = FLTARR(grid.XDIM,grid.YDIM) & cfc[*,*] = 0 ; cloud fraction
+    cph = FLTARR(grid.XDIM,grid.YDIM) & cph[*,*] = 0 ; cloud phase
+    cph_day = FLTARR(grid.XDIM,grid.YDIM) & cph_day[*,*] = 0 ; cloud phase day only
+    ctt = FLTARR(grid.XDIM,grid.YDIM) & ctt[*,*] = 0 ; cloud top temperature
+    cth = FLTARR(grid.XDIM,grid.YDIM) & cth[*,*] = 0 ; cloud top height
+    ctp = FLTARR(grid.XDIM,grid.YDIM) & ctp[*,*] = 0 ; cloud top pressure
+    cwp = FLTARR(grid.XDIM,grid.YDIM) & cwp[*,*] = 0 ; cloud water path = lwp + iwp
+    lwp = FLTARR(grid.XDIM,grid.YDIM) & lwp[*,*] = 0 ; liquid water path
+    iwp = FLTARR(grid.XDIM,grid.YDIM) & iwp[*,*] = 0 ; ice water path
+    cwp_allsky = FLTARR(grid.XDIM,grid.YDIM) & cwp_allsky[*,*] = 0
+    lwp_allsky = FLTARR(grid.XDIM,grid.YDIM) & lwp_allsky[*,*] = 0
+    iwp_allsky = FLTARR(grid.XDIM,grid.YDIM) & iwp_allsky[*,*] = 0
+    cot = FLTARR(grid.XDIM,grid.YDIM) & cot[*,*] = 0 ; cloud optical thickness
+    cot_liq = FLTARR(grid.XDIM,grid.YDIM) & cot_liq[*,*] = 0
+    cot_ice = FLTARR(grid.XDIM,grid.YDIM) & cot_ice[*,*] = 0
+    cer = FLTARR(grid.XDIM,grid.YDIM) & cer[*,*] = 0 ; cloud effective radius
+    cer_liq = FLTARR(grid.XDIM,grid.YDIM) & cer_liq[*,*] = 0
+    cer_ice = FLTARR(grid.XDIM,grid.YDIM) & cer_ice[*,*] = 0
+
 
     ; -- hist1d [lon,lat,bins,phase] = [720,361,15,2]
-    hist1d_ctp = LONARR(grid.xdim,grid.ydim,hist.ctp_bin1d_dim,hist.phase_dim) 
+    hist1d_ctp = LONARR(grid.XDIM,grid.YDIM,hist.CTP_BIN1D_DIM,hist.PHASE_DIM) 
     hist1d_ctp[*,*,*,*] = 0l
-    hist1d_ctt = LONARR(grid.xdim,grid.ydim,hist.ctt_bin1d_dim,hist.phase_dim) 
+    hist1d_ctt = LONARR(grid.XDIM,grid.YDIM,hist.CTT_BIN1D_DIM,hist.PHASE_DIM) 
     hist1d_ctt[*,*,*,*] = 0l
-    hist1d_cwp = LONARR(grid.xdim,grid.ydim,hist.cwp_bin1d_dim,hist.phase_dim) 
+    hist1d_cwp = LONARR(grid.XDIM,grid.YDIM,hist.CWP_BIN1D_DIM,hist.PHASE_DIM) 
     hist1d_cwp[*,*,*,*] = 0l
-    hist1d_cot = LONARR(grid.xdim,grid.ydim,hist.cot_bin1d_dim,hist.phase_dim) 
+    hist1d_cot = LONARR(grid.XDIM,grid.YDIM,hist.COT_BIN1D_DIM,hist.PHASE_DIM) 
     hist1d_cot[*,*,*,*] = 0l
-    hist1d_cer = LONARR(grid.xdim,grid.ydim,hist.cer_bin1d_dim,hist.phase_dim) 
+    hist1d_cer = LONARR(grid.XDIM,grid.YDIM,hist.CER_BIN1D_DIM,hist.PHASE_DIM) 
     hist1d_cer[*,*,*,*] = 0l
 
     ; -- hist2d [lon,lat,cotbins,ctpbins,phase] = [720,361,13,15,2]
-    hist2d_cot_ctp = LONARR(grid.xdim, grid.ydim, $
-                            hist.cot_bin1d_dim, hist.ctp_bin1d_dim, $
-                            hist.phase_dim) 
+    hist2d_cot_ctp = LONARR(grid.XDIM, grid.YDIM, $
+                            hist.COT_BIN1D_DIM, hist.CTP_BIN1D_DIM, $
+                            hist.PHASE_DIM) 
     hist2d_cot_ctp[*,*,*,*] = 0l
 
     ; -- counts
     numb_raw = 0l ; files
-    numb_cfc = LONARR(grid.xdim,grid.ydim) & numb_cfc[*,*] = 0
-    numb_ctp = LONARR(grid.xdim,grid.ydim) & numb_ctp[*,*] = 0
-    numb_cwp = LONARR(grid.xdim,grid.ydim) & numb_cwp[*,*] = 0
-    numb_lwp = LONARR(grid.xdim,grid.ydim) & numb_lwp[*,*] = 0
-    numb_iwp = LONARR(grid.xdim,grid.ydim) & numb_iwp[*,*] = 0
-    numb_cot = LONARR(grid.xdim,grid.ydim) & numb_cot[*,*] = 0
-    numb_cot_liq = LONARR(grid.xdim,grid.ydim) & numb_cot_liq[*,*] = 0
-    numb_cot_ice = LONARR(grid.xdim,grid.ydim) & numb_cot_ice[*,*] = 0
-    numb_cer = LONARR(grid.xdim,grid.ydim) & numb_cer[*,*] = 0
-    numb_cer_liq = LONARR(grid.xdim,grid.ydim) & numb_cer_liq[*,*] = 0
-    numb_cer_ice = LONARR(grid.xdim,grid.ydim) & numb_cer_ice[*,*] = 0
-    numb_cph_day = LONARR(grid.xdim,grid.ydim) & numb_cph_day[*,*] = 0
+    numb_cfc = LONARR(grid.XDIM,grid.YDIM) & numb_cfc[*,*] = 0
+    numb_ctp = LONARR(grid.XDIM,grid.YDIM) & numb_ctp[*,*] = 0
+    numb_cwp = LONARR(grid.XDIM,grid.YDIM) & numb_cwp[*,*] = 0
+    numb_lwp = LONARR(grid.XDIM,grid.YDIM) & numb_lwp[*,*] = 0
+    numb_iwp = LONARR(grid.XDIM,grid.YDIM) & numb_iwp[*,*] = 0
+    numb_cot = LONARR(grid.XDIM,grid.YDIM) & numb_cot[*,*] = 0
+    numb_cot_liq = LONARR(grid.XDIM,grid.YDIM) & numb_cot_liq[*,*] = 0
+    numb_cot_ice = LONARR(grid.XDIM,grid.YDIM) & numb_cot_ice[*,*] = 0
+    numb_cer = LONARR(grid.XDIM,grid.YDIM) & numb_cer[*,*] = 0
+    numb_cer_liq = LONARR(grid.XDIM,grid.YDIM) & numb_cer_liq[*,*] = 0
+    numb_cer_ice = LONARR(grid.XDIM,grid.YDIM) & numb_cer_ice[*,*] = 0
+    numb_cph_day = LONARR(grid.XDIM,grid.YDIM) & numb_cph_day[*,*] = 0
+    numb_cwp_allsky = FLTARR(grid.XDIM,grid.YDIM) & numb_cwp_allsky[*,*] = 0
+    numb_lwp_allsky = FLTARR(grid.XDIM,grid.YDIM) & numb_lwp_allsky[*,*] = 0
+    numb_iwp_allsky = FLTARR(grid.XDIM,grid.YDIM) & numb_iwp_allsky[*,*] = 0
 
 
     ; -- create structure
     arrays = { monthly_means, $
                hist2d_cot_ctp:hist2d_cot_ctp, $
-               hist1d_ctp:hist1d_ctp, $ 
-               hist1d_ctt:hist1d_ctt, $ 
-               hist1d_cwp:hist1d_cwp, $ 
-               hist1d_cot:hist1d_cot, $ 
+               hist1d_ctp:hist1d_ctp, hist1d_ctt:hist1d_ctt, $ 
+               hist1d_cwp:hist1d_cwp, hist1d_cot:hist1d_cot, $ 
                hist1d_cer:hist1d_cer, $ 
-               cfc:cfc, cph:cph, cph_day:cph_day, ctt:ctt, $
-               cth:cth, ctp:ctp, cwp:cwp, lwp:lwp, iwp:iwp, $
+               cfc:cfc, cph:cph, cph_day:cph_day, $
+               ctt:ctt, cth:cth, ctp:ctp, $
+               cwp:cwp, lwp:lwp, iwp:iwp, $
+               cwp_allsky:cwp_allsky, $
+               lwp_allsky:lwp_allsky, $
+               iwp_allsky:iwp_allsky, $ 
                cot:cot, cot_liq:cot_liq, cot_ice:cot_ice, $
                cer:cer, cer_liq:cer_liq, cer_ice:cer_ice }
 
@@ -168,6 +166,9 @@ PRO INIT_OUT_ARRAYS, grid, hist, arrays, counts
                cwp:numb_cwp, $
                lwp:numb_lwp, $
                iwp:numb_iwp, $ 
+               cwp_allsky:numb_cwp_allsky, $
+               lwp_allsky:numb_lwp_allsky, $
+               iwp_allsky:numb_iwp_allsky, $ 
                cot:numb_cot, $
                cot_liq:numb_cot_liq, $
                cot_ice:numb_cot_ice, $
