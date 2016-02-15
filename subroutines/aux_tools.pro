@@ -740,11 +740,11 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
         ref_liq = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
                            algo=compare.REF, level='l3c', $
                            dirname=compare.DIRNAME, $
-                           data='hist1d_' + compare.VAR + '_liq') 
+                           data='hist1d_' + compare.VAR + '_liq', /silent) 
         ref_ice = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
                            algo=compare.REF, level='l3c', $
                            dirname=compare.DIRNAME, $
-                           data='hist1d_' + compare.VAR + '_ice') 
+                           data='hist1d_' + compare.VAR + '_ice', /silent) 
         ; consider fill_values
         ref_all = ( ref_liq>0 ) + ( ref_ice>0 )
 
@@ -770,7 +770,7 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
             ref_total = GET_DATA(compare.YEAR, compare.MONTH, sat=compare.SAT, $
                                  algo=compare.REF, level='l3c', $
                                  dirname=compare.DIRNAME, $
-                                 data='hist1d_' + compare.VAR) 
+                                 data='hist1d_' + compare.VAR, /silent) 
             refbild3 = get_1d_rel_hist_from_1d_hist( ref_total, $
                     'hist1d_'+dname+'_ratio', algo=compare.REF, $
                     land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
@@ -1152,10 +1152,10 @@ PRO PLOT_SIM_COMPARE_JCH, file, vname, time, save_dir, base, $
 
             ; get data
             ref_liq = GET_DATA( year, month, sat=sat, algo=refs[r], $ 
-                dirname=dirn, $
+                dirname=dirn, /silent, $
                 nan_fillv=fillvalue, level='l3c', data=vname+'_liq' )
             ref_ice = GET_DATA( year, month, sat=sat, algo=refs[r], $ 
-                dirname=dirn, $
+                dirname=dirn, /silent, $
                 nan_fillv=fillvalue, level='l3c', data=vname+'_ice' )
             ref_all = ( ref_liq>0 ) + ( ref_ice>0 )
 
