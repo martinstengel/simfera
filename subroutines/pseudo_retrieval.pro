@@ -273,7 +273,7 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                     zug_ctt=(WHERE(histo.CTT1D-array_ctt[q[opi]] GT 0.))[0]-1
                     means.HIST1D_CTT[xi,yi,zug_ctt,zug_cph]++
 
-                    IF(array_cot[q[opi]] GT 0.) THEN BEGIN 
+                    IF ( array_cot[q[opi]] GT 0. AND sza[xi,yi] LT 75. ) THEN BEGIN 
 
                         zug_cot=(WHERE(histo.COT1D-array_cot[q[opi]] GT 0.))[0]-1
                         means.HIST1D_COT[xi,yi,zug_cot,zug_cph]++
