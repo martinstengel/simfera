@@ -53,7 +53,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
         PRINT, " VIS_SIMULATOR, /jch, refs='cci', sat'NOAA18' "
         PRINT, " VIS_SIMULATOR, /map, file='/path/to/file.nc'"
         PRINT, " VIS_SIMULATOR, /all, refs='cci', sat='NOAA15' "
-        PRINT, " VIS_SIMULATOR, /zonal, vars='ctt', refs='cci,gac2,pmx', sat='NOAA18'"
+        PRINT, " VIS_SIMULATOR, /zonal, refs='cci,gac2,mod2,myd2,pmx', sat='NOAA18'"
         PRINT, " VIS_SIMULATOR, /hist1d, vars='ctp,cot'"
         PRINT, " VIS_SIMULATOR, /hist1d, refs='cci,gac2,mod2,myd2', sat='NOAA18' "
         PRINT, " VIS_SIMULATOR, /compare, refs='cci', sat='NOAA18' "
@@ -134,13 +134,9 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
 
 
             IF KEYWORD_SET(zonal) OR KEYWORD_SET(all) THEN BEGIN
-                IF KEYWORD_SET(refs) THEN BEGIN
-                    list = 'cci,gac2,mod2,myd2,pmx'
-                    ref_list = STRSPLIT(list, /EXTRACT, ',')
-                ENDIF
                 PLOT_SIM_COMPARE_ZONAL, file, vars[i], time, !SAVE_DIR, base,$
                                         mini, maxi, cfg.CCI_PWD, $
-                                        REFS=ref_list, SAT=sat
+                                        REFS=refs, SAT=sat
             ENDIF
 
             IF KEYWORD_SET(jch) OR KEYWORD_SET(all) THEN $
