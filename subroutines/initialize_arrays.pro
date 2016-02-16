@@ -40,7 +40,7 @@ FUNCTION INIT_SZA_ARRAY, data, grd, MAP=map
     IF KEYWORD_SET(map)  THEN BEGIN
 
         date  = data.YEAR + data.MONTH + data.DAY
-        title ='Solar Zenith Angle for ' + date + ' UTC  ' + data.UTC
+        title ='SZA [deg] for ' + date + ' UTC  ' + data.UTC
 
         PLOT_SZA2D, FILENAME=data.FILENAME, DATA=sza2d, $
                     LATITUDE=grd.lat2d, LONGITUDE=grd.lon2d, $

@@ -384,12 +384,12 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
     fbase = inp.FILENAME + t + s + m + p + v
     save_as = !SAVE_DIR  + fbase + '.eps'
     start_save, save_as, size='A4', /LANDSCAPE
+    ;start_save, save_as, size=[45,30]
 
     lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.2)'),2)
     latstr = STRTRIM(STRING(inp.lat[yi], FORMAT='(F8.2)'),2)
     szastr = STRTRIM(STRING(sza[xi,yi], FORMAT='(F8.2)'),2)
     pixel = 'SZA: '+szastr+', Longitue: '+lonstr+', Latitude: '+latstr
-    ;ytick = REVERSE(STRTRIM(STRING(inp.PLEVEL/100., FORMAT='(F6.1)'),2))
     ytick = REVERSE(inp.PLEVEL/100.)
     ytstr = FLTARR(ROUND(N_ELEMENTS(ytick)/2.))
     j = 0
@@ -403,21 +403,42 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
 
     ytickname = STRTRIM(STRING(ytstr,FORMAT='(I4)'),2)
     bar_nlev = 6
-    IF (target EQ 'scops cloud fraction') THEN $
-        col_table = -10 ELSE col_table = 2
+    col_table = 2
+    void = WHERE(data LE 0.)
+    bar_format = '(f5.1)'
 
-    IF (target EQ 'scops cloud fraction' OR $
-        target EQ 'scops cloud phase') THEN BEGIN
-        void = WHERE(data LT 0.)
-    ENDIF ELSE BEGIN
-        void = WHERE(data LE 0.)
-    ENDELSE
+    CASE target OF
+        'CFC': BEGIN
+            title = pixel
+            col_table = -10 
+            bar_title = 'Cloud Fraction'
+            void = WHERE(data LT 0.)
+            END
+        'CPH': BEGIN
+            bar_title = 'Cloud Phase'
+            void = WHERE(data LT 0.)
+            END
+        'COT': bar_title = 'Cloud Optical Thickness'
+        'CWP': BEGIN
+            bar_title = 'Cloud Water Path [kg/m!U2!N]'
+            bar_format = '(f5.2)'
+            END
+        'CER': bar_title = 'Cloud Effective Radius [microns]'
+        ELSE: BEGIN
+            bar_title = ''
+            title = ''
+            END
+    ENDCASE
 
-    view2d, data, col_table=col_table, /color, chars=2.3, title = pixel, $
-        bar_title=target, xtitle='Subcolumn', /xstyle, /ystyle, $
+    view2d, data, col_table=col_table, /color, chars=2.8, $
+        bar_title=bar_title, xtitle='Subcolumn', /xstyle, /ystyle, $
         ytitle='Pressure level [hPa]', ytickname=ytickname, $
         yticks=N_ELEMENTS(ytickname)-1, no_data_idx=void, $
-        bar_tickname=bar_tickname, bar_nlev=bar_nlev
+        bar_tickname=bar_tickname, bar_nlev=bar_nlev, bar_format=bar_format
+
+    IF (target EQ 'CFC') THEN $ 
+        cgText, 0.65, 0.9, title, ALIGNMENT=0.5, /NORMAL, $
+            COLOR='red', CHARSIZE=3
 
     end_save, save_as
 END
@@ -442,9 +463,9 @@ PRO PLOT_ERA_SST, FILENAME=filename, DATA=sst, $
                CTABLE=33, /BOX_AXES, /MAGNIFY, /GRID, $
                FORMAT=('(f5.1)'), N_LEV=6, $
                MINI=MIN(sst), MAXI=MAX(sst), $
-               CHARSIZE=2.2, VOID_INDEX=void_index, $
-               TITLE='SST [K]', $
-               FIGURE_TITLE="ERA-Interim Sea Surface Temperature"
+               CHARSIZE=3., VOID_INDEX=void_index, $
+               ;FIGURE_TITLE="ERA-Interim Sea Surface Temperature", $
+               TITLE='SST [K]'
 
     MAP_CONTINENTS, /CONTINENTS, /HIRES, $
         COLOR=cgcolor('Black'), GLINETHICK=2.2
@@ -479,8 +500,9 @@ PRO PLOT_LSM2D, FILENAME=filename, DATA=lsm, $
                DISCRETE=discrete, N_LEV=nlev, $
                BAR_TICKNAME=bar_tickname, $
                MINI=MIN(lsm), MAXI=MAX(lsm), $
-               CHARSIZE=2.2, VOID_INDEX=void_index, $
-               FIGURE_TITLE=title;+'!C'
+               /NO_COLOR_BAR, $
+               ;FIGURE_TITLE=title, $
+               CHARSIZE=3., VOID_INDEX=void_index
 
     MAP_CONTINENTS, /CONTINENTS, /HIRES, $
         COLOR=cgcolor('Black'), GLINETHICK=2.2
@@ -510,9 +532,8 @@ PRO PLOT_SZA2D, FILENAME=filename, DATA=sza2d, $
     MAP_IMAGE, sza2d, lat, lon, LIMIT=limit, $
                CTABLE=33, /FLIP_COLOURS, $
                /BOX_AXES, /MAGNIFY, /GRID, $
-               MINI=0., MAXI=180., CHARSIZE=2.2, $
-               TITLE='SZA [deg]', N_LEV=6, $
-               FIGURE_TITLE=title
+               MINI=0., MAXI=180., CHARSIZE=3., $
+               TITLE=title, N_LEV=6
 
     MAP_CONTINENTS, /CONTINENTS, /HIRES, $
         COLOR=cgcolor('Black'), GLINETHICK=2.2
