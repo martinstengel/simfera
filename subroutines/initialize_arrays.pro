@@ -199,8 +199,7 @@ PRO GET_ERA_GRID, data, lon, lat, grid
     FOR loi=0,xdim-1 DO longrd[loi,*]=lon[loi]
     FOR lai=0,ydim-1 DO latgrd[*,lai]=lat[lai]
 
-    grid = { era_grid, $
-             lon2d:longrd, lat2d:latgrd, $
+    grid = { lon2d:longrd, lat2d:latgrd, $
              xdim:xdim, ydim:ydim }
 
 END

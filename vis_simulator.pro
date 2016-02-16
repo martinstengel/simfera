@@ -50,7 +50,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
         PRINT, " VIS_SIMULATOR, /all, pattern='*200807_*nc', ",$
                                "ref='cci,gac2,mod2,myd2,pmx', /nopng "
         PRINT, " VIS_SIMULATOR, /map"
-        PRINT, " VIS_SIMULATOR, /jch, refs='cci', sat'NOAA18' "
+        PRINT, " VIS_SIMULATOR, /jch, refs='cci', sat='NOAA18' "
         PRINT, " VIS_SIMULATOR, /map, file='/path/to/file.nc'"
         PRINT, " VIS_SIMULATOR, /all, refs='cci', sat='NOAA15' "
         PRINT, " VIS_SIMULATOR, /zonal, refs='cci,gac2,mod2,myd2,pmx', sat='NOAA18'"
