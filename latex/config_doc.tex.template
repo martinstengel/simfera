@@ -10,11 +10,11 @@
 \usepackage{amssymb}
 \usepackage{enumitem}
 \usepackage{pdflscape}
-\usepackage{subfig}
+\usepackage[justification=centering]{subfig}
 \usepackage{natbib}
 \bibliographystyle{agsm}
 
-\geometry{a4paper,left=2.5cm,right=2.5cm, top=2.5cm, bottom=2.5cm}
+\geometry{a4paper,left=2.5cm,right=2.5cm, top=2.0cm, bottom=2.0cm}
 
 \newcommand{\docauthor}{cornelia.schlundt@dwd.de}
 \newcommand{\doctitle}{Evaluation of ERA-Interim reanalysis data 
@@ -27,8 +27,7 @@ using a cloud simulator adapted to CC4CL}
 %\newcommand{\cerstring}{REF}
 
 % GRAPHIC PATH
-%\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.2_cph_day_added/compare_with_cc4cl_fv2.0/}}
-\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.2_cph_day_added/}}
+\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.4_bugfix_histos_daysided_only/}}
 
 % SIMULATOR RUN SETTINGS
 \newcommand{\filebase}{ERA_Interim_MM}
@@ -47,7 +46,7 @@ using a cloud simulator adapted to CC4CL}
 \newcommand{\szamidday}{ERA_Interim_an_\yyyymm01_12+00_plev_sza}
 \newcommand{\szaevening}{ERA_Interim_an_\yyyymm01_18+00_plev_sza}
 % SCOPS snapshots
-\newcommand{\snapscops}{ERA_Interim_an_\yyyymm01_00+00_plev_thv0.30_\scops_\mpc_scops}
+\newcommand{\snapscops}{ERA_Interim_an_\yyyymm01_00+00_plev_thv0.30_\scops_\mpc}
 
 % COMPARE WITH REFERENCE DATA PLOTS
 \newcommand{\sat}{NOAA-18}

@@ -17,15 +17,16 @@ ERA-Interim files per month containing gridbox mean vertical profiles of
 \end{itemize}
 A detailed description of the ERA-Interim data is given in section~\ref{sec:era}.
 The following steps address the things needed to ``simulate'' the observational process.
-In other words, \textbf{what would a satellite see if the atmosphere had the clouds
-of a climate model}?
+In other words, what would a satellite see if the atmosphere had the clouds
+of a climate model?
 
 
 \subsection{Calculation of cloud effective radius, optical thickness and water path}
 
-First of all, the gridbox mean liquid and ice water contents at each model level
-are weighted by the cloud cover profile providing the so-called ``in-cloud'' 
-liquid and ice water contents in order to consider only the cloudy part of the grid cell.
+In the first step the gridbox mean liquid and ice water contents at each model level
+are weighted by the cloud cover profile providing the so-called 
+``in-cloud'' liquid and ice water contents. 
+Thus, only the cloudy part of the grid cell is taken into account.
 Based on these cloud-cover-weighted profiles the liquid ($LWP$) and ice ($IWP$) water paths
 per model layer can be derived, which present the total amount of liquid and ice
 water between two consecutive pressure levels in the atmosphere, respectively.
@@ -35,48 +36,141 @@ The cloud optical thickness ($\tau$) per layer is obtained by the method of \cit
 \begin{equation}\label{eq:han}
     \tau = \frac{3}{4} \frac{CWP \cdot  Q_{ext}}{r_{e} \cdot \rho}
 \end{equation}
-which is also used in CC4CL but to obtain the post-processed $CWP$ 
-based on the retrieved optical thickness and effective radius.
-$Q_{ext}$ denotes the extinction coefficient, which is assumed to be
-2 for water and 2.1 for ice.
+where $CWP$ represents either $LWP$ or $IWP$ depending on the thermodynamic phase.
+$Q_{ext}$ denotes the extinction coefficient, which is assumed to be 2 for water and 2.1 for ice.
 The density $\rho$ is set to 1 $g/m^{3}$ for water and 0.9167 $g/m^{3}$ for ice.
-For the computation of effective radii $r_{e}$ per layer the 
-ERA-Interim parameterizations are implemented in the cloud simulator.
-The cloud droplet effective radius follows the method by \citet{Martin1994} and 
+For the computation of effective radii ($r_{e}$) per layer the 
+ERA-Interim parameterizations are implemented in the cloud simulator.\\
+The cloud droplet effective radius ($r_{e}^{liq}$) follows the method of \citet{Martin1994} and 
 is defined as function of liquid water content and cloud droplet number 
-concentration$\footnote{In the cloud simulator the number of cloud condensation nuclei
-is set to constant values, i.e. 300 over land and 100 over sea, respectively.}$, 
-which in turn depends on the wind speed.
-% Dr Richard Forbes ---------------------------------------------------------
-%ZNTOT = cloud droplet number concentration (dependent on wind speed in 
-%ERAI parametrization, but you could choose fixed values for land and ocean
-%e.g. (300 and 100 respectively)  
-%----------------------------------------------------------------------------
-The ice crystal effective radius is parameterized as a function of 
+concentration, which in turn depends on the wind speed.
+For practical reasons the simulator uses constant values for the number of 
+cloud condensation nuclei over land (300) and over sea (100).
+Hence, a land-sea mask (Fig.~\ref{fig:lsm}) is required, 
+which is obtained from ERA-Interim Sea Surface Temperature (Fig.~\ref{fig:sst}) 
+data aggregated on a 0.5$^{\circ}$ latitude-longitude grid.
+The ice crystal effective radius ($r_{e}^{ice}$) is parameterized as a function of 
 temperature and ice water content based on \citet{Sun1999}, which has been
-revised by \citet{Sun2001}.
+revised by \citet{Sun2001}.\\
+In CC4CL the simultaneously retrieved $\tau^{liq}$ ($\tau^{ice}$) and 
+$r_{e}^{liq}$ ($r_{e}^{ice}$) are combined utilizing the relationship given in 
+Eq.~\ref{eq:han} for deriving $LWP$ ($IWP$) as post-processed product.
+To summarize, the cloud simulator adopts the retrieval characteristic of CC4CL by
+using this equation, however, the other way round for computing the 
+cloud optical thickness per model layer since ERA-Interim provides the information
+on the cloud water content.
+
+%\captionsetup[subfloat]{position=top}
+\begin{figure}[!ht]
+  \begin{minipage}[t]{0.5\textwidth}
+    \subfloat[ERA-Interim land-sea mask (LSM).]
+    {\includegraphics[scale=0.26]{./figures/{lsm_era_interim_0.5_0.5}.png}\label{fig:lsm}}
+  \end{minipage}
+  \begin{minipage}[t]{0.5\textwidth}
+    \subfloat[ERA-Interim sea surface temperature (SST).]
+    {\includegraphics[scale=0.26]{./figures/{sst_era_interim_0.5_0.5}.png}\label{fig:sst}}
+  \end{minipage}
+  \caption[ERA-Interim land-sea mask and sea surface temperature (31/08/2015).]
+{ERA-Interim auxiliary data provided on a 0.5$^{\circ}$ latitude-longitude grid.}\label{fig:lsm_sst}
+\end{figure}
+
 
 
 \subsection{Pseudo retrieval}
-Addressing the mismatch between gridbox mean and satellite footprint;
-``down-scaler'' 
+%Addressing the mismatch between gridbox mean and satellite footprint; %``down-scaler'' 
+In the previous section the pre-processing of pseudo-satellite 
+$\tau$, $r_{e}$, and $CWP$ vertical profiles has been explained,
+which complement along with the original ERA-Interim 3D fields the required
+input data for the pseudo retrieval.
+This is the essential part of the cloud simulator responsible for producing 
+output comparable to Cloud\_cci data in three main steps.
 
-\subsubsection{Statistical aggregation}
-histograms and gridbox mean values
+%1. down-scaling, scops (subgrid cloud overlap profile sampler)
+First, the mismatch in scale between that of the ERA-Interim model grid box
+($\sim$ 500 km) and the satellite footprint ($\sim$ 5 km, e.g. AVHRR) has to be addressed.
+Therefore, the grid box mean profiles (mentioned above) for each latitude-longitude cell
+are broken into 20 subcolumns$\footnote{
+Currently each grid cell is broken into 20 subcolumns.
+Later the number of subcolumns will be a function of latitude.}$ 
+representing the spatial resolution of the sensor.
+Figure~\ref{fig:scops} shows examples for down-scaled cloud paramater profiles 
+for two different grid boxes.
 
-%\begin{figure}[!ht]
-%  \begin{minipage}[c]{0.5\textwidth}
-%    \includegraphics[scale=0.27]{./figures/{sst_era_interim_0.5_0.5}.png}
-%  \end{minipage}\hfill
-%  \begin{minipage}[c]{0.5\textwidth}
-%    \includegraphics[scale=0.27]{./figures/{lsm_era_interim_0.5_0.5}.png}
-%  \end{minipage}
-%  \caption[ERA-Interim sea surface temperature and land-sea mask.]
-%  {ERA-Interim sea surface temperature (left) and land-sea mask (right).} 
-%  \label{fig:lsm}
-%\end{figure}
-%
-%
+
+% cloud profiles 
+\begin{figure}[!ht]
+  \centering
+    \includegraphics[scale=0.17]{./figures/\snapscops_CFC1_profile.png}
+    \includegraphics[scale=0.17]{./figures/\snapscops_COT1_profile.png}
+    \includegraphics[scale=0.17]{./figures/\snapscops_CWP1_profile.png}\\
+    \includegraphics[scale=0.17]{./figures/\snapscops_CFC9_profile.png}
+    \includegraphics[scale=0.17]{./figures/\snapscops_COT9_profile.png}
+    \includegraphics[scale=0.17]{./figures/\snapscops_CWP9_profile.png}
+  \caption[Cloud parameter profiles.]{Cloud fraction,
+cloud optical thickness and cloud water path profiles for
+two different grid boxes at UTC 00 on 1$^{st}$ of \MonthYear.}
+  \label{fig:profiles}
+\end{figure}
+
+Cite here COSP simulator and SCOPS, we use almost the same approach.
+%These subcolumns can be thought of as discrete samples, which 
+%\citet{Bodas2011}.
+Describe how the model information is broken into subcolumns.
+Scale COT greater than 100.
+Only solar COT, CWP, CER due to CC4CL.
+
+
+% subcolumn cloud distribution 
+\begin{figure}[!ht]
+  \centering
+  \begin{minipage}[c]{0.4\textwidth}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CFC1.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CPH1.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CER1.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_COT1.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CWP1.png}
+  \end{minipage}\hspace*{1cm}
+  \begin{minipage}[c]{0.4\textwidth}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CFC9.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CPH9.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CER9.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_COT9.png}
+    \includegraphics[scale=0.21]{./figures/\snapscops_CWP9.png}
+  \end{minipage}
+  \caption[Down-scaled cloud parameter profiles.]{Subcolumn distribution 
+of cloud fraction, phase, effective radius, optical thickness and 
+water path derived from the corresponding grid box mean profiles. 
+The left and right columns demonstrates two different grid cells 
+at UTC 00 on 1$^{st}$ of \MonthYear.}
+  \label{fig:scops}
+\end{figure}
+
+
+
+
+%2. search for upper-most cloud and collect cloud parameters
+
+% cloud top parameters 
+\begin{figure}[!htp]
+  \begin{minipage}{\textwidth}
+    \subfloat[Retrieved cloud top parameters at 29.5 latitude and 162.5 longitude.]
+    {\includegraphics[width=\textwidth]{./figures/\snapscops_retrieved1.png}}
+  \end{minipage}\vspace*{1cm}
+  \begin{minipage}{\textwidth}
+    \subfloat[Retrieved cloud top parameters at 31.5 latitude and 164.0 longitude.]
+    {\includegraphics[width=\textwidth]{./figures/\snapscops_retrieved9.png}}
+  \end{minipage}
+  \caption[Retrieved cloud top parameters based on subcolumn distribution.]
+{Retrieved cloud top parameters for two different grid boxes during daytime
+at UTC 00 on 1$^{st}$ of \MonthYear.}
+\label{fig:retrieved}
+\end{figure}
+
+
+
+%3. collect statistics, i.e. means over subcolumns and 1D, 2D histograms
+
+
 %% CER, CWP, COT only daytime
 %\begin{figure}[!ht]
 %  \begin{minipage}[c]{0.5\textwidth}
@@ -93,30 +187,5 @@ histograms and gridbox mean values
 %\end{figure}
 %
 %
-%% SCOPS snapshots 
-%\begin{figure}[!ht]
-%  \centering
-%  \begin{minipage}[c]{0.4\textwidth}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_fraction1.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_phase1.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_effective_radius1.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_optical_thickness1.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_water_path1.png}
-%  \end{minipage}
-%  \begin{minipage}[c]{0.4\textwidth}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_fraction9.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_phase9.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_effective_radius9.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_optical_thickness9.png}
-%    \includegraphics[scale=0.20]{./figures/\snapscops_cloud_water_path9.png}
-%  \end{minipage}
-%  \caption[Down-scaled cloud paramters.]
-%  {These figures show the sub-column distribution of
-%cloud fraction (0-1), phase (0-1), effective radius [$\mu$m], optical thickness 
-%and water path [kg/m$^{2}$] derived from the corresponding grid-box mean profiles. 
-%The left and right columns demonstrates two different grid cells
-%at 0 UTC on 1$^{st}$ of \MonthYear.}
-%  \label{fig:scops}
-%\end{figure}
 
 
