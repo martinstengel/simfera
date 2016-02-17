@@ -157,25 +157,6 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                 matrix_cer[wothin]=-1.
             ENDIF
 
-            ; make scops snapshots
-            IF (KEYWORD_SET(test) AND (inp.HOUR EQ '00') AND (sv_cnt LT 10)) THEN BEGIN
-                sv = sza[xi,yi]
-                IF (TOTAL(matrix_cfc) GT 70 AND (sv GT 16 AND sv LT 18) $
-                    AND (inp.lon[xi] LT 179.)) THEN BEGIN
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
-                        ROTATE(matrix_cfc,7), 'CFC', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
-                        ROTATE(matrix_cph,7), 'CPH', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
-                        ROTATE(matrix_cwp,7), 'CWP', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
-                        ROTATE(matrix_cot,7), 'COT', scops_type, mpc, thv, sv_cnt
-                    MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
-                        ROTATE(matrix_cer,7), 'CER', scops_type, mpc, thv, sv_cnt
-                    sv_cnt++
-                ENDIF
-            ENDIF
-
             ; get subcolumn values
             FOR icol=0, ncol-1 DO BEGIN
                wo = WHERE( matrix_cfc[icol,*] GT 0.5, nwo )
@@ -200,6 +181,40 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
                 sfactor = max_cot / array_cot[scale]
                 array_cot[scale] = array_cot[scale] * sfactor
                 array_cwp[scale] = array_cwp[scale] * sfactor
+            ENDIF
+
+
+            ; make scops snapshots
+            IF (KEYWORD_SET(test) AND (inp.HOUR EQ '00') AND (sv_cnt LT 10)) THEN BEGIN
+                sv = sza[xi,yi]
+                IF (TOTAL(matrix_cfc) GT 70 AND (sv GT 16 AND sv LT 18) $
+                    AND (inp.lon[xi] LT 179.)) THEN BEGIN
+
+                    IF (sv_cnt EQ 1) OR (sv_cnt EQ 9) THEN BEGIN
+
+                        PLOT_CLOUD_ARRAYS, array_ctp, array_cth, array_ctt, $
+                            array_cph, array_cer, array_cfc, array_cot, array_cwp, $
+                            ncol, inp, sv_cnt, sza, xi, yi, scops_type, mpc, thv
+
+                        MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
+                            ROTATE(matrix_cfc,7), 'CFC', scops_type, mpc, thv, sv_cnt, $
+                            do_profile=REVERSE(cfc_lay_prof)
+                        MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
+                            ROTATE(matrix_cwp,7), 'CWP', scops_type, mpc, thv, sv_cnt, $
+                            do_profile=REVERSE(cwp_prof_total)
+                        MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
+                            ROTATE(matrix_cot,7), 'COT', scops_type, mpc, thv, sv_cnt, $
+                            do_profile=REVERSE(cot_prof_total)
+                        MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
+                            ROTATE(matrix_cer,7), 'CER', scops_type, mpc, thv, sv_cnt
+                        MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, $
+                            ROTATE(matrix_cph,7), 'CPH', scops_type, mpc, thv, sv_cnt
+
+                    ENDIF
+
+                    sv_cnt++
+
+                ENDIF
             ENDIF
 
 

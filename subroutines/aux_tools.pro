@@ -222,7 +222,7 @@ FUNCTION GET_DETAILS, varname, DATA=data, HISTO=histo
                 vardata = data.CTP
                 varhist = data.HIST1D_CTP
             ENDIF
-            title = 'Cloud Top Pressue [hPa]'
+            title = 'Cloud Top Pressure [hPa]'
             hist_str = 'HIST1D_CTP'
             maxvalue = 1100.
             minvalue = 1.
@@ -373,8 +373,57 @@ END
 
 
 ;-----------------------------------------------------------------------------
+PRO ADD_SUBPLOT, xaxis, yaxis, ymin, ymax, xtitle=xtitle, ytitle=ytitle
+;-----------------------------------------------------------------------------
+    PLOT, xaxis, yaxis, YRANGE=[ymin,ymax], CHARSIZE=4.8, $
+        COLOR=cgcolor('black'), YTITLE=ytitle, XTITLE=xtitle, $
+        /NODATA, /XSTYLE, /YSTYLE, XTICKINTERVAL=3, XMINOR=3
+    OPLOT, yaxis, COLOR=cgcolor('Blue'), SYMSIZE=2.3, PSYM=cgsymcat(46)
+END
+
+
+;-----------------------------------------------------------------------------
+PRO PLOT_CLOUD_ARRAYS, ctp, cth, ctt, cph, cer, cfc, cot, cwp, $
+                       ncol, inp, cnt, sza, xi, yi, scops, mpc, thv
+;-----------------------------------------------------------------------------
+    !P.MULTI=[0,4,2]
+    t = '_thv'+STRTRIM(STRING(thv, FORMAT='(F4.2)'),2)
+    s = '_scops'+STRTRIM(STRING(scops),2)
+    m = '_mpc'+STRTRIM(STRING(mpc),2)
+    p = '_retrieved'
+    v = STRTRIM(STRING(cnt),2)
+    fbase = inp.FILENAME + t + s + m + p + v
+    save_as = !SAVE_DIR  + fbase + '.eps'
+    ;start_save, save_as, size='A4', /LANDSCAPE
+    start_save, save_as, size=[45,30]
+
+    lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.1)'),2)
+    latstr = STRTRIM(STRING(inp.lat[yi], FORMAT='(F8.1)'),2)
+    szastr = STRTRIM(STRING(sza[xi,yi], FORMAT='(F8.1)'),2)
+    pixel = 'Grid box: LON='+lonstr+'  LAT='+latstr+'  SZA='+szastr
+    xaxis = FINDGEN(ncol)
+    xt = 'Subcolumn'
+
+    ADD_SUBPLOT, xaxis, cfc, -0.5, 1.5, ytitle='CFC'
+    ADD_SUBPLOT, xaxis, ctp, -100, 1000, ytitle='CTP [hPa]'
+    ADD_SUBPLOT, xaxis, ctt, -15, 350, ytitle='CTT [K]'
+    ADD_SUBPLOT, xaxis, cth/1000., -1, 15, ytitle='CTH [km]'
+    ADD_SUBPLOT, xaxis, cph, -1.5, 1.5, ytitle='CPH', xtitle=xt
+    ADD_SUBPLOT, xaxis, cer, -10, 100., ytitle='CER [microns]', xtitle=xt
+    ADD_SUBPLOT, xaxis, cot, -10, 110, ytitle='COT', xtitle=xt
+    ADD_SUBPLOT, xaxis, cwp, -1.5, 1.5, ytitle='CWP [kg/m!U2!N]', xtitle=xt
+
+    cgText, 0.5, 0.5, pixel, ALIGNMENT=0.5, /NORMAL, $
+        COLOR=cgcolor('RED6'), CHARSIZE=2.8
+
+    end_save, save_as
+    !P.MULTI = 0
+END
+
+
+;-----------------------------------------------------------------------------
 PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
-                          scops, mpc, thv, cnt
+                          scops, mpc, thv, cnt, do_profile=do_profile
 ;-----------------------------------------------------------------------------
     t = '_thv'+STRTRIM(STRING(thv, FORMAT='(F4.2)'),2)
     s = '_scops'+STRTRIM(STRING(scops),2)
@@ -384,12 +433,11 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
     fbase = inp.FILENAME + t + s + m + p + v
     save_as = !SAVE_DIR  + fbase + '.eps'
     start_save, save_as, size='A4', /LANDSCAPE
-    ;start_save, save_as, size=[45,30]
 
-    lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.2)'),2)
-    latstr = STRTRIM(STRING(inp.lat[yi], FORMAT='(F8.2)'),2)
-    szastr = STRTRIM(STRING(sza[xi,yi], FORMAT='(F8.2)'),2)
-    pixel = 'SZA: '+szastr+', Longitue: '+lonstr+', Latitude: '+latstr
+    lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.1)'),2)
+    latstr = STRTRIM(STRING(inp.lat[yi], FORMAT='(F8.1)'),2)
+    szastr = STRTRIM(STRING(sza[xi,yi], FORMAT='(F8.1)'),2)
+    pixel = 'Grid box: LON='+lonstr+'  LAT='+latstr+'  SZA='+szastr
     ytick = REVERSE(inp.PLEVEL/100.)
     ytstr = FLTARR(ROUND(N_ELEMENTS(ytick)/2.))
     j = 0
@@ -401,7 +449,7 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
         ENDELSE
     ENDFOR
 
-    ytickname = STRTRIM(STRING(ytstr,FORMAT='(I4)'),2)
+    ytickname = STRCOMPRESS(STRING(ytstr,FORMAT='(I4)'),/rem)
     bar_nlev = 6
     col_table = 2
     void = WHERE(data LE 0.)
@@ -418,7 +466,9 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
             bar_title = 'Cloud Phase'
             void = WHERE(data LT 0.)
             END
-        'COT': bar_title = 'Cloud Optical Thickness'
+        'COT': BEGIN
+            bar_title = 'Cloud Optical Thickness'
+            END
         'CWP': BEGIN
             bar_title = 'Cloud Water Path [kg/m!U2!N]'
             bar_format = '(f5.2)'
@@ -432,15 +482,37 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
 
     view2d, data, col_table=col_table, /color, chars=2.8, $
         bar_title=bar_title, xtitle='Subcolumn', /xstyle, /ystyle, $
-        ytitle='Pressure level [hPa]', ytickname=ytickname, $
+        ytitle='Pressure Level [hPa]', ytickname=ytickname, $
         yticks=N_ELEMENTS(ytickname)-1, no_data_idx=void, $
         bar_tickname=bar_tickname, bar_nlev=bar_nlev, bar_format=bar_format
 
     IF (target EQ 'CFC') THEN $ 
-        cgText, 0.65, 0.9, title, ALIGNMENT=0.5, /NORMAL, $
-            COLOR='red', CHARSIZE=3
+        cgText, 0.65, 0.91, title, ALIGNMENT=0.5, /NORMAL, $
+            COLOR='RED6', CHARSIZE=2.8
 
     end_save, save_as
+
+    ; plot profile
+    IF KEYWORD_SET(do_profile) THEN BEGIN
+        save_as2 = !SAVE_DIR  + fbase + '_profile.eps'
+        start_save, save_as2, size='A4', /LANDSCAPE
+
+        plev_prof = inp.PLEVEL[0:N_ELEMENTS(inp.PLEVEL)-2]*0.5 + $
+                    inp.PLEVEL[1:N_ELEMENTS(inp.PLEVEL)-1]*0.5
+        yplev = REVERSE(plev_prof/100.)
+
+        PLOT, [0,0], [1,1], YRANGE=[1000,100], $
+            XRANGE=[MIN(do_profile), MAX(do_profile)], $
+            COLOR=cgcolor('black'), XTITLE=bar_title, $
+            YTITLE='Pressure Level [hPa]', CHARS=3., $
+            YTICKINTERVAL=100, YMINOR=2
+        OPLOT, do_profile, yplev, psym=-1, symsize=2.5, $
+            COLOR=cgcolor('Blue'), THICK=5
+        cgText, 0.55, 0.95, pixel, ALIGNMENT=0.5, /NORMAL, $
+            COLOR=cgcolor('RED6'), CHARSIZE=3
+
+        end_save, save_as2
+    ENDIF
 END
 
 
