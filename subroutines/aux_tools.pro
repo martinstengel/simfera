@@ -376,8 +376,9 @@ END
 PRO ADD_SUBPLOT, xaxis, yaxis, ymin, ymax, xtitle=xtitle, ytitle=ytitle
 ;-----------------------------------------------------------------------------
     PLOT, xaxis, yaxis, YRANGE=[ymin,ymax], CHARSIZE=4.8, $
+        XRANGE=[xaxis[0]-1, xaxis[N_ELEMENTS(xaxis)-1]+1],$
         COLOR=cgcolor('black'), YTITLE=ytitle, XTITLE=xtitle, $
-        /NODATA, /XSTYLE, /YSTYLE, XTICKINTERVAL=3, XMINOR=3
+        /NODATA, /XSTYLE, /YSTYLE;, XTICKINTERVAL=3, XMINOR=3
     OPLOT, yaxis, COLOR=cgcolor('Blue'), SYMSIZE=2.3, PSYM=cgsymcat(46)
 END
 
@@ -404,16 +405,16 @@ PRO PLOT_CLOUD_ARRAYS, ctp, cth, ctt, cph, cer, cfc, cot, cwp, $
     xaxis = FINDGEN(ncol)
     xt = 'Subcolumn'
 
-    ADD_SUBPLOT, xaxis, cfc, -0.5, 1.5, ytitle='CFC'
-    ADD_SUBPLOT, xaxis, ctp, -100, 1000, ytitle='CTP [hPa]'
-    ADD_SUBPLOT, xaxis, ctt, -15, 350, ytitle='CTT [K]'
-    ADD_SUBPLOT, xaxis, cth/1000., -1, 15, ytitle='CTH [km]'
+    ADD_SUBPLOT, xaxis, cfc, -0.5, 1.5, ytitle='CFC', xtitle=xt
+    ADD_SUBPLOT, xaxis, ctp, -100, 1000, ytitle='CTP [hPa]', xtitle=xt
+    ADD_SUBPLOT, xaxis, ctt, -15, 350, ytitle='CTT [K]', xtitle=xt
+    ADD_SUBPLOT, xaxis, cth/1000., -1, 15, ytitle='CTH [km]', xtitle=xt
     ADD_SUBPLOT, xaxis, cph, -1.5, 1.5, ytitle='CPH', xtitle=xt
     ADD_SUBPLOT, xaxis, cer, -10, 100., ytitle='CER [microns]', xtitle=xt
     ADD_SUBPLOT, xaxis, cot, -10, 110, ytitle='COT', xtitle=xt
     ADD_SUBPLOT, xaxis, cwp, -1.5, 1.5, ytitle='CWP [kg/m!U2!N]', xtitle=xt
 
-    cgText, 0.5, 0.5, pixel, ALIGNMENT=0.5, /NORMAL, $
+    cgText, 0.5, 0.485, pixel, ALIGNMENT=0.5, /NORMAL, $
         COLOR=cgcolor('RED6'), CHARSIZE=2.8
 
     end_save, save_as
