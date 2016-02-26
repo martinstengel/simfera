@@ -14,6 +14,9 @@ FUNCTION GET_AVAILABILITY, var_name, ref_algo
                 'cth': avail = -1
                 'cer': avail = -1
                 'cph': avail = -1
+                'cwp_allsky': avail = -1
+                'lwp_allsky': avail = -1
+                'iwp_allsky': avail = -1
                 ELSE: avail = 1
             ENDCASE
             END

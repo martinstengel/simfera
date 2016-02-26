@@ -15,7 +15,7 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     ; ========================================================
 
     ; subdirectory for output & figures
-    run = 'v5.2_cph_day_added/'
+    run = 'v5.5_check4cfc/'
 
     ; 1=random, 2=max/random
     scops_overlap_type = 2
@@ -28,7 +28,8 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     devmode = 0
 
     ; cloud optical thickness thresholds required in search4cloud.pro
-    cot_thv = 0.3
+    ;cot_thv = 0.3
+    cot_thv = 0.0000001
 
     IF KEYWORD_SET(test) THEN $
         iw = 'TESTDATA_era_simulator/' ELSE iw = 'INPUT_era_simulator/'
@@ -78,7 +79,7 @@ PRO CONFIG_SIMULATOR, PATHS=io_paths, TIMES=time_frame, $
     IF (devmode EQ 1) THEN devstr='devmode_' ELSE devstr=''
 
     ; create THV strings
-    cadd_cot = STRTRIM(STRING(cot_thv, FORMAT='(F4.2)'),2)
+    cadd_cot = STRCOMPRESS(STRING(cot_thv,FORMAT='(E12.1)'),/REM)
     crit_string_cot = devstr + 'cot_thv_' + cadd_cot
 
 

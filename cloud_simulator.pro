@@ -105,7 +105,7 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
     PRINT, FORMAT='(A, A-100)', '** INP:     ', path.INP
     PRINT, FORMAT='(A, A-100)', '** OUT:     ', path.OUT
     PRINT, FORMAT='(A, A-100)', '** FIG:     ', path.FIG
-    PRINT, FORMAT='(A, F8.3)',  '** COT-thv: ', set.COT
+    PRINT, FORMAT='(A, E12.1)',  '** COT-thv: ', set.COT
     PRINT, FORMAT='(A, A-100)', '** SCOPS:   ', set.SCOPS
     PRINT, FORMAT='(A, A-100)', '** MPC:     ', set.MPC
 

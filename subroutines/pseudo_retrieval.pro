@@ -74,6 +74,7 @@ PRO PSEUDO_RETRIEVAL, inp, grd, sza, scops_type, cwp, cot, cer, thv, mpc, $
             FOR zi=0, nlev-1 DO BEGIN ; SCOPS ----------------------------------
 
                 nfb = FLOOR(ncol * cfc_lay_prof[zi]) ;nfilledboxes
+                ;nfb = ROUND(ncol * cfc_lay_prof[zi]) ;nfilledboxes
 
                 IF (nfb GT 0) THEN BEGIN 
 
