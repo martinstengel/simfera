@@ -390,15 +390,18 @@ END
 PRO PLOT_CLOUD_ARRAYS, ctp, cth, ctt, cph, cer, cfc, cot, cwp, $
                        ncol, inp, cnt, sza, xi, yi, scops, mpc, thv
 ;-----------------------------------------------------------------------------
-    !P.MULTI=[0,4,2]
     t = '_thv'+STRTRIM(STRING(thv, FORMAT='(F4.2)'),2)
     s = '_scops'+STRTRIM(STRING(scops),2)
     m = '_mpc'+STRTRIM(STRING(mpc),2)
     p = '_retrieved'
     v = STRTRIM(STRING(cnt),2)
     fbase = inp.FILENAME + t + s + m + p + v
+
+    IF (is_file(!SAVE_DIR+fbase+'.png')) THEN RETURN
+    IF (is_file(!SAVE_DIR+fbase+'.eps')) THEN RETURN
+
+    !P.MULTI=[0,4,2]
     save_as = !SAVE_DIR  + fbase + '.eps'
-    ;start_save, save_as, size='A4', /LANDSCAPE
     start_save, save_as, size=[45,30]
 
     lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.1)'),2)
@@ -436,6 +439,10 @@ PRO MAKE_SCOPS_SNAPSHOTS, inp, grd, sza, xi, yi, data, target, $
     v = STRTRIM(STRING(cnt),2)
     fbase = inp.FILENAME + t + s + m + p + v
     save_as = !SAVE_DIR  + fbase + '.eps'
+
+    IF (is_file(!SAVE_DIR+fbase+'.png')) THEN RETURN
+    IF (is_file(!SAVE_DIR+fbase+'.eps')) THEN RETURN
+
     start_save, save_as, size='A4', /LANDSCAPE
 
     lonstr = STRTRIM(STRING(inp.lon[xi], FORMAT='(F8.1)'),2)
@@ -529,6 +536,7 @@ PRO PLOT_ERA_SST, FILENAME=filename, DATA=sst, $
     filepwd = !SAVE_DIR + filename
 
     IF ( is_file(filepwd+'.png') ) THEN RETURN
+    IF ( is_file(filepwd+'.eps') ) THEN RETURN
 
     save_as = filepwd + '.eps'
     start_save, save_as, size='A4', /LANDSCAPE
@@ -562,6 +570,7 @@ PRO PLOT_LSM2D, FILENAME=filename, DATA=lsm, $
     filepwd = !SAVE_DIR + filename
 
     IF ( is_file(filepwd+'.png') ) THEN RETURN
+    IF ( is_file(filepwd+'.eps') ) THEN RETURN
 
     save_as = filepwd + '.eps'
     start_save, save_as, size='A4', /LANDSCAPE
@@ -599,6 +608,7 @@ PRO PLOT_SZA2D, FILENAME=filename, DATA=sza2d, $
     filepwd = !SAVE_DIR + filename + '_sza'
 
     IF ( is_file(filepwd+'.png') ) THEN RETURN
+    IF ( is_file(filepwd+'.eps') ) THEN RETURN
 
     save_as = filepwd + '.eps'
     start_save, save_as, size='A4', /LANDSCAPE
@@ -631,6 +641,7 @@ PRO MAP_MM, grd, data, filename, varname, flag, scops_type, mpc, $
                          CONSTANT_CER=creff )
 
     IF (is_file(ofil+'.png')) THEN RETURN
+    IF (is_file(ofil+'.eps')) THEN RETURN
 
     save_as = ofil + '.eps'
     start_save, save_as, size='A4', /LANDSCAPE
@@ -664,6 +675,7 @@ PRO PLOT_HISTOS_1D, varname, data, histo, filename, flag, scops_type, mpc, $
                           mpc, CONSTANT_CER=creff, RATIO=ratio )
 
     IF (is_file(ofil+'.png')) THEN RETURN
+    IF (is_file(ofil+'.eps')) THEN RETURN
 
     IF (scops_type EQ 1) THEN st = 'random' ELSE st='max/random'
     datutc = GET_DATE_UTC(filename)
@@ -695,6 +707,7 @@ PRO PLOT_INTER_HISTOS, data, varname, histo, filename, flag, scops_type, $
                          CONSTANT_CER=creff, RATIO=ratio )
 
     IF ( is_file( ofil + '.png' ) ) THEN RETURN
+    IF ( is_file( ofil + '.eps' ) ) THEN RETURN
 
     sname = SIZE(data, /SNAME)
     cph_dim = histo.PHASE_DIM
@@ -770,6 +783,7 @@ PRO PLOT_SOLAR_VARS, DATA=data, GRID=grd, FLAG=flg, FILE=fil, VOID=void,$
     filepwd = !SAVE_DIR + base + '_' + flg + '_scops'+ ststr + '_daytime'
 
     IF ( is_file(filepwd+'.png') ) THEN RETURN
+    IF ( is_file(filepwd+'.eps') ) THEN RETURN
 
     !P.MULTI = [0,2,3]
     save_as = filepwd + '.eps'

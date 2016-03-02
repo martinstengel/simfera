@@ -44,6 +44,7 @@
 ;   C. Schlundt, Jan 2016: SZA < 75 equals daytime (previously 80 deg)
 ;   M. Stengel,  Jan 2016: pseudo_retrieval, i.e. SCOPS and more
 ;   M. Stengel,  Feb 2016: cph_day, cwp_allsky, lwp_allsky, iwp_allsky added
+;   C. Schlundt, Mar 2016: code optimization
 ;
 ;******************************************************************************
 PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
@@ -174,10 +175,12 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                             lsm2d, cer_info, cwp_lay, cot_lay, cer_lay, $ 
                             CONSTANT_CER=constant_cer, VERBOSE=verbose
 
+                        PR = SYSTIME(1)
                         ; means (in/out), temps (out)
-                        PSEUDO_RETRIEVAL, input, grid, sza2d, set.SCOPS, $ 
+                        CORE, input, grid, sza2d, set.SCOPS, $ 
                             cwp_lay, cot_lay, cer_lay, set.COT, set.MPC, $
                             his, means, temps, TEST=test
+                        PRINT, "** Core: ", (SYSTIME(1)-PR)/60., " minutes"
 
                         ; sum up cloud parameters
                         SUMUP_VARS, means, counts, temps
@@ -196,31 +199,12 @@ PRO CLOUD_SIMULATOR, VERBOSE=verbose, LOGFILE=logfile, TEST=test, $
                 ; calculate averages
                 MEAN_VARS, means, counts
 
-                ; plot final hist1d results: ctp, cwp, cer, cot, ctt
-                IF KEYWORD_SET(test) THEN BEGIN 
-
-                    FOR v2=0, N_ELEMENTS(vars2)-1 DO BEGIN
-                        ofile = 'ERA_Interim_'+year+month
-                        MAP_MM, grid, means, ofile, vars2[v2], set.COT_STR, $
-                            set.SCOPS, set.MPC, CONSTANT_CER=creff
-                    ENDFOR
-
-                    FOR v=0, N_ELEMENTS(vars)-1 DO BEGIN
-                        ofile = 'ERA_Interim_'+year+month
-
-                        PLOT_HISTOS_1D, vars[v], means, his, ofile, $
-                            set.COT_STR, set.SCOPS, set.MPC, $
-                            CONSTANT_CER=constant_cer, RATIO=ratio
-
-                        MAP_MM, grid, means, ofile, vars[v], set.COT_STR, $
-                            set.SCOPS, set.MPC, CONSTANT_CER=creff
-                    ENDFOR
-
-                ENDIF
-
+                WMM = SYSTIME(1)
                 ; write output files
                 WRITE_MONTHLY_MEAN, path.out, year, month, grid, input, his, $ 
-                    set.COT_STR, set.COT, means, counts, set.SCOPS, set.MPC
+                    set.COT_STR, set.COT, means, counts, set.SCOPS, set.MPC, $
+                    TEST=test
+                PRINT, "** WriteFile: ", (SYSTIME(1)-WMM)/60., " minutes"
 
                 ; delete final arrays before next cycle starts
                 UNDEFINE, means, counts

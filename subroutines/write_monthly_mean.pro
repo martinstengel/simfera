@@ -2,7 +2,8 @@
 ;-- write netcdf histograms & monthly mean (average) output
 ;-----------------------------------------------------------------------------
 PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
-                        thv_str, thv_val, means, counts, scops_type, mpc
+                        thv_str, thv_val, means, counts, scops_type, mpc, $
+                        TEST=test
 ;-----------------------------------------------------------------------------
 
     dim_time   = 1
@@ -18,12 +19,14 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
     tbo[1,0]   = tttt2-tref
     itime      = tttt-tref
 
+    IF KEYWORD_SET(test) THEN tt = '_test' ELSE tt = ''
+
     IF (scops_type EQ 1) THEN st = 'random' ELSE st='max/random'
     ststr = STRTRIM(STRING(scops_type),2)
     mpstr = STRTRIM(STRING(mpc),2)
 
     file_bas = 'ERA_Interim_MM'+year+month
-    file_out = file_bas + '_'+thv_str + '_scops'+ststr + '_mpc'+mpstr +'.nc'
+    file_out = file_bas+'_'+thv_str+'_scops'+ststr+'_mpc'+mpstr+tt+'.nc'
     clobber  = 1
 
     lon = inp.lon ;degrees_east
