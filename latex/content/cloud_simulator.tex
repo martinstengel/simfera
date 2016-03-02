@@ -88,25 +88,24 @@ Fig.~\ref{fig:profiles}) for each grid cell down to subcolumns$\footnote{
 Currently each grid cell is broken into 20 subcolumns. This will be changed 
 so that the number of subcolumns will be a function of latitude.}$, which
 can be thought of as respresenting the spatial resolution of the instrument.
-
 Figure~\ref{fig:scops} shows examples of vertical profiles of individual subcolumns 
-based on the grid box mean profiles displayed in Figure~\ref{fig:profiles}.
-For instance, Figure~\ref{fig:cfc_scops} illustrates an ensemble of 
-subgrid cloud fraction profiles representing the cloud distribution 
-within the model grid box shown in Figure~\ref{fig:cfc_profile} for the grid cell 
-located at N$31^{\circ}30^{\prime}$ and E$164^{\circ}0^{\prime}$.
-A pseudo-random sampling process takes the vertical profile of the cloud
-fraction and generates horizontally homogeneous subgrid profiles.
-Then, each grid column is split into subcolumns in which each layer is either
-completely cloudy (1) or clear (0) assuming maximum random cloud overlap, i.e.
-clouds in neighboring layers are maximally overlapped, while groups of clouds 
-separated by one or more clear layers are randomly overlapped.
+for two different grid cells based on the grid box mean profiles displayed in 
+Figure~\ref{fig:profiles}.
+The upper left figure illustrates the subgrid cloud fraction profiles 
+%The downscaler applies a pseudo-random sampling process 
+%to generate an ensemble of subgrid profiles, which the distribution within the model grid box.
 
-%Each cloud subcolumn gets COT and CWP grid box value.
-The cloud optical thickness (Fig.~\ref{fig:cot_profile}) and
-cloud water path (Fig.~\ref{fig:cwp_profile}) 
-%CER is a weighted product
-%CPH is the cloud liquid fraction.
+The cloud simulator assumes maximum random overlap of clouds, which means 
+that clouds in neighboring layers are maximally overlapped, 
+while groups of clouds separated by one or more clear layers are randomly overlapped.
+
+%This method uses a pseudo-random sampling process to generate an ensemble of subgrid cloud
+%profiles representing the distribution within the model grid box. It takes the input vertical
+%profiles of cloud fraction to generate a specified number of horizontally homogeneous cloud
+%profiles. The SCOPS algorithm splits each grid column into a number of subcolumns NCOL in which
+%each layer is either completely filled or completely free of cloud. The cloud cover in each
+%vertical layer and subcolumn is therefore either 0 or 1. The SCOPS version used here assumes
+%maximum random overlap for cloud
 
 The used approach for deriving subgrid profiles is very similar to
 SCOPS (Subgrid Cloud Overlap Profile Sampler, \citet{Webb2001}),
@@ -120,83 +119,66 @@ and therefore, allows the quantitative evaluation of clouds, humidity,
 and precipitation processes in diverse numerical models.
 
 
+
 % grid box mean profiles 
 \begin{figure}[!h]
   \centering
   \begin{minipage}{0.3\textwidth}
     \subfloat[Cloud fraction.]
-    {\includegraphics[scale=0.17]{./figures/\snapscops_CFC9_profile.png}
-    \label{fig:cfc_profile}}
+    {\includegraphics[scale=0.17]{./figures/\snapscops_CFC9_profile.png}}
   \end{minipage}\hfill
   \begin{minipage}{0.3\textwidth}
     \subfloat[Cloud optical thickness.]
-    {\includegraphics[scale=0.17]{./figures/\snapscops_COT9_profile.png}
-    \label{fig:cot_profile}}
+    {\includegraphics[scale=0.17]{./figures/\snapscops_COT9_profile.png}}
   \end{minipage}\hfill
   \begin{minipage}{0.3\textwidth}
     \subfloat[Cloud water path.]
-    {\includegraphics[scale=0.17]{./figures/\snapscops_CWP9_profile.png}
-    \label{fig:cwp_profile}}
+    {\includegraphics[scale=0.17]{./figures/\snapscops_CWP9_profile.png}}
   \end{minipage}
-  \caption[Grid box mean profiles.]{Example of (a) cloud fraction,
-      (b) cloud optical thickness, and (c) cloud water path 
-      grid box mean profiles. The daytime grid cell is located
-      at N$31^{\circ}30^{\prime}$ and E$164^{\circ}0^{\prime}$ 
-  at UTC 00 on 1$^{st}$ of \MonthYear.}
+  \caption[Grid box mean profiles.]{Example of cloud fraction (a),
+cloud optical thickness (b) and cloud water path (c) 
+grid box mean profiles. The grid cell is located in the daytime 
+(solar zenith angle equal 17.7) at N$31^{\circ}30^{\prime}$ and 
+E$164^{\circ}0^{\prime}$ at UTC 00 on 1$^{st}$ of \MonthYear.}
   \label{fig:profiles}
 \end{figure}
 
 
 % subcolumn cloud distribution 
 \begin{figure}[!h]
+  \centering
 
-  \begin{minipage}[c][4.5cm][c]{\textwidth}
+  \begin{minipage}{0.3\textwidth}
+    \subfloat[Cloud fraction.]
+    {\includegraphics[scale=0.17]{./figures/\snapscops_CFC9.png}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.3\textwidth}
+    \subfloat[Cloud optical thickness.]
+    {\includegraphics[scale=0.17]{./figures/\snapscops_COT9.png}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.3\textwidth}
+    \subfloat[Cloud water path.]
+    {\includegraphics[scale=0.17]{./figures/\snapscops_CWP9.png}}
+  \end{minipage}\hfill
 
-    \begin{minipage}{0.3\textwidth}
-      \subfloat[Cloud fraction.]
-      {\includegraphics[scale=0.17]{./figures/\snapscops_CFC9.png}
-      \label{fig:cfc_scops}}
-    \end{minipage}\hfill
-    \begin{minipage}{0.3\textwidth}
-      \subfloat[Cloud optical thickness.]
-      {\includegraphics[scale=0.17]{./figures/\snapscops_COT9.png}
-      \label{fig:cot_scops}}
-    \end{minipage}\hfill
-    \begin{minipage}{0.3\textwidth}
-      \subfloat[Cloud water path.]
-      {\includegraphics[scale=0.17]{./figures/\snapscops_CWP9.png}
-      \label{fig:cwp_scops}}
-    \end{minipage}
-
+  \begin{minipage}{0.3\textwidth}
+    \subfloat[Cloud effective radius.]
+    {\includegraphics[scale=0.17]{./figures/\snapscops_CER9.png}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.3\textwidth}
+    \subfloat[Cloud phase.]
+    {\includegraphics[scale=0.17]{./figures/\snapscops_CPH9.png}}
   \end{minipage}
-  \begin{minipage}[c][4.5cm][c]{\textwidth}
 
-    \begin{minipage}{0.3\textwidth}
-        \begin{minipage}[c]{0.9\textwidth}
-        Grid cell location: \\
-        N$31^{\circ}30^{\prime}$ E$164^{\circ}0^{\prime}$\\
-        Solar zenith angle is 17.7
-        \end{minipage}
-    \end{minipage}\hfill
-    \begin{minipage}{0.3\textwidth}
-      \subfloat[Cloud effective radius.]
-      {\includegraphics[scale=0.17]{./figures/\snapscops_CER9.png}
-      \label{fig:cer_scops}}
-    \end{minipage}\hfill
-    \begin{minipage}{0.3\textwidth}
-      \subfloat[Cloud phase.]
-      {\includegraphics[scale=0.17]{./figures/\snapscops_CPH9.png}
-      \label{fig:cph_scops}}
-    \end{minipage}
-
-  \end{minipage}
-  \caption[Down-scaled cloud parameter profiles.]{Subgrid profiles 
-      of (a) cloud fraction, (b) cloud optical thickness, (c) cloud water path,
-      (d) cloud effective radius, and (e) cloud phase
-      derived from grid box mean profiles shown in Figure~\ref{fig:profiles} 
-  at UTC 00 on 1$^{st}$ of \MonthYear.}
+  \caption[Down-scaled cloud parameter profiles.]{Top-down: 
+Subcolumn distribution of cloud fraction, phase, effective radius, 
+optical thickness and water path derived from grid box mean profiles
+shown in Figure~\ref{fig:profiles} for
+two different grid cells at UTC 00 on 1$^{st}$ of \MonthYear.}
   \label{fig:scops}
 \end{figure}
+
+
 
 
 %2. search for upper-most cloud and collect cloud parameters
