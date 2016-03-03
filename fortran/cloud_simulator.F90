@@ -1,21 +1,61 @@
+      !
+      ! C. Schlundt, 2016 March, first version
+      !
       PROGRAM cloud_simulator
 
-      IMPLICIT NONE
+        USE STRUCTS
+        USE SUBS
+        USE COMMON_CONSTANTS
 
-      INTEGER :: mpc, scops
-      INTEGER :: sy, ey, sm, em, sd, ed
-      REAL(kind=4) :: thv
-      CHARACTER*1024 :: rep_path, inp_path, out_path, sst_file
+        IMPLICIT NONE
 
-      CALL read_config(thv, mpc, scops, rep_path, inp_path, out_path, & 
-                      & sst_file, sy, ey, sm, em, sd, ed)
+        INTEGER(KIND=sint) :: year, ystep=1
+        INTEGER(KIND=sint) :: month, mstep=1
+        INTEGER(KIND=sint) :: day, dstep=1
+        INTEGER(KIND=sint) :: ifile, nfiles
+        CHARACTER(LEN=500), ALLOCATABLE :: files(:,:)
+        TYPE(config) :: cfg
 
-      WRITE(*,*) "cloud_simulator: read config file"
-      WRITE(*,*) thv, mpc, scops
-      WRITE(*,*) sy, ey, sm, em, sd, ed
-      WRITE(*,*) TRIM(rep_path)
-      WRITE(*,*) TRIM(inp_path)
-      WRITE(*,*) TRIM(out_path)
-      WRITE(*,*) TRIM(sst_file)
+
+        ! get config settings
+        CALL READ_CONFIG(cfg)
+
+        PRINT*, ''
+        PRINT*, "** cloud_simulator: read config file"
+        PRINT('(A15, E8.2)'), "COT-THV: ", cfg%thv
+        PRINT('(A15, I1)'), "MPC: ", cfg%mpc
+        PRINT('(A15, I1)'), "SCOPS: ", cfg%scops
+        PRINT('(A15, A8)'), "START: ", cfg%start_date
+        PRINT('(A15, A8)'), "STOP: ", cfg%end_date
+        PRINT('(A15, A)'), "REP_PWD: ", TRIM(cfg%rep_path)
+        PRINT('(A15, A)'), "INP_PWD: ", TRIM(cfg%inp_path)
+        PRINT('(A15, A)'), "OUT_PWD: ", TRIM(cfg%out_path)
+        PRINT('(A15, A)'), "SST_FILE: ", TRIM(cfg%sst_file)
+        PRINT*, ''
+
+        ! create output directory
+        CALL CREATE_DIR( TRIM(cfg%out_path) )
+
+        ! loop over year and month
+        DO year = cfg%sy, cfg%ey, ystep !year-loop 
+            DO month = cfg%sm, cfg%em, mstep !month-loop
+
+                CALL GET_FILE_LIST(cfg, year, month, files)
+                nfiles = SIZE(files,DIM=1)
+
+                ! loop over files in month
+                DO ifile = 1, nfiles
+
+                    ! convert to nc-file if not existing
+                    CALL CONVERT_ERA_FILE(TRIM(files(ifile,1)))
+
+                END DO ! end of files
+
+
+                ! make MM(L3) product and save it
+
+            END DO !end of month-loop
+        END DO !end of year-loop
 
       END PROGRAM cloud_simulator
+

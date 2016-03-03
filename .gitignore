@@ -1,4 +1,7 @@
 # Ignore following files
+fortran/cloud_simulator
+fortran/fort*
+fortran/config.file
 config_simulator.pro
 config_vis.pro
 config_doc.tex
@@ -23,3 +26,6 @@ config_doc.tex
 *.swp
 *error*
 .directory
+*.o
+*.mod
+*.MOD
