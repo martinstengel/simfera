@@ -14,7 +14,7 @@
 @subroutines/initialize_arrays.pro
 @subroutines/calc_incloud_cwc.pro
 @subroutines/calc_cld_vars.pro
-@subroutines/pseudo_retrieval.pro
+@subroutines/core.pro
 @subroutines/scops.pro
 @subroutines/mean_vars.pro
 @subroutines/write_monthly_mean.pro
