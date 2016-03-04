@@ -41,25 +41,19 @@ MODULE STRUCTS
         REAL(KIND=sreal) :: hist_cwp_1d_axis(n_cwp_bins+1)
     END TYPE config
 
+    ! era-i grid
+    ! to be defined here
 
     ! era-i input
     TYPE era_input
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: lat
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: lon
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: cc
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: lwc
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: iwc
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: geop
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: temp
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: plevel
-        REAL(KIND=sreal), DIMENSION(:,:,:), POINTER :: dpres
-        CHARACTER(LEN=file_length)                  :: filename
-        CHARACTER(LEN=file_length)                  :: dirname
-        CHARACTER(LEN=file_length)                  :: basename
-        CHARACTER(LEN=4)                            :: year
-        CHARACTER(LEN=2)                            :: month
-        CHARACTER(LEN=2)                            :: day
-        CHARACTER(LEN=2)                            :: hour
+        INTEGER(KIND=lint)                              :: nlon, nlat, nlev
+        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE     :: lat, lon
+        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE     :: plevel, dpres
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: cc, lwc, iwc
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: geop, temp
+        CHARACTER(LEN=4)           :: year
+        CHARACTER(LEN=2)           :: month, day, hour
+        CHARACTER(LEN=file_length) :: filename, dirname, basename
     END TYPE era_input
 
 
