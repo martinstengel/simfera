@@ -18,6 +18,9 @@
 THV=0.3
 MPC=1
 SCOPS=2
+THV=0.3
+MPC=1
+SCOPS=2
 OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/v5.7_fortran
 INP_PWD=/scratch/ms/de/sf7/cschlund/ERA_Simulator
 REP_PWD=/perm/ms/de/sf7/cschlund/cloud_simulator
@@ -29,6 +32,6 @@ STOPYEAR=2008
 STARTMONTH=7
 STOPMONTH=7
 STARTDAY=1
-STOPDAY=1
+STOPDAY=0
 # 0 means complete month
 
