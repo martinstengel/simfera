@@ -41,8 +41,13 @@ MODULE STRUCTS
         REAL(KIND=sreal) :: hist_cwp_1d_axis(n_cwp_bins+1)
     END TYPE config
 
-    ! era-i grid
-    ! to be defined here
+    ! era-sst
+    TYPE era_sst_lsm
+        INTEGER(KIND=lint)                              :: nlon, nlat
+        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE     :: lat, lon
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE   :: sst
+        INTEGER(KIND=sint), DIMENSION(:,:), ALLOCATABLE :: lsm
+    END TYPE era_sst_lsm
 
     ! era-i input
     TYPE era_input
@@ -51,8 +56,7 @@ MODULE STRUCTS
         REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE     :: plevel, dpres
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: cc, lwc, iwc
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: geop, temp
-        CHARACTER(LEN=4)           :: year
-        CHARACTER(LEN=2)           :: month, day, hour
+        INTEGER(KIND=sint)         :: year, month, day, hour
         CHARACTER(LEN=file_length) :: filename, dirname, basename
     END TYPE era_input
 

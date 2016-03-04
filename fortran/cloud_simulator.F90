@@ -15,8 +15,9 @@ PROGRAM CLOUD_SIMULATOR
     INTEGER(KIND=sint)  :: day, dstep=1
     INTEGER(KIND=sint)  :: ff, nfiles
 
-    TYPE(config)    :: cfg
-    TYPE(era_input) :: input
+    TYPE(config)      :: cfg
+    TYPE(era_input)   :: input
+    TYPE(era_sst_lsm) :: aux
 
     CHARACTER(LEN=file_length)              :: ncfile
     CHARACTER(LEN=file_length), ALLOCATABLE :: files(:,:)
@@ -30,6 +31,9 @@ PROGRAM CLOUD_SIMULATOR
     ! create output directory
     CALL CREATE_DIR( TRIM(cfg%out_path) )
 
+    ! read sea surface temperature and get land/sea mask
+    CALL READ_AUX_DATA( TRIM(cfg%sst_file), aux )
+
 
     ! loop over year and month
     DO year = cfg%sy, cfg%ey, ystep !year-loop 
@@ -38,7 +42,7 @@ PROGRAM CLOUD_SIMULATOR
             CALL GET_FILE_LIST(cfg, year, month, files)
             nfiles = SIZE(files, DIM=1)
 
-            DO ff = 1, nfiles ! loop over files in month
+            DO ff = 1, nfiles ! loop over files per month
 
                 CALL CONVERT_ERA_FILE( files(ff,1), ncfile )
 
@@ -54,6 +58,9 @@ PROGRAM CLOUD_SIMULATOR
         END DO !end of month-loop
     END DO !end of year-loop
 
+    CALL DEALLOCATE_AUX( aux )
+
+    PRINT*, ""
     PRINT*, "** cloud_simulator finished for ", &
         TRIM(cfg%start_date), " - ", TRIM(cfg%end_date)
     PRINT*, ""

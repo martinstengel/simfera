@@ -40,6 +40,10 @@ MODULE COMMON_CONSTANTS
     REAL(KIND=sreal),    PARAMETER :: pi=3.14159265
     REAL(KIND=sreal),    PARAMETER :: d2r=pi/180.0
 
+    ! land sea mask
+    INTEGER(KIND=sint), PARAMETER :: sea=0
+    INTEGER(KIND=sint), PARAMETER :: land=1
+
     ! phase definition
     INTEGER(KIND=sint), PARAMETER :: liquid=0
     INTEGER(KIND=sint), PARAMETER :: ice=1

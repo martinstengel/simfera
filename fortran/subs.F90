@@ -6,8 +6,9 @@ MODULE SUBS
     CONTAINS
 
     !==========================================================================
-    SUBROUTINE GET_FILE_LIST(cfg, year, month, file_list)
+    ! BASH stuff
     !==========================================================================
+    SUBROUTINE GET_FILE_LIST(cfg, year, month, file_list)
 
         USE STRUCTS
         USE COMMON_CONSTANTS
@@ -59,15 +60,11 @@ MODULE SUBS
 
         PRINT*, "** ",nfiles," ERA-I files for ", year, month
     
-    !==========================================================================
     END SUBROUTINE GET_FILE_LIST
+
     !==========================================================================
-    
-    
-    
-    !==========================================================================
+
     SUBROUTINE CONVERT_ERA_FILE( ifile, ofile )
-    !==========================================================================
     
         USE COMMON_CONSTANTS
         IMPLICIT NONE
@@ -88,15 +85,11 @@ MODULE SUBS
             CALL system( command )
         ENDIF
     
-    !==========================================================================
     END SUBROUTINE CONVERT_ERA_FILE
+
     !==========================================================================
-    
-    
-    
-    !==========================================================================
+
     SUBROUTINE CREATE_DIR( newDirPath )
-    !==========================================================================
     
         USE COMMON_CONSTANTS
     
@@ -122,8 +115,8 @@ MODULE SUBS
             CALL system( mkdirCmd )
         ENDIF
     
-    !==========================================================================
     END SUBROUTINE CREATE_DIR
+
     !==========================================================================
     
     
@@ -292,8 +285,9 @@ MODULE SUBS
 
 
     !==========================================================================
-    SUBROUTINE READ_ERA_NCFILE( ifile, idata )
+    ! NCDF stuff
     !==========================================================================
+    SUBROUTINE READ_AUX_DATA( sfile, sdata )
 
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -301,11 +295,75 @@ MODULE SUBS
 
         IMPLICIT NONE
 
-        INTEGER :: ncid, DimID, VarID, VarDim
-        CHARACTER(LEN=var_name) :: VarName
+        INTEGER            :: ncid, DimID, VarID, VarDim, i, j
+        REAL(KIND=sreal)   :: scale_factor, add_offset
+        INTEGER(KIND=lint) :: fill_value, missing_value
+        CHARACTER(LEN=file_length), INTENT(IN) :: sfile
+        TYPE(era_sst_lsm), INTENT(INOUT)       :: sdata
+
+        PRINT*, "** READ SST FILE and GET LAND/SEA MASK"
+
+        ! open ncdf file
+        CALL CHECK( nf90_open( sfile, nf90_nowrite, ncid) )
+
+        ! longitude
+        CALL GET_VARDIM_VARID( ncid, 'longitude', VarID, sdata%nlon )
+        ALLOCATE( sdata%lon( sdata%nlon ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, sdata%lon ) )
+
+        ! latitude
+        CALL GET_VARDIM_VARID( ncid, 'latitude', VarID, sdata%nlat )
+        ALLOCATE( sdata%lat( sdata%nlat ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, sdata%lat ) )
+
+        ! sea surface temperature
+        CALL CHECK( nf90_inq_varid( ncid, 'sst', VarID ) )
+        ALLOCATE( sdata%sst( sdata%nlon, sdata%nlat ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, sdata%sst ) )
+
+        ! attributes
+        CALL CHECK( nf90_get_att( ncid, VarID, 'scale_factor', scale_factor )  )
+        CALL CHECK( nf90_get_att( ncid, VarID, 'add_offset', add_offset )  )
+        CALL CHECK( nf90_get_att( ncid, VarID, 'missing_value', missing_value )  )
+        CALL CHECK( nf90_get_att( ncid, VarID, '_FillValue', fill_value )  )
+        
+        ! close ncdf file
+        CALL CHECK( nf90_close( ncid ) )
+
+        ! get lsm and scale sst and add offset
+        ALLOCATE( sdata%lsm( sdata%nlon, sdata%nlat ) )
+
+        WHERE( sdata%sst == fill_value .OR. sdata%sst == missing_value ) 
+            sdata%lsm = land
+            sdata%sst = sint_fill_value
+        ELSEWHERE
+            sdata%lsm = sea
+            sdata%sst = sdata%sst*scale_factor+add_offset
+        END WHERE
+
+        !print*, minval(sdata%sst, mask=sdata%sst .NE. sint_fill_value)
+        !print*, maxval(sdata%sst, mask=sdata%sst .NE. sint_fill_value)
+
+    END SUBROUTINE READ_AUX_DATA
+
+    !==========================================================================
+
+    SUBROUTINE READ_ERA_NCFILE( ifile, idata )
+
+        USE COMMON_CONSTANTS
+        USE STRUCTS
+        USE NETCDF
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint), PARAMETER :: fb=15
+        CHARACTER(LEN=fb),  PARAMETER :: filbase="ERA_Interim_an_"
+        INTEGER                       :: ncid, DimID, VarID, VarDim, idx
+        CHARACTER(LEN=20)             :: string
         CHARACTER(LEN=file_length), INTENT(IN) :: ifile
         TYPE(era_input), INTENT(INOUT)         :: idata
 
+        ! open ncdf file
         CALL CHECK( nf90_open( ifile, nf90_nowrite, ncid) )
 
         ! longitude
@@ -350,18 +408,37 @@ MODULE SUBS
         ALLOCATE( idata%temp( idata%nlon, idata%nlat, idata%nlev ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%temp ) )
 
+        ! close ncdf file
         CALL CHECK( nf90_close( ncid ) )
 
+        ! pressure difference
+        idata%dpres=idata%plevel(2:SIZE(idata%plevel)) - &
+                    idata%plevel(1:SIZE(idata%plevel)-1)
+        
+        ! split filename ! ERA_Interim_an_20080701_00+00_plev
+        idx = INDEX( TRIM(ifile), filbase )
 
-    !==========================================================================
+        idata%filename = TRIM( ifile(idx:LEN_TRIM(ifile)) )
+        idata%dirname  = TRIM( ifile(1:idx-1) )
+        idata%basename = TRIM( ifile(idx:SCAN(TRIM(ifile),'.')-1) )
+
+        string = TRIM( ifile(idx+fb:idx+fb+3) )
+        READ(string, '(I4)') idata%year
+
+        string = TRIM( ifile(idx+fb+4:idx+fb+5) )
+        READ(string, '(I2)') idata%month
+
+        string = TRIM( ifile(idx+fb+6:idx+fb+7) )
+        READ(string, '(I2)') idata%day
+
+        string = TRIM( ifile(idx+fb+9:idx+fb+10) )
+        READ(string, '(I2)') idata%hour
+
     END SUBROUTINE READ_ERA_NCFILE
-    !==========================================================================
-
-
 
     !==========================================================================
+
     SUBROUTINE CHECK( status )
-    !==========================================================================
 
         USE NETCDF
 
@@ -374,15 +451,35 @@ MODULE SUBS
             STOP "Stopped"
         END IF
 
-    !==========================================================================
     END SUBROUTINE CHECK
+
+    !==========================================================================
+
+    SUBROUTINE GET_VARDIM_VARID( fileid, varname, vardim, varid )
+
+        USE COMMON_CONSTANTS
+        USE NETCDF
+
+        IMPLICIT NONE
+
+        CHARACTER(LEN=var_name) :: varname
+        INTEGER, INTENT(INOUT)  :: fileid
+        INTEGER, INTENT(OUT)    :: vardim, varid
+
+        CALL CHECK( nf90_inq_dimid( fileid, varname, vardim ) )
+        CALL CHECK( nf90_inq_varid( fileid, varname, varid ) )
+        CALL CHECK( nf90_inquire_dimension( fileid, vardim, varname, varid ) )
+
+    END SUBROUTINE GET_VARDIM_VARID
+
     !==========================================================================
 
 
 
+    !==========================================================================
+    ! DEALLOCATE ARRAYS
     !==========================================================================
     SUBROUTINE DEALLOCATE_INPUT( input )
-    !==========================================================================
 
         USE STRUCTS
 
@@ -400,31 +497,22 @@ MODULE SUBS
         IF (ALLOCATED(input%geop))   DEALLOCATE(input%geop)
         IF (ALLOCATED(input%temp))   DEALLOCATE(input%temp)
 
-    !==========================================================================
     END SUBROUTINE DEALLOCATE_INPUT
     !==========================================================================
+    SUBROUTINE DEALLOCATE_AUX( aux )
 
-
-
-    !==========================================================================
-    SUBROUTINE GET_VARDIM_VARID( fileid, varname, vardim, varid )
-    !==========================================================================
-
-        USE COMMON_CONSTANTS
-        USE NETCDF
+        USE STRUCTS
 
         IMPLICIT NONE
 
-        CHARACTER(LEN=var_name) :: varname
-        INTEGER, INTENT(INOUT)  :: fileid
-        INTEGER, INTENT(OUT)    :: vardim, varid
+        TYPE(era_sst_lsm), INTENT(INOUT) :: aux
 
-        CALL CHECK( nf90_inq_dimid( fileid, varname, vardim ) )
-        CALL CHECK( nf90_inq_varid( fileid, varname, varid ) )
-        CALL CHECK( nf90_inquire_dimension( fileid, vardim, varname, varid ) )
+        IF (ALLOCATED(aux%lon)) DEALLOCATE(aux%lon)
+        IF (ALLOCATED(aux%lat)) DEALLOCATE(aux%lat)
+        IF (ALLOCATED(aux%sst)) DEALLOCATE(aux%sst)
+        IF (ALLOCATED(aux%lsm)) DEALLOCATE(aux%lsm)
 
-    !==========================================================================
-    END SUBROUTINE GET_VARDIM_VARID
+    END SUBROUTINE DEALLOCATE_AUX
     !==========================================================================
 
 
