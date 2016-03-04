@@ -13,7 +13,7 @@ FCFLAGS += -I/usr/include
 # libraries needed for linking, unused in the examples
 #LDFLAGS = -li_need_this_lib
 
-objects = common_constants.o funcs.o structs.o subs.o read_config.o cloud_simulator.o
+objects = common_constants.o funcs.o structs.o subs.o cloud_simulator.o
 
 cloud_simulator: $(objects)
 	$(FC) -o cloud_simulator $(objects)
