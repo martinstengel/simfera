@@ -35,6 +35,15 @@ FUNCTION INIT_SZA_ARRAY, data, grd, MAP=map
     utc2d = FLTARR(grd.XDIM,grd.YDIM) & utc2d[*,*] = data.HOUR
     day2d = FLTARR(grd.XDIM,grd.YDIM) & day2d[*,*] = jul_day
 
+    ; for Timo's get_sza.pro function
+    year   = FLTARR(grd.XDIM,grd.YDIM) & year[*,*]   = data.YEAR
+    month  = FLTARR(grd.XDIM,grd.YDIM) & month[*,*]  = data.MONTH
+    day    = FLTARR(grd.XDIM,grd.YDIM) & day[*,*]    = data.DAY
+    hour   = FLTARR(grd.XDIM,grd.YDIM) & hour[*,*]   = data.HOUR
+    minute = FLTARR(grd.XDIM,grd.YDIM) & minute[*,*] = 0.
+    second = FLTARR(grd.XDIM,grd.YDIM) & second[*,*] = 0.
+    sza = GET_SZA(year, month, day, hour, minute, second, grd.lat2d, grd.lon2d)
+
     ZENSUN, day2d, utc2d, grd.lat2d, grd.lon2d, sza2d
 
     IF KEYWORD_SET(map)  THEN BEGIN
@@ -46,6 +55,13 @@ FUNCTION INIT_SZA_ARRAY, data, grd, MAP=map
                     LATITUDE=grd.lat2d, LONGITUDE=grd.lon2d, $
                     TITLE=title
 
+        PLOT_SZA2D, FILENAME=data.FILENAME+'_get', DATA=sza, $
+                    LATITUDE=grd.lat2d, LONGITUDE=grd.lon2d, $
+                    TITLE=title+' (get_sza)'
+
+        PLOT_SZA2D, FILENAME=data.FILENAME+'_diff', DATA=(sza2d-sza), $
+                    LATITUDE=grd.lat2d, LONGITUDE=grd.lon2d, $
+                    TITLE=title+' (diff_sza)', /DIFF
     ENDIF
 
     RETURN, sza2d

@@ -8,10 +8,6 @@ FUNCTION GET_SZA, year, month, day, hour, minute, second, lat, lon
   cost   = sin(2.*!dpi*lat/360.)*sin(delta) + cos(2.*!dpi*lat/360.)*cos(delta)*cos(h) 
   SZA    = (360/(2*!dpi))*acos(cost) 
  
-  IF [cos(h)*sin(2.*!dpi*lat/360.) - tan(delta)*cos(2.*!dpi*lat/360.)] LT 0 THEN azi = azi + 180. 
-  IF azi LT 0 THEN azi=azi +360. 
-  azi = azi+180. 
-  IF azi GE 360 THEN azi = azi - 360. 
- 
   RETURN, SZA
+
 END 

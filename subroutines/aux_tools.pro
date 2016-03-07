@@ -601,7 +601,7 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SZA2D, FILENAME=filename, DATA=sza2d, $
-                LATITUDE=lat, LONGITUDE=lon, TITLE=title
+                LATITUDE=lat, LONGITUDE=lon, TITLE=title, DIFF=diff
 ;-----------------------------------------------------------------------------
     !EXCEPT=0
 
@@ -614,12 +614,18 @@ PRO PLOT_SZA2D, FILENAME=filename, DATA=sza2d, $
     start_save, save_as, size='A4', /LANDSCAPE
     limit = [-90., -180., 90., 180.]
 
-
-    MAP_IMAGE, sza2d, lat, lon, LIMIT=limit, $
-               CTABLE=33, /FLIP_COLOURS, $
-               /BOX_AXES, /MAGNIFY, /GRID, $
-               MINI=0., MAXI=180., CHARSIZE=3., $
-               TITLE=title, N_LEV=6
+    IF KEYWORD_SET(diff) THEN BEGIN
+        MAP_IMAGE, sza2d, lat, lon, LIMIT=limit, $
+                   CTABLE=70, /BOX_AXES, /MAGNIFY, /GRID, $
+                   MINI=MIN(sza2d), MAXI=MAX(sza2d), $
+                   CHARSIZE=2.5, TITLE=title, N_LEV=6, FORMAT=('(f7.3)') 
+    ENDIF ELSE BEGIN
+        MAP_IMAGE, sza2d, lat, lon, LIMIT=limit, $
+                   CTABLE=33, /FLIP_COLOURS, $
+                   /BOX_AXES, /MAGNIFY, /GRID, $
+                   MINI=0., MAXI=180., CHARSIZE=3., $
+                   TITLE=title, N_LEV=6
+    ENDELSE
 
     MAP_CONTINENTS, /CONTINENTS, /HIRES, $
         COLOR=cgcolor('Black'), GLINETHICK=2.2

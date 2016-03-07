@@ -8,6 +8,7 @@
 @subtools/doy.pro
 @subtools/is_file.pro
 @subtools/zensun.pro
+@subtools/get_sza.pro
 @subroutines/aux_tools.pro
 @subroutines/sumup_vars.pro
 @subroutines/read_netcdf.pro
