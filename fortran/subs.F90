@@ -8,7 +8,7 @@ MODULE SUBS
     !==========================================================================
     ! BASH stuff
     !==========================================================================
-    SUBROUTINE GET_FILE_LIST(cfg, year, month, file_list)
+    SUBROUTINE GET_FILE_LIST(cfg, year, month, file_list, nfiles)
 
         USE STRUCTS
         USE COMMON_CONSTANTS
@@ -18,13 +18,16 @@ MODULE SUBS
         REAL                       :: r
         CHARACTER(LEN=4)           :: ystr
         CHARACTER(LEN=2)           :: mstr
-        INTEGER(KIND=sint)         :: i, reason, nfiles, ilen
+        INTEGER(KIND=sint)         :: i, reason, ilen
         CHARACTER(LEN=file_length) :: command, txtfile, inppath, line
     
         TYPE(config), INTENT(IN)                             :: cfg
         INTEGER(KIND=sint), INTENT(IN)                       :: year, month
+        INTEGER(KIND=sint), INTENT(OUT)                      :: nfiles
         CHARACTER(LEN=file_length), ALLOCATABLE, INTENT(OUT) :: file_list(:,:)
     
+        PRINT*, "** GET_FILE_LIST"
+
         ! convert integer to character
         WRITE(ystr,'(I4)') year
         WRITE(mstr,'(I0.2)') month
@@ -47,6 +50,7 @@ MODULE SUBS
         END DO
     
         nfiles = i
+        ! x-rows, 1 column
         ALLOCATE(file_list(nfiles,1))
     
         REWIND(31)
@@ -58,7 +62,7 @@ MODULE SUBS
     
         CLOSE(31)
 
-        PRINT*, "** ",nfiles," ERA-I files for ", year, month
+        PRINT('(I6,A16,I5,I3)'), nfiles,"ERA-I files for", year, month
     
     END SUBROUTINE GET_FILE_LIST
 
@@ -74,11 +78,13 @@ MODULE SUBS
         CHARACTER(LEN=file_length), INTENT(IN)  :: ifile
         CHARACTER(LEN=file_length), INTENT(OUT) :: ofile
     
+        PRINT*, "** CONVERT_ERA_FILE"
+
         ofile = TRIM(ifile)//'.nc'
         INQUIRE( FILE=TRIM(ofile), EXIST=file_exists )
     
         IF (file_exists) THEN 
-            WRITE (*,*) "** ERA ncfile already exists: '"//TRIM(ofile)//"'"
+            PRINT*, "   ERA ncfile already exists: '"//TRIM(ofile)//"'"
         ELSE
             command = "cdo -f nc copy "//TRIM(ifile)//" "//TRIM(ofile)
             WRITE(*,'(a)') "** "//TRIM(command)
@@ -99,6 +105,8 @@ MODULE SUBS
         CHARACTER(LEN=256)                     :: mkdirCmd
         CHARACTER(LEN=path_length), INTENT(IN) :: newDirPath
     
+        PRINT*, '** CREATE_DIR'
+
         ! Check if the directory exists first
         ! Works with ifort, but not gfortran
         !INQUIRE( directory=newDirPath, EXIST=dirExists ) 
@@ -106,11 +114,11 @@ MODULE SUBS
         INQUIRE( FILE=TRIM(newDirPath)//'/.', EXIST=dirExists )  
     
         IF (dirExists) THEN 
-            WRITE (*,*) "** Directory already exists: '"//&
+            WRITE (*,*) "   Directory already exists: '"//&
                         TRIM(newDirPath)//"'"
         ELSE
             mkdirCmd = 'mkdir -p '//TRIM(newDirPath)
-            WRITE(*,'(a)') "** Creating new directory: '"//&
+            WRITE(*,'(a)') "   Creating new directory: '"//&
                            TRIM(mkdirCmd)//"'"
             CALL system( mkdirCmd )
         ENDIF
@@ -122,8 +130,76 @@ MODULE SUBS
     
     
     !==========================================================================
-    SUBROUTINE READ_CONFIG(cfg)
+    ! MISC
     !==========================================================================
+    SUBROUTINE CALC_INCLOUD_CWC( inp, tmp )
+
+        USE COMMON_CONSTANTS
+        USE STRUCTS
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint)              :: z
+        TYPE(era_input),  INTENT(IN)    :: inp
+        TYPE(tmp_arrays), INTENT(INOUT) :: tmp
+
+        PRINT*, "** CALC_INCLOUD_CWC"
+
+        ALLOCATE( tmp%lwc_inc( inp%xdim, inp%ydim, inp%zdim) )
+        ALLOCATE( tmp%iwc_inc( inp%xdim, inp%ydim, inp%zdim) )
+
+        DO z=inp%zdim, 1, -1
+
+            WHERE( inp%cc(:,:,z) .GT. 0. .AND. inp%lwc(:,:,z) .GT. 0 )
+                tmp%lwc_inc(:,:,z) = inp%lwc(:,:,z) / inp%cc(:,:,z)
+            ELSEWHERE
+                tmp%lwc_inc(:,:,z) = 0.
+            END WHERE
+
+            print*, z, inp%plevel(z), &
+            minval(tmp%lwc_inc(:,:,z)), maxval(tmp%lwc_inc(:,:,z)), &
+            minval(tmp%iwc_inc(:,:,z)), maxval(tmp%iwc_inc(:,:,z))
+
+        END DO
+
+        stop
+
+    END SUBROUTINE
+
+    !==========================================================================
+
+    SUBROUTINE INIT_SZA( inp, aux )
+
+        USE COMMON_CONSTANTS
+        USE STRUCTS
+        USE FUNCS, only: DAY_OF_YEAR, GET_SZA
+
+        IMPLICIT NONE
+
+        TYPE(era_aux),   INTENT(IN)    :: aux
+        TYPE(era_input), INTENT(INOUT) :: inp
+        INTEGER(KIND=sint), DIMENSION(inp%xdim,inp%ydim) :: doy
+        INTEGER(KIND=sint), DIMENSION(inp%xdim,inp%ydim) :: hour
+        INTEGER(KIND=sint), DIMENSION(inp%xdim,inp%ydim) :: minute
+
+        PRINT*, "** INIT_SZA"
+
+        ! check if SST grid is the same of input file
+        IF (inp%xdim .NE. aux%nlon) STOP
+        IF (inp%ydim .NE. aux%nlat) STOP
+
+        doy(:,:)    = DAY_OF_YEAR( inp%year, inp%month, inp%day )
+        hour(:,:)   = inp%hour
+        minute(:,:) = 0
+        inp%doy     = doy(1,1)
+        inp%sza2d   = GET_SZA(doy, hour, minute, &
+                              aux%lon2d, aux%lat2d, aux%nlon, aux%nlat)
+
+    END SUBROUTINE INIT_SZA
+
+    !==========================================================================
+
+    SUBROUTINE READ_CONFIG(cfg)
     
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -137,6 +213,8 @@ MODULE SUBS
         CHARACTER(LEN=500)          :: line, what
         TYPE(config), INTENT(INOUT) :: cfg
     
+        PRINT*, "** READ_CONFIG"
+
         OPEN(NEWUNIT=lun, FILE="config.file", STATUS="old")
         DO
             READ(lun,"(a)",IOSTAT=io) line
@@ -194,7 +272,8 @@ MODULE SUBS
                         READ(line(idx+1:ilen),'(I2)') cfg%ed
     
                     ELSE
-                        PRINT*, "NOT defined in config.file"
+                        PRINT*, "   NOT defined in config.file"
+                        STOP
                     END IF
     
                 END IF
@@ -265,8 +344,6 @@ MODULE SUBS
         cfg%hist_cer_1d_bin=cfg%hist_cer_1d_axis(1:n_cer_bins)*0.5 + &
                             cfg%hist_cer_1d_axis(2:n_cer_bins+1)*0.5
     
-        PRINT*, ''
-        PRINT*, '** CONFIG SETTINGS '
         PRINT('(A13, E8.2)'), "COT-THV: ", cfg%thv
         PRINT('(A13, I1)'), "MPC: ", cfg%mpc
         PRINT('(A13, I1)'), "SCOPS: ", cfg%scops
@@ -276,9 +353,7 @@ MODULE SUBS
         PRINT('(A13, A)'), "INP_PWD: ", TRIM(cfg%inp_path)
         PRINT('(A13, A)'), "OUT_PWD: ", TRIM(cfg%out_path)
         PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg%sst_file)
-        PRINT*, ''
 
-    !==========================================================================
     END SUBROUTINE READ_CONFIG
     !==========================================================================
 
@@ -295,13 +370,15 @@ MODULE SUBS
 
         IMPLICIT NONE
 
-        INTEGER            :: ncid, DimID, VarID, VarDim, i, j
+        INTEGER            :: ncid, DimID, VarID, VarDim, i 
         REAL(KIND=sreal)   :: scale_factor, add_offset
         INTEGER(KIND=lint) :: fill_value, missing_value
         CHARACTER(LEN=file_length), INTENT(IN) :: sfile
-        TYPE(era_sst_lsm), INTENT(INOUT)       :: sdata
+        TYPE(era_aux), INTENT(INOUT)           :: sdata
 
-        PRINT*, "** READ SST FILE and GET LAND/SEA MASK"
+        PRINT*, "** READ_AUX_DATA"
+
+        PRINT*, "   Read SST_FILE "//TRIM(sfile)
 
         ! open ncdf file
         CALL CHECK( nf90_open( sfile, nf90_nowrite, ncid) )
@@ -318,8 +395,8 @@ MODULE SUBS
 
         ! sea surface temperature
         CALL CHECK( nf90_inq_varid( ncid, 'sst', VarID ) )
-        ALLOCATE( sdata%sst( sdata%nlon, sdata%nlat ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, sdata%sst ) )
+        ALLOCATE( sdata%sst2d( sdata%nlon, sdata%nlat ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, sdata%sst2d ) )
 
         ! attributes
         CALL CHECK( nf90_get_att( ncid, VarID, 'scale_factor', scale_factor )  )
@@ -330,19 +407,33 @@ MODULE SUBS
         ! close ncdf file
         CALL CHECK( nf90_close( ncid ) )
 
-        ! get lsm and scale sst and add offset
-        ALLOCATE( sdata%lsm( sdata%nlon, sdata%nlat ) )
 
-        WHERE( sdata%sst == fill_value .OR. sdata%sst == missing_value ) 
-            sdata%lsm = land
-            sdata%sst = sint_fill_value
+        PRINT*, "   Create Land/Sea mask: land = ",land," sea = ",sea 
+
+        ALLOCATE( sdata%lsm2d( sdata%nlon, sdata%nlat ) )
+
+        WHERE( sdata%sst2d == fill_value .OR. sdata%sst2d == missing_value ) 
+            sdata%lsm2d = land
+            sdata%sst2d = sint_fill_value
         ELSEWHERE
-            sdata%lsm = sea
-            sdata%sst = sdata%sst*scale_factor+add_offset
+            sdata%lsm2d = sea
+            sdata%sst2d = sdata%sst2d*scale_factor+add_offset
         END WHERE
 
-        !print*, minval(sdata%sst, mask=sdata%sst .NE. sint_fill_value)
-        !print*, maxval(sdata%sst, mask=sdata%sst .NE. sint_fill_value)
+
+        PRINT*, "   Create ERA-Interim 2D-grid" 
+
+        ALLOCATE( sdata%lon2d( sdata%nlon, sdata%nlat ) )
+        ALLOCATE( sdata%lat2d( sdata%nlon, sdata%nlat ) )
+        
+        ! each column of i-th row = longitude
+        DO i=1, sdata%nlon
+            sdata%lon2d(i,:) = sdata%lon(i)
+        END DO
+        ! each row of i-th column = latitude
+        DO i=1, sdata%nlat
+            sdata%lat2d(:,i) = sdata%lat(i)
+        END DO
 
     END SUBROUTINE READ_AUX_DATA
 
@@ -363,53 +454,58 @@ MODULE SUBS
         CHARACTER(LEN=file_length), INTENT(IN) :: ifile
         TYPE(era_input), INTENT(INOUT)         :: idata
 
+        PRINT*, "** READ_ERA_NCFILE"
+
         ! open ncdf file
         CALL CHECK( nf90_open( ifile, nf90_nowrite, ncid) )
 
         ! longitude
-        CALL GET_VARDIM_VARID( ncid, 'lon', VarID, idata%nlon )
-        ALLOCATE( idata%lon( idata%nlon ) )
+        CALL GET_VARDIM_VARID( ncid, 'lon', VarID, idata%xdim )
+        ALLOCATE( idata%lon( idata%xdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%lon ) )
 
         ! latitude
-        CALL GET_VARDIM_VARID( ncid, 'lat', VarID, idata%nlat )
-        ALLOCATE( idata%lat( idata%nlat ) )
+        CALL GET_VARDIM_VARID( ncid, 'lat', VarID, idata%ydim )
+        ALLOCATE( idata%lat( idata%ydim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%lat ) )
 
         ! pressure levels
-        CALL GET_VARDIM_VARID( ncid, 'lev', VarID, idata%nlev )
-        ALLOCATE( idata%plevel( idata%nlev ) )
+        CALL GET_VARDIM_VARID( ncid, 'lev', VarID, idata%zdim )
+        ALLOCATE( idata%plevel( idata%zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%plevel ) )
 
         ! cloud cover
         CALL CHECK( nf90_inq_varid( ncid, 'var248', VarID ) )
-        ALLOCATE( idata%cc( idata%nlon, idata%nlat, idata%nlev ) )
+        ALLOCATE( idata%cc( idata%xdim, idata%ydim, idata%zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%cc ) )
 
         ! liquid cloud water content [kg kg**-1] 
         ! i.e., [mass of condensate / mass of moist air]
         CALL CHECK( nf90_inq_varid( ncid, 'var246', VarID ) )
-        ALLOCATE( idata%lwc( idata%nlon, idata%nlat, idata%nlev ) )
+        ALLOCATE( idata%lwc( idata%xdim, idata%ydim, idata%zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%lwc ) )
 
         ! ice cloud water content [kg kg**-1] 
         ! i.e., [mass of condensate / mass of moist air]
         CALL CHECK( nf90_inq_varid( ncid, 'var247', VarID ) )
-        ALLOCATE( idata%iwc( idata%nlon, idata%nlat, idata%nlev ) )
+        ALLOCATE( idata%iwc( idata%xdim, idata%ydim, idata%zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%iwc ) )
 
         ! geopotential height [m2/s2]
         CALL CHECK( nf90_inq_varid( ncid, 'var129', VarID ) )
-        ALLOCATE( idata%geop( idata%nlon, idata%nlat, idata%nlev ) )
+        ALLOCATE( idata%geop( idata%xdim, idata%ydim, idata%zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%geop ) )
 
         ! temperature [K]
         CALL CHECK( nf90_inq_varid( ncid, 'var130', VarID ) )
-        ALLOCATE( idata%temp( idata%nlon, idata%nlat, idata%nlev ) )
+        ALLOCATE( idata%temp( idata%xdim, idata%ydim, idata%zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata%temp ) )
 
         ! close ncdf file
         CALL CHECK( nf90_close( ncid ) )
+
+        ! allocate SZA2d array
+        ALLOCATE( idata%sza2d( idata%xdim, idata%ydim ) )
 
         ! pressure difference
         idata%dpres=idata%plevel(2:SIZE(idata%plevel)) - &
@@ -487,32 +583,53 @@ MODULE SUBS
 
         TYPE(era_input), INTENT(INOUT) :: input
 
-        IF (ALLOCATED(input%lon))    DEALLOCATE(input%lon)
-        IF (ALLOCATED(input%lat))    DEALLOCATE(input%lat)
-        IF (ALLOCATED(input%plevel)) DEALLOCATE(input%plevel)
-        IF (ALLOCATED(input%dpres))  DEALLOCATE(input%dpres)
-        IF (ALLOCATED(input%cc))     DEALLOCATE(input%cc)
-        IF (ALLOCATED(input%lwc))    DEALLOCATE(input%lwc)
-        IF (ALLOCATED(input%iwc))    DEALLOCATE(input%iwc)
-        IF (ALLOCATED(input%geop))   DEALLOCATE(input%geop)
-        IF (ALLOCATED(input%temp))   DEALLOCATE(input%temp)
+        DEALLOCATE(input%lon)
+        DEALLOCATE(input%lat)
+        DEALLOCATE(input%plevel)
+        DEALLOCATE(input%dpres)
+        DEALLOCATE(input%cc)
+        DEALLOCATE(input%lwc)
+        DEALLOCATE(input%iwc)
+        DEALLOCATE(input%geop)
+        DEALLOCATE(input%temp)
+        DEALLOCATE(input%sza2d)
 
     END SUBROUTINE DEALLOCATE_INPUT
+
     !==========================================================================
+
+    SUBROUTINE DEALLOCATE_TEMPS( temps )
+
+        USE STRUCTS
+
+        IMPLICIT NONE
+
+        TYPE(tmp_arrays), INTENT(INOUT) :: temps
+
+        DEALLOCATE( temps%lwc_inc )
+        DEALLOCATE( temps%iwc_inc )
+
+    END SUBROUTINE DEALLOCATE_TEMPS
+
+    !==========================================================================
+
     SUBROUTINE DEALLOCATE_AUX( aux )
 
         USE STRUCTS
 
         IMPLICIT NONE
 
-        TYPE(era_sst_lsm), INTENT(INOUT) :: aux
+        TYPE(era_aux), INTENT(INOUT) :: aux
 
-        IF (ALLOCATED(aux%lon)) DEALLOCATE(aux%lon)
-        IF (ALLOCATED(aux%lat)) DEALLOCATE(aux%lat)
-        IF (ALLOCATED(aux%sst)) DEALLOCATE(aux%sst)
-        IF (ALLOCATED(aux%lsm)) DEALLOCATE(aux%lsm)
+        DEALLOCATE(aux%lon)
+        DEALLOCATE(aux%lat)
+        DEALLOCATE(aux%sst2d)
+        DEALLOCATE(aux%lsm2d)
+        DEALLOCATE(aux%lon2d)
+        DEALLOCATE(aux%lat2d)
 
     END SUBROUTINE DEALLOCATE_AUX
+
     !==========================================================================
 
 

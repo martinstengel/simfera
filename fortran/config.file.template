@@ -21,10 +21,10 @@ SCOPS=2
 THV=0.3
 MPC=1
 SCOPS=2
-OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/v5.7_fortran
-INP_PWD=/scratch/ms/de/sf7/cschlund/ERA_Simulator
 REP_PWD=/perm/ms/de/sf7/cschlund/cloud_simulator
 SSTFILE=/perm/ms/de/sf7/cschlund/cloud_simulator/aux/sst_era_interim_0.5_0.5.nc
+INP_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/input
+OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/v5.7_fortran
 
 # define date range
 STARTYEAR=2008

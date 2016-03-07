@@ -42,46 +42,34 @@ MODULE STRUCTS
     END TYPE config
 
     ! era-sst
-    TYPE era_sst_lsm
-        INTEGER(KIND=lint)                              :: nlon, nlat
-        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE     :: lat, lon
-        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE   :: sst
-        INTEGER(KIND=sint), DIMENSION(:,:), ALLOCATABLE :: lsm
-    END TYPE era_sst_lsm
+    TYPE era_aux
+        INTEGER(KIND=lint)                          :: nlon, nlat
+        REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: lat, lon
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: lat2d, lon2d
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: sst2d
+        INTEGER(KIND=sint), DIMENSION(:,:), ALLOCATABLE :: lsm2d
+    END TYPE era_aux
 
     ! era-i input
     TYPE era_input
-        INTEGER(KIND=lint)                              :: nlon, nlat, nlev
-        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE     :: lat, lon
-        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE     :: plevel, dpres
+        INTEGER(KIND=lint)                          :: xdim, ydim, zdim
+        REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: lat, lon
+        REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: plevel, dpres
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: cc, lwc, iwc
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: geop, temp
-        INTEGER(KIND=sint)         :: year, month, day, hour
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: sza2d
+        INTEGER(KIND=sint)         :: year, month, day, hour, doy
         CHARACTER(LEN=file_length) :: filename, dirname, basename
     END TYPE era_input
 
 
-    ! counts
-    TYPE l3_points
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: raw
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cfc
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: ctp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cwp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cwp_allsky
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: lwp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: lwp_allsky
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: iwp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: iwp_allsky
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot_liq
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot_ice
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer_liq
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer_ice
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cph_day
-    END TYPE l3_points
+    ! temp arrays for each time slot
+    TYPE tmp_arrays
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwc_inc, iwc_inc
+    END TYPE tmp_arrays
 
-
+    
+    ! final output (monthly mean - L3C)
     TYPE l3_vars
         REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cfc
         REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cph
@@ -108,6 +96,26 @@ MODULE STRUCTS
         INTEGER(KIND=lint), DIMENSION(:,:,:,:), POINTER   :: hist_cwp
         INTEGER(KIND=lint), DIMENSION(:,:,:,:), POINTER   :: hist_cer
     END TYPE l3_vars
+
+
+    TYPE counts
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: raw
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cfc
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: ctp
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cwp
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cwp_allsky
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: lwp
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: lwp_allsky
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: iwp
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: iwp_allsky
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot_liq
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot_ice
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer_liq
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer_ice
+        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cph_day
+    END TYPE counts
 
 
 END MODULE STRUCTS

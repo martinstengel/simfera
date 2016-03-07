@@ -10,28 +10,26 @@ PROGRAM CLOUD_SIMULATOR
 
     IMPLICIT NONE
 
-    INTEGER(KIND=sint)  :: year, ystep=1
-    INTEGER(KIND=sint)  :: month, mstep=1
-    INTEGER(KIND=sint)  :: day, dstep=1
+    INTEGER(KIND=sint)  :: year, ystep=1, month, mstep=1
     INTEGER(KIND=sint)  :: ff, nfiles
-
-    TYPE(config)      :: cfg
-    TYPE(era_input)   :: input
-    TYPE(era_sst_lsm) :: aux
-
+    TYPE(config)        :: cfg
+    TYPE(era_input)     :: input
+    TYPE(era_aux)       :: aux
+    TYPE(tmp_arrays)    :: temps
     CHARACTER(LEN=file_length)              :: ncfile
     CHARACTER(LEN=file_length), ALLOCATABLE :: files(:,:)
 
     PRINT*, ""
     PRINT*, "** cloud_simulator started"
+    PRINT*, ""
 
     ! get config settings
     CALL READ_CONFIG(cfg)
 
-    ! create output directory
+    ! create output directory if not already existing
     CALL CREATE_DIR( TRIM(cfg%out_path) )
 
-    ! read sea surface temperature and get land/sea mask
+    ! create land/sea mask from SST & era-grid
     CALL READ_AUX_DATA( TRIM(cfg%sst_file), aux )
 
 
@@ -39,19 +37,20 @@ PROGRAM CLOUD_SIMULATOR
     DO year = cfg%sy, cfg%ey, ystep !year-loop 
         DO month = cfg%sm, cfg%em, mstep !month-loop
 
-            CALL GET_FILE_LIST(cfg, year, month, files)
-            nfiles = SIZE(files, DIM=1)
+            CALL GET_FILE_LIST(cfg, year, month, files, nfiles)
 
             DO ff = 1, nfiles ! loop over files per month
 
                 CALL CONVERT_ERA_FILE( files(ff,1), ncfile )
-
                 CALL READ_ERA_NCFILE( ncfile, input )
-
+                CALL INIT_SZA( input, aux )
+                CALL CALC_INCLOUD_CWC( input, temps )
+                CALL DEALLOCATE_TEMPS( temps )
                 CALL DEALLOCATE_INPUT( input )
 
             END DO ! end of files
 
+            IF ( ALLOCATED( files ) ) DEALLOCATE( files )
 
             ! make MM(L3) product and save it
 

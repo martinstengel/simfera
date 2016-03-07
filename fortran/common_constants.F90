@@ -37,8 +37,8 @@ MODULE COMMON_CONSTANTS
     REAL(KIND=dreal),    PARAMETER :: dreal_fill_value=-999.0
 
     ! Mathematical constants
-    REAL(KIND=sreal),    PARAMETER :: pi=3.14159265
-    REAL(KIND=sreal),    PARAMETER :: d2r=pi/180.0
+    REAL(KIND=sreal), PARAMETER :: pi=3.14159265
+    REAL(KIND=sreal), PARAMETER :: d2r=pi/180.0
 
     ! land sea mask
     INTEGER(KIND=sint), PARAMETER :: sea=0
