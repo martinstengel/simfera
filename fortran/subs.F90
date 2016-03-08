@@ -6,8 +6,7 @@ MODULE SUBS
     CONTAINS
 
     !==========================================================================
-    ! BASH stuff
-    !==========================================================================
+
     SUBROUTINE GET_FILE_LIST(cfg, year, month, file_list, nfiles)
 
         USE STRUCTS
@@ -125,13 +124,9 @@ MODULE SUBS
     
     END SUBROUTINE CREATE_DIR
 
-    !==========================================================================
-    
-    
     
     !==========================================================================
-    ! MISC
-    !==========================================================================
+
     SUBROUTINE CALC_INCLOUD_CWC( inp, tmp )
 
         USE COMMON_CONSTANTS
@@ -145,24 +140,101 @@ MODULE SUBS
 
         PRINT*, "** CALC_INCLOUD_CWC"
 
-        ALLOCATE( tmp%lwc_inc( inp%xdim, inp%ydim, inp%zdim) )
-        ALLOCATE( tmp%iwc_inc( inp%xdim, inp%ydim, inp%zdim) )
+        CALL ALLOCATE_INCLOUD_CWC( inp, tmp )
 
         DO z=inp%zdim, 1, -1
 
+            ! incloud liquid water content
             WHERE( inp%cc(:,:,z) .GT. 0. .AND. inp%lwc(:,:,z) .GT. 0 )
                 tmp%lwc_inc(:,:,z) = inp%lwc(:,:,z) / inp%cc(:,:,z)
             ELSEWHERE
                 tmp%lwc_inc(:,:,z) = 0.
             END WHERE
 
-            print*, z, inp%plevel(z), &
-            minval(tmp%lwc_inc(:,:,z)), maxval(tmp%lwc_inc(:,:,z)), &
-            minval(tmp%iwc_inc(:,:,z)), maxval(tmp%iwc_inc(:,:,z))
+            ! incloud ice water content
+            WHERE( inp%cc(:,:,z) .GT. 0. .AND. inp%iwc(:,:,z) .GT. 0 )
+                tmp%iwc_inc(:,:,z) = inp%iwc(:,:,z) / inp%cc(:,:,z)
+            ELSEWHERE
+                tmp%iwc_inc(:,:,z) = 0.
+            END WHERE
 
         END DO
 
-        stop
+    END SUBROUTINE
+
+    !==========================================================================
+
+    SUBROUTINE CALC_CLD_VARS( inp, aux, tmp )
+
+        USE COMMON_CONSTANTS
+        USE STRUCTS
+        USE FUNCS, only: GET_LIQ_CER, GET_ICE_CER
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint)                             :: z
+        TYPE(era_input),  INTENT(IN)                   :: inp
+        TYPE(era_aux),    INTENT(IN)                   :: aux
+        TYPE(tmp_arrays), INTENT(INOUT)                :: tmp
+        REAL(KIND=sreal)                               :: pressure
+        REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: lwc_z, iwc_z
+        REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: temperature
+
+        PRINT*, "** CALC_CLD_VARS"
+
+        CALL ALLOCATE_CLD_VARS( inp, tmp )
+
+        DO z=inp%zdim-1, 1, -1
+
+            lwc_z = tmp % lwc_inc(:,:,z)*0.5 + tmp % lwc_inc(:,:,z+1)*0.5
+            iwc_z = tmp % iwc_inc(:,:,z)*0.5 + tmp % iwc_inc(:,:,z+1)*0.5
+
+            temperature = inp % temp(:,:,z)*0.5 + inp % temp(:,:,z+1)*0.5 ![K]
+            pressure = inp % plevel(z)*0.5 + inp % plevel(z+1)*0.5 ![Pa]
+
+            tmp % lwp_lay(:,:,z) = lwc_z * inp % dpres(z) / 9.81 ![kg/m2]
+            tmp % iwp_lay(:,:,z) = iwc_z * inp % dpres(z) / 9.81 ![kg/m2]
+
+            tmp % lcer_lay(:,:,z) = GET_LIQ_CER( temperature, lwc_z, pressure,&
+                                                 aux%lsm2d, inp%xdim, inp%ydim  )
+            tmp % icer_lay(:,:,z) = GET_ICE_CER( temperature, iwc_z, pressure, &
+                                                 inp%xdim, inp%ydim  )
+
+            ! COT computation: method of Han et al. (1994)
+            ! CWP = (4 * COT * R_eff * rho) / (3 * Q_ext)
+            ! COT = (3 * CWP * Q_ext) / (4 * R_eff * rho)
+            tmp % lcot_lay(:,:,z) = (3.*tmp%lwp_lay(:,:,z)*qext_water) / &
+                                    (4.*tmp%lcer_lay(:,:,z)*1.0E-6*rho_water)
+            tmp % icot_lay(:,:,z) = (3.*tmp%iwp_lay(:,:,z)*qext_ice) / &
+                                    (4.*tmp%icer_lay(:,:,z)*1.0E-6*rho_ice)
+
+            WHERE ( tmp % lwp_lay == 0. )
+                tmp % lcot_lay = 0.
+                tmp % lcer_lay = 0.
+            END WHERE
+            WHERE ( tmp % iwp_lay == 0. )
+                tmp % icot_lay = 0.
+                tmp % icer_lay = 0.
+            END WHERE
+
+            !print('(A25, I4)'), "Layer : ", z
+            !print('(A25, F14.5)'), "pressure [Pa] : ", pressure
+            !print('(A25, 2F14.5)'), "temperature [K] : ", & 
+            !    minval(temperature),  maxval(temperature)
+            !print('(A25, 2F14.5)'), "lwp_lay [kg/m2] : ", & 
+            !    minval(tmp % lwp_lay(:,:,z)), maxval(tmp % lwp_lay(:,:,z))
+            !print('(A25, 2F14.5)'), "iwp_lay [kg/m2] : ", & 
+            !    minval(tmp % iwp_lay(:,:,z)), maxval(tmp % iwp_lay(:,:,z))
+            !print('(A25, 2F14.5)'), "lcer_lay [microns]: ", & 
+            !    minval(tmp % lcer_lay(:,:,z)), maxval(tmp % lcer_lay(:,:,z))
+            !print('(A25, 2F14.5)'), "icer_lay [microns]: ", & 
+            !    minval(tmp % icer_lay(:,:,z)), maxval(tmp % icer_lay(:,:,z))
+            !print('(A25, 2F14.5)'), "lcot_lay : ", & 
+            !    minval(tmp % lcot_lay(:,:,z)), maxval(tmp % lcot_lay(:,:,z))
+            !print('(A25, 2F14.5)'), "icot_lay : ", & 
+            !    minval(tmp % icot_lay(:,:,z)), maxval(tmp % icot_lay(:,:,z))
+
+        END DO
 
     END SUBROUTINE
 
@@ -355,282 +427,39 @@ MODULE SUBS
         PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg%sst_file)
 
     END SUBROUTINE READ_CONFIG
-    !==========================================================================
-
-
-
-    !==========================================================================
-    ! NCDF stuff
-    !==========================================================================
-    SUBROUTINE READ_AUX_DATA( sfile, sdata )
-
-        USE COMMON_CONSTANTS
-        USE STRUCTS
-        USE NETCDF
-
-        IMPLICIT NONE
-
-        INTEGER            :: ncid, DimID, VarID, VarDim, i 
-        REAL(KIND=sreal)   :: scale_factor, add_offset
-        INTEGER(KIND=lint) :: fill_value, missing_value
-        CHARACTER(LEN=file_length), INTENT(IN) :: sfile
-        TYPE(era_aux), INTENT(INOUT)           :: sdata
-
-        PRINT*, "** READ_AUX_DATA"
-
-        PRINT*, "   Read SST_FILE "//TRIM(sfile)
-
-        ! open ncdf file
-        CALL CHECK( nf90_open( sfile, nf90_nowrite, ncid) )
-
-        ! longitude
-        CALL GET_VARDIM_VARID( ncid, 'longitude', VarID, sdata%nlon )
-        ALLOCATE( sdata%lon( sdata%nlon ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, sdata%lon ) )
-
-        ! latitude
-        CALL GET_VARDIM_VARID( ncid, 'latitude', VarID, sdata%nlat )
-        ALLOCATE( sdata%lat( sdata%nlat ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, sdata%lat ) )
-
-        ! sea surface temperature
-        CALL CHECK( nf90_inq_varid( ncid, 'sst', VarID ) )
-        ALLOCATE( sdata%sst2d( sdata%nlon, sdata%nlat ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, sdata%sst2d ) )
-
-        ! attributes
-        CALL CHECK( nf90_get_att( ncid, VarID, 'scale_factor', scale_factor )  )
-        CALL CHECK( nf90_get_att( ncid, VarID, 'add_offset', add_offset )  )
-        CALL CHECK( nf90_get_att( ncid, VarID, 'missing_value', missing_value )  )
-        CALL CHECK( nf90_get_att( ncid, VarID, '_FillValue', fill_value )  )
-        
-        ! close ncdf file
-        CALL CHECK( nf90_close( ncid ) )
-
-
-        PRINT*, "   Create Land/Sea mask: land = ",land," sea = ",sea 
-
-        ALLOCATE( sdata%lsm2d( sdata%nlon, sdata%nlat ) )
-
-        WHERE( sdata%sst2d == fill_value .OR. sdata%sst2d == missing_value ) 
-            sdata%lsm2d = land
-            sdata%sst2d = sint_fill_value
-        ELSEWHERE
-            sdata%lsm2d = sea
-            sdata%sst2d = sdata%sst2d*scale_factor+add_offset
-        END WHERE
-
-
-        PRINT*, "   Create ERA-Interim 2D-grid" 
-
-        ALLOCATE( sdata%lon2d( sdata%nlon, sdata%nlat ) )
-        ALLOCATE( sdata%lat2d( sdata%nlon, sdata%nlat ) )
-        
-        ! each column of i-th row = longitude
-        DO i=1, sdata%nlon
-            sdata%lon2d(i,:) = sdata%lon(i)
-        END DO
-        ! each row of i-th column = latitude
-        DO i=1, sdata%nlat
-            sdata%lat2d(:,i) = sdata%lat(i)
-        END DO
-
-    END SUBROUTINE READ_AUX_DATA
 
     !==========================================================================
 
-    SUBROUTINE READ_ERA_NCFILE( ifile, idata )
-
-        USE COMMON_CONSTANTS
-        USE STRUCTS
-        USE NETCDF
-
-        IMPLICIT NONE
-
-        INTEGER(KIND=sint), PARAMETER :: fb=15
-        CHARACTER(LEN=fb),  PARAMETER :: filbase="ERA_Interim_an_"
-        INTEGER                       :: ncid, DimID, VarID, VarDim, idx
-        CHARACTER(LEN=20)             :: string
-        CHARACTER(LEN=file_length), INTENT(IN) :: ifile
-        TYPE(era_input), INTENT(INOUT)         :: idata
-
-        PRINT*, "** READ_ERA_NCFILE"
-
-        ! open ncdf file
-        CALL CHECK( nf90_open( ifile, nf90_nowrite, ncid) )
-
-        ! longitude
-        CALL GET_VARDIM_VARID( ncid, 'lon', VarID, idata%xdim )
-        ALLOCATE( idata%lon( idata%xdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%lon ) )
-
-        ! latitude
-        CALL GET_VARDIM_VARID( ncid, 'lat', VarID, idata%ydim )
-        ALLOCATE( idata%lat( idata%ydim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%lat ) )
-
-        ! pressure levels
-        CALL GET_VARDIM_VARID( ncid, 'lev', VarID, idata%zdim )
-        ALLOCATE( idata%plevel( idata%zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%plevel ) )
-
-        ! cloud cover
-        CALL CHECK( nf90_inq_varid( ncid, 'var248', VarID ) )
-        ALLOCATE( idata%cc( idata%xdim, idata%ydim, idata%zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%cc ) )
-
-        ! liquid cloud water content [kg kg**-1] 
-        ! i.e., [mass of condensate / mass of moist air]
-        CALL CHECK( nf90_inq_varid( ncid, 'var246', VarID ) )
-        ALLOCATE( idata%lwc( idata%xdim, idata%ydim, idata%zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%lwc ) )
-
-        ! ice cloud water content [kg kg**-1] 
-        ! i.e., [mass of condensate / mass of moist air]
-        CALL CHECK( nf90_inq_varid( ncid, 'var247', VarID ) )
-        ALLOCATE( idata%iwc( idata%xdim, idata%ydim, idata%zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%iwc ) )
-
-        ! geopotential height [m2/s2]
-        CALL CHECK( nf90_inq_varid( ncid, 'var129', VarID ) )
-        ALLOCATE( idata%geop( idata%xdim, idata%ydim, idata%zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%geop ) )
-
-        ! temperature [K]
-        CALL CHECK( nf90_inq_varid( ncid, 'var130', VarID ) )
-        ALLOCATE( idata%temp( idata%xdim, idata%ydim, idata%zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata%temp ) )
-
-        ! close ncdf file
-        CALL CHECK( nf90_close( ncid ) )
-
-        ! allocate SZA2d array
-        ALLOCATE( idata%sza2d( idata%xdim, idata%ydim ) )
-
-        ! pressure difference
-        idata%dpres=idata%plevel(2:SIZE(idata%plevel)) - &
-                    idata%plevel(1:SIZE(idata%plevel)-1)
-        
-        ! split filename ! ERA_Interim_an_20080701_00+00_plev
-        idx = INDEX( TRIM(ifile), filbase )
-
-        idata%filename = TRIM( ifile(idx:LEN_TRIM(ifile)) )
-        idata%dirname  = TRIM( ifile(1:idx-1) )
-        idata%basename = TRIM( ifile(idx:SCAN(TRIM(ifile),'.')-1) )
-
-        string = TRIM( ifile(idx+fb:idx+fb+3) )
-        READ(string, '(I4)') idata%year
-
-        string = TRIM( ifile(idx+fb+4:idx+fb+5) )
-        READ(string, '(I2)') idata%month
-
-        string = TRIM( ifile(idx+fb+6:idx+fb+7) )
-        READ(string, '(I2)') idata%day
-
-        string = TRIM( ifile(idx+fb+9:idx+fb+10) )
-        READ(string, '(I2)') idata%hour
-
-    END SUBROUTINE READ_ERA_NCFILE
-
-    !==========================================================================
-
-    SUBROUTINE CHECK( status )
-
-        USE NETCDF
-
-        IMPLICIT NONE
-
-        INTEGER, INTENT(IN) :: status
-
-        IF (status /= nf90_noerr) THEN
-            PRINT *, TRIM(nf90_strerror(status))
-            STOP "Stopped"
-        END IF
-
-    END SUBROUTINE CHECK
-
-    !==========================================================================
-
-    SUBROUTINE GET_VARDIM_VARID( fileid, varname, vardim, varid )
-
-        USE COMMON_CONSTANTS
-        USE NETCDF
-
-        IMPLICIT NONE
-
-        CHARACTER(LEN=var_name) :: varname
-        INTEGER, INTENT(INOUT)  :: fileid
-        INTEGER, INTENT(OUT)    :: vardim, varid
-
-        CALL CHECK( nf90_inq_dimid( fileid, varname, vardim ) )
-        CALL CHECK( nf90_inq_varid( fileid, varname, varid ) )
-        CALL CHECK( nf90_inquire_dimension( fileid, vardim, varname, varid ) )
-
-    END SUBROUTINE GET_VARDIM_VARID
-
-    !==========================================================================
-
-
-
-    !==========================================================================
-    ! DEALLOCATE ARRAYS
-    !==========================================================================
-    SUBROUTINE DEALLOCATE_INPUT( input )
+    SUBROUTINE ALLOCATE_INCLOUD_CWC( inp, tmp )
 
         USE STRUCTS
-
         IMPLICIT NONE
+        TYPE(era_input),  INTENT(IN)    :: inp
+        TYPE(tmp_arrays), INTENT(INOUT) :: tmp
 
-        TYPE(era_input), INTENT(INOUT) :: input
+        ALLOCATE( tmp%lwc_inc( inp%xdim, inp%ydim, inp%zdim) )
+        ALLOCATE( tmp%iwc_inc( inp%xdim, inp%ydim, inp%zdim) )
 
-        DEALLOCATE(input%lon)
-        DEALLOCATE(input%lat)
-        DEALLOCATE(input%plevel)
-        DEALLOCATE(input%dpres)
-        DEALLOCATE(input%cc)
-        DEALLOCATE(input%lwc)
-        DEALLOCATE(input%iwc)
-        DEALLOCATE(input%geop)
-        DEALLOCATE(input%temp)
-        DEALLOCATE(input%sza2d)
-
-    END SUBROUTINE DEALLOCATE_INPUT
+    END SUBROUTINE ALLOCATE_INCLOUD_CWC
 
     !==========================================================================
 
-    SUBROUTINE DEALLOCATE_TEMPS( temps )
+    SUBROUTINE ALLOCATE_CLD_VARS( inp, tmp )
 
         USE STRUCTS
-
         IMPLICIT NONE
+        TYPE(era_input),  INTENT(IN)    :: inp
+        TYPE(tmp_arrays), INTENT(INOUT) :: tmp
 
-        TYPE(tmp_arrays), INTENT(INOUT) :: temps
+        ALLOCATE( tmp % lwp_lay ( inp % xdim, inp % ydim, inp % zdim-1) )
+        ALLOCATE( tmp % iwp_lay ( inp % xdim, inp % ydim, inp % zdim-1) )
+        ALLOCATE( tmp % lcer_lay( inp % xdim, inp % ydim, inp % zdim-1) )
+        ALLOCATE( tmp % icer_lay( inp % xdim, inp % ydim, inp % zdim-1) )
+        ALLOCATE( tmp % lcot_lay( inp % xdim, inp % ydim, inp % zdim-1) )
+        ALLOCATE( tmp % icot_lay( inp % xdim, inp % ydim, inp % zdim-1) )
 
-        DEALLOCATE( temps%lwc_inc )
-        DEALLOCATE( temps%iwc_inc )
-
-    END SUBROUTINE DEALLOCATE_TEMPS
+    END SUBROUTINE ALLOCATE_CLD_VARS
 
     !==========================================================================
-
-    SUBROUTINE DEALLOCATE_AUX( aux )
-
-        USE STRUCTS
-
-        IMPLICIT NONE
-
-        TYPE(era_aux), INTENT(INOUT) :: aux
-
-        DEALLOCATE(aux%lon)
-        DEALLOCATE(aux%lat)
-        DEALLOCATE(aux%sst2d)
-        DEALLOCATE(aux%lsm2d)
-        DEALLOCATE(aux%lon2d)
-        DEALLOCATE(aux%lat2d)
-
-    END SUBROUTINE DEALLOCATE_AUX
-
-    !==========================================================================
-
-
+    
 END MODULE SUBS

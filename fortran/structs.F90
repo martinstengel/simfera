@@ -8,17 +8,10 @@ MODULE STRUCTS
     IMPLICIT NONE
 
     TYPE config
-        REAL(KIND=sreal)   :: thv
-        INTEGER(KIND=sint) :: mpc
-        INTEGER(KIND=sint) :: scops 
-        INTEGER(KIND=sint) :: sy
-        INTEGER(KIND=sint) :: ey
-        INTEGER(KIND=sint) :: sm
-        INTEGER(KIND=sint) :: em
-        INTEGER(KIND=sint) :: sd
-        INTEGER(KIND=sint) :: ed
-        CHARACTER(LEN=8) :: start_date
-        CHARACTER(LEN=8) :: end_date
+        REAL(KIND=sreal)           :: thv
+        INTEGER(KIND=sint)         :: mpc, scops
+        INTEGER(KIND=sint)         :: sy, ey, sm, em, sd, ed
+        CHARACTER(LEN=8)           :: start_date, end_date
         CHARACTER(LEN=path_length) :: rep_path
         CHARACTER(LEN=path_length) :: inp_path
         CHARACTER(LEN=path_length) :: out_path
@@ -43,16 +36,22 @@ MODULE STRUCTS
 
     ! era-sst
     TYPE era_aux
-        INTEGER(KIND=lint)                          :: nlon, nlat
+        INTEGER(KIND=lint)                              :: nlon, nlat
         REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: lat, lon
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: lat2d, lon2d
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: sst2d
         INTEGER(KIND=sint), DIMENSION(:,:), ALLOCATABLE :: lsm2d
     END TYPE era_aux
 
+    ! gridbox mean profile downscaling to gridbox subcolumn profiles
+    TYPE scops_matrix
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: tcot, cot
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cfc, cph, cwp, cer
+    END TYPE scops_matrix
+
     ! era-i input
     TYPE era_input
-        INTEGER(KIND=lint)                          :: xdim, ydim, zdim
+        INTEGER(KIND=lint)                              :: xdim, ydim, zdim
         REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: lat, lon
         REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: plevel, dpres
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: cc, lwc, iwc
@@ -66,55 +65,49 @@ MODULE STRUCTS
     ! temp arrays for each time slot
     TYPE tmp_arrays
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwc_inc, iwc_inc
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwp_lay, iwp_lay
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcer_lay, icer_lay
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcot_lay, icot_lay
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cfc, cph, cph_day
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: ctt, cth, ctp
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cwp, lwp, iwp
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cwp_allsky
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: lwp_allsky
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: iwp_allsky
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cot, cot_liq, cot_ice
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cer, cer_liq, cer_ice
     END TYPE tmp_arrays
 
     
     ! final output (monthly mean - L3C)
     TYPE l3_vars
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cfc
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cph
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cph_day
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: ctt
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cth
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: ctp
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cwp
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cwp_allsky
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: lwp
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: lwp_allsky
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: iwp
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: iwp_allsky
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cot
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cot_liq
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cot_ice
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cer
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cer_liq
-        REAL(KIND=sreal), DIMENSION(:,:), POINTER :: cer_ice
-        INTEGER(KIND=lint), DIMENSION(:,:,:,:,:), POINTER :: hist_cot_ctp
-        INTEGER(KIND=lint), DIMENSION(:,:,:,:), POINTER   :: hist_ctp
-        INTEGER(KIND=lint), DIMENSION(:,:,:,:), POINTER   :: hist_ctt
-        INTEGER(KIND=lint), DIMENSION(:,:,:,:), POINTER   :: hist_cot
-        INTEGER(KIND=lint), DIMENSION(:,:,:,:), POINTER   :: hist_cwp
-        INTEGER(KIND=lint), DIMENSION(:,:,:,:), POINTER   :: hist_cer
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cfc, cph, cph_day
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: ctt, cth, ctp
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cwp, lwp, iwp
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cwp_allsky
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: lwp_allsky
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: iwp_allsky
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cot, cot_liq, cot_ice
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cer, cer_liq, cer_ice
+        INTEGER(KIND=lint), DIMENSION(:,:,:,:,:), ALLOCATABLE :: hist_cot_ctp
+        INTEGER(KIND=lint), DIMENSION(:,:,:,:),   ALLOCATABLE :: hist_ctp
+        INTEGER(KIND=lint), DIMENSION(:,:,:,:),   ALLOCATABLE :: hist_ctt
+        INTEGER(KIND=lint), DIMENSION(:,:,:,:),   ALLOCATABLE :: hist_cot
+        INTEGER(KIND=lint), DIMENSION(:,:,:,:),   ALLOCATABLE :: hist_cwp
+        INTEGER(KIND=lint), DIMENSION(:,:,:,:),   ALLOCATABLE :: hist_cer
     END TYPE l3_vars
 
 
     TYPE counts
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: raw
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cfc
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: ctp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cwp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cwp_allsky
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: lwp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: lwp_allsky
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: iwp
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: iwp_allsky
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot_liq
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cot_ice
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer_liq
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cer_ice
-        INTEGER(KIND=lint), DIMENSION(:,:), POINTER :: cph_day
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cph_day
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: raw, cfc, ctp
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cwp, lwp, iwp
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cwp_allsky
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: lwp_allsky
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: iwp_allsky
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cot, cer
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cot_liq, cer_liq
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cot_ice, cer_ice
     END TYPE counts
 
 
