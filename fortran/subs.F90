@@ -14,16 +14,17 @@ MODULE SUBS
     
         IMPLICIT NONE
     
+        TYPE(config),       INTENT(IN)                       :: cfg
+        INTEGER(KIND=sint), INTENT(IN)                       :: year, month
+        INTEGER(KIND=sint), INTENT(OUT)                      :: nfiles
+        CHARACTER(LEN=file_length), ALLOCATABLE, INTENT(OUT) :: file_list(:,:)
+
+        ! local variables
         REAL                       :: r
         CHARACTER(LEN=4)           :: ystr
         CHARACTER(LEN=2)           :: mstr
         INTEGER(KIND=sint)         :: i, reason, ilen
         CHARACTER(LEN=file_length) :: command, txtfile, inppath, line
-    
-        TYPE(config), INTENT(IN)                             :: cfg
-        INTEGER(KIND=sint), INTENT(IN)                       :: year, month
-        INTEGER(KIND=sint), INTENT(OUT)                      :: nfiles
-        CHARACTER(LEN=file_length), ALLOCATABLE, INTENT(OUT) :: file_list(:,:)
     
         PRINT*, "** GET_FILE_LIST"
 
@@ -72,11 +73,13 @@ MODULE SUBS
         USE COMMON_CONSTANTS
         IMPLICIT NONE
     
-        LOGICAL                                 :: file_exists
-        CHARACTER(LEN=900)                      :: command
         CHARACTER(LEN=file_length), INTENT(IN)  :: ifile
         CHARACTER(LEN=file_length), INTENT(OUT) :: ofile
-    
+
+        !local variables 
+        LOGICAL            :: file_exists
+        CHARACTER(LEN=900) :: command
+
         PRINT*, "** CONVERT_ERA_FILE"
 
         ofile = TRIM(ifile)//'.nc'
@@ -100,9 +103,11 @@ MODULE SUBS
     
         IMPLICIT NONE
     
-        LOGICAL                                :: dirExists
-        CHARACTER(LEN=256)                     :: mkdirCmd
         CHARACTER(LEN=path_length), INTENT(IN) :: newDirPath
+
+        !local variables
+        LOGICAL            :: dirExists
+        CHARACTER(LEN=256) :: mkdirCmd
     
         PRINT*, '** CREATE_DIR'
 
@@ -134,9 +139,11 @@ MODULE SUBS
 
         IMPLICIT NONE
 
-        INTEGER(KIND=sint)              :: z
         TYPE(era_input),  INTENT(IN)    :: inp
         TYPE(tmp_arrays), INTENT(INOUT) :: tmp
+
+        !local variable
+        INTEGER(KIND=sint) :: z
 
         PRINT*, "** CALC_INCLOUD_CWC"
 
@@ -172,10 +179,12 @@ MODULE SUBS
 
         IMPLICIT NONE
 
+        TYPE(era_input),  INTENT(IN)    :: inp
+        TYPE(era_aux),    INTENT(IN)    :: aux
+        TYPE(tmp_arrays), INTENT(INOUT) :: tmp
+
+        ! local variables
         INTEGER(KIND=sint)                             :: z
-        TYPE(era_input),  INTENT(IN)                   :: inp
-        TYPE(era_aux),    INTENT(IN)                   :: aux
-        TYPE(tmp_arrays), INTENT(INOUT)                :: tmp
         REAL(KIND=sreal)                               :: pressure
         REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: lwc_z, iwc_z
         REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: temperature
@@ -203,18 +212,18 @@ MODULE SUBS
             ! COT computation: method of Han et al. (1994)
             ! CWP = (4 * COT * R_eff * rho) / (3 * Q_ext)
             ! COT = (3 * CWP * Q_ext) / (4 * R_eff * rho)
-            tmp % lcot_lay(:,:,z) = (3.*tmp%lwp_lay(:,:,z)*qext_water) / &
-                                    (4.*tmp%lcer_lay(:,:,z)*1.0E-6*rho_water)
-            tmp % icot_lay(:,:,z) = (3.*tmp%iwp_lay(:,:,z)*qext_ice) / &
-                                    (4.*tmp%icer_lay(:,:,z)*1.0E-6*rho_ice)
+            tmp % lcot_lay(:,:,z) = (3.0*tmp % lwp_lay(:,:,z)*qext_water) / &
+                                    (4.0*tmp % lcer_lay(:,:,z)*1.0E-6*rho_water)
+            tmp % icot_lay(:,:,z) = (3.0*tmp % iwp_lay(:,:,z)*qext_ice) / &
+                                    (4.0*tmp % icer_lay(:,:,z)*1.0E-6*rho_ice)
 
-            WHERE ( tmp % lwp_lay == 0. )
-                tmp % lcot_lay = 0.
-                tmp % lcer_lay = 0.
+            WHERE ( tmp % lwp_lay(:,:,z) == 0.0 )
+                tmp % lcot_lay(:,:,z) = 0.0
+                tmp % lcer_lay(:,:,z) = 0.0
             END WHERE
-            WHERE ( tmp % iwp_lay == 0. )
-                tmp % icot_lay = 0.
-                tmp % icer_lay = 0.
+            WHERE ( tmp % iwp_lay(:,:,z) == 0.0 )
+                tmp % icot_lay(:,:,z) = 0.0
+                tmp % icer_lay(:,:,z) = 0.0
             END WHERE
 
             !print('(A25, I4)'), "Layer : ", z
@@ -250,6 +259,8 @@ MODULE SUBS
 
         TYPE(era_aux),   INTENT(IN)    :: aux
         TYPE(era_input), INTENT(INOUT) :: inp
+
+        ! local variables
         INTEGER(KIND=sint), DIMENSION(inp%xdim,inp%ydim) :: doy
         INTEGER(KIND=sint), DIMENSION(inp%xdim,inp%ydim) :: hour
         INTEGER(KIND=sint), DIMENSION(inp%xdim,inp%ydim) :: minute
@@ -257,15 +268,15 @@ MODULE SUBS
         PRINT*, "** INIT_SZA"
 
         ! check if SST grid is the same of input file
-        IF (inp%xdim .NE. aux%nlon) STOP
-        IF (inp%ydim .NE. aux%nlat) STOP
+        IF (inp % xdim .NE. aux % nlon) STOP
+        IF (inp % ydim .NE. aux % nlat) STOP
 
-        doy(:,:)    = DAY_OF_YEAR( inp%year, inp%month, inp%day )
-        hour(:,:)   = inp%hour
-        minute(:,:) = 0
-        inp%doy     = doy(1,1)
-        inp%sza2d   = GET_SZA(doy, hour, minute, &
-                              aux%lon2d, aux%lat2d, aux%nlon, aux%nlat)
+        doy = DAY_OF_YEAR( inp % year, inp % month, inp % day )
+        hour = inp % hour
+        minute = 0
+        inp % doy = doy(1,1)
+        inp % sza2d = GET_SZA(doy, hour, minute, aux % lon2d, &
+                              aux % lat2d, aux % nlon, aux % nlat)
 
     END SUBROUTINE INIT_SZA
 
@@ -279,11 +290,13 @@ MODULE SUBS
     
         IMPLICIT NONE
     
-        INTEGER(KIND=sint)          :: io, idx, lun, ilen
-        CHARACTER(LEN=4)            :: year
-        CHARACTER(LEN=2)            :: month, day
-        CHARACTER(LEN=500)          :: line, what
         TYPE(config), INTENT(INOUT) :: cfg
+
+        ! local variables
+        INTEGER(KIND=sint) :: io, idx, lun, ilen
+        CHARACTER(LEN=4)   :: year
+        CHARACTER(LEN=2)   :: month, day
+        CHARACTER(LEN=500) :: line, what
     
         PRINT*, "** READ_CONFIG"
 
@@ -437,8 +450,8 @@ MODULE SUBS
         TYPE(era_input),  INTENT(IN)    :: inp
         TYPE(tmp_arrays), INTENT(INOUT) :: tmp
 
-        ALLOCATE( tmp%lwc_inc( inp%xdim, inp%ydim, inp%zdim) )
-        ALLOCATE( tmp%iwc_inc( inp%xdim, inp%ydim, inp%zdim) )
+        ALLOCATE( tmp % lwc_inc( inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % iwc_inc( inp % xdim, inp % ydim, inp % zdim) )
 
     END SUBROUTINE ALLOCATE_INCLOUD_CWC
 

@@ -9,6 +9,23 @@ MODULE UNDEFINE
     ! DEALLOCATE ARRAYS
     !==========================================================================
 
+    SUBROUTINE UNDEFINE_MATRIX( matrix )
+    
+        USE STRUCTS
+        IMPLICIT NONE
+        TYPE(scops_matrix), INTENT(INOUT) :: matrix
+
+        IF ( ALLOCATED(matrix % tcot)) DEALLOCATE( matrix % tcot )
+        IF ( ALLOCATED(matrix % cot) ) DEALLOCATE( matrix % cot  )
+        IF ( ALLOCATED(matrix % cfc) ) DEALLOCATE( matrix % cfc  )
+        IF ( ALLOCATED(matrix % cwp) ) DEALLOCATE( matrix % cwp  )
+        IF ( ALLOCATED(matrix % cph) ) DEALLOCATE( matrix % cph  )
+        IF ( ALLOCATED(matrix % cer) ) DEALLOCATE( matrix % cer  )
+
+    END SUBROUTINE UNDEFINE_MATRIX
+
+    !==========================================================================
+
     SUBROUTINE UNDEFINE_INPUT( input )
 
         USE STRUCTS

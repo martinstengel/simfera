@@ -58,7 +58,10 @@ MODULE COMMON_CONSTANTS
     ! sim_core.F90
     INTEGER(KIND=sint), PARAMETER :: is_night=0
     INTEGER(KIND=sint), PARAMETER :: is_day=1
-    INTEGER(KIND=sint), PARAMETER :: ncol=20 
+    INTEGER(KIND=sint), PARAMETER :: no_mixed_phase=0
+    INTEGER(KIND=sint), PARAMETER :: mixed_phase=1
+    INTEGER(KIND=sint), PARAMETER :: rand=1
+    INTEGER(KIND=sint), PARAMETER :: max_rand=2
 
     ! phase definition
     INTEGER(KIND=sint), PARAMETER :: liquid=0

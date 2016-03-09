@@ -7,6 +7,30 @@ MODULE FUNCS
 
     !==========================================================================
 
+    FUNCTION RANDOM_NUMBER_DUPLICATES( n, vector ) RESULT( ret )
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint)             :: n, i, j, cnt
+        REAL(KIND=sreal), DIMENSION(n) :: vector
+        LOGICAL                        :: ret
+
+        ret = .FALSE.
+
+        DO i=1, n
+            cnt = 0
+            DO j=1, n
+                IF ( vector(i) == vector(j) ) cnt = cnt + 1
+                IF ( cnt > 1 ) ret = .TRUE.
+            END DO
+        END DO
+
+    END FUNCTION RANDOM_NUMBER_DUPLICATES
+
+    !==========================================================================
+
     FUNCTION GET_DENSITY_OF_AIR( temp, pres, x, y ) RESULT( rho )
 
         ! https://en.wikipedia.org/wiki/Density_of_air
