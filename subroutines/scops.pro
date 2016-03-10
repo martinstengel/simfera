@@ -53,6 +53,7 @@ PRO SCOPS, type, mpc, flag, icc, lcot, icot, lcer, icer, lwp, iwp, subcols
 
 
             IF (lastcloud NE (zi-1) OR type EQ 1) THEN BEGIN
+                UNDEFINE, dseed
                 x = LINDGEN(ncol)
                 y = RANDOMU(dseed, ncol)
                 ci = x[SORT(y)]
@@ -110,9 +111,6 @@ PRO SCOPS, type, mpc, flag, icc, lcot, icot, lcer, icer, lwp, iwp, subcols
 
            ENDELSE 
 
-           IF (flag EQ 1) THEN matrix_cwp[ci[0:nfb-1],zi] = cwp_prof_total[zi]
-           matrix_cot[ci[0:nfb-1],zi] = cot_prof_total[zi]
-           matrix_cfc[ci[0:nfb-1],zi] = 1.0
            lastcloud = zi
 
         ENDIF
