@@ -37,14 +37,42 @@ MODULE COMMON_CONSTANTS
     REAL(KIND=dreal),    PARAMETER :: dreal_fill_value=-999.0
 
     ! Mathematical constants
-    REAL(KIND=sreal),    PARAMETER :: pi=3.14159265
-    REAL(KIND=sreal),    PARAMETER :: d2r=pi/180.0
+    REAL(KIND=sreal), PARAMETER :: pi=3.14159265
+    REAL(KIND=sreal), PARAMETER :: d2r=pi/180.0
+    REAL(KIND=sreal), PARAMETER :: r_specific=287.058 ![J/(kg*K)]
+    REAL(KIND=sreal), PARAMETER :: zd_sea=0.33
+    REAL(KIND=sreal), PARAMETER :: zd_land=0.43
+    REAL(KIND=sreal), PARAMETER :: zntot_sea=100.
+    REAL(KIND=sreal), PARAMETER :: zntot_land=300.
+    REAL(KIND=sreal), PARAMETER :: rtt=273.15
+    REAL(KIND=sreal), PARAMETER :: zrefde=0.64952
+    REAL(KIND=sreal), PARAMETER :: rho_water=1000. ![kg/m3]
+    REAL(KIND=sreal), PARAMETER :: rho_ice=916.7   ![kg/m3]
+    REAL(KIND=sreal), PARAMETER :: qext_water=2.0
+    REAL(KIND=sreal), PARAMETER :: qext_ice=2.1
 
     ! land sea mask
     INTEGER(KIND=sint), PARAMETER :: sea=0
     INTEGER(KIND=sint), PARAMETER :: land=1
 
-    ! phase definition
+    ! sim_core.F90
+    INTEGER(KIND=sint), PARAMETER :: is_night=0
+    INTEGER(KIND=sint), PARAMETER :: is_day=1
+    INTEGER(KIND=sint), PARAMETER :: no_mixed_phase=1
+    INTEGER(KIND=sint), PARAMETER :: mixed_phase=2
+    INTEGER(KIND=sint), PARAMETER :: rand=1
+    INTEGER(KIND=sint), PARAMETER :: max_rand=2
+    INTEGER(KIND=sint), PARAMETER :: max_cot=100.0
+    REAL(KIND=sreal),   PARAMETER :: is_clear=0.0
+    REAL(KIND=sreal),   PARAMETER :: is_cloud=1.0
+    REAL(KIND=sreal),   PARAMETER :: is_ice=0.0
+    REAL(KIND=sreal),   PARAMETER :: is_liq=1.0
+
+    ! GET_MEAN in funcs.F90
+    INTEGER(KIND=sint), PARAMETER :: normal=0
+    INTEGER(KIND=sint), PARAMETER :: allsky=1
+
+    ! phase definition in CC4CL
     INTEGER(KIND=sint), PARAMETER :: liquid=0
     INTEGER(KIND=sint), PARAMETER :: ice=1
 
