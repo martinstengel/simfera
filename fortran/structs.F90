@@ -49,6 +49,12 @@ MODULE STRUCTS
         REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cfc, cph, cwp, cer
     END TYPE scops_matrix
 
+    ! pseudo arrays(ncol)
+    TYPE pseudo_arrays
+        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE :: ctp, cth, ctt, cfc
+        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE :: cph, cot, cwp, cer
+    END TYPE pseudo_arrays
+
     ! era-i input
     TYPE era_input
         INTEGER(KIND=lint)                              :: xdim, ydim, zdim

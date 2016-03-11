@@ -9,6 +9,25 @@ MODULE UNDEFINE
     ! DEALLOCATE ARRAYS
     !==========================================================================
 
+    SUBROUTINE UNDEFINE_ARRAYS( array )
+
+        USE STRUCTS
+        IMPLICIT NONE
+        TYPE(pseudo_arrays), INTENT(INOUT) :: array
+
+        IF ( ALLOCATED(array % ctp) ) DEALLOCATE( array % ctp ) 
+        IF ( ALLOCATED(array % cth) ) DEALLOCATE( array % cth )
+        IF ( ALLOCATED(array % ctt) ) DEALLOCATE( array % ctt )
+        IF ( ALLOCATED(array % cfc) ) DEALLOCATE( array % cfc )
+        IF ( ALLOCATED(array % cph) ) DEALLOCATE( array % cph )
+        IF ( ALLOCATED(array % cot) ) DEALLOCATE( array % cot )
+        IF ( ALLOCATED(array % cwp) ) DEALLOCATE( array % cwp )
+        IF ( ALLOCATED(array % cer) ) DEALLOCATE( array % cer )
+
+    END SUBROUTINE UNDEFINE_ARRAYS
+
+    !==========================================================================
+
     SUBROUTINE UNDEFINE_MATRIX( matrix )
     
         USE STRUCTS

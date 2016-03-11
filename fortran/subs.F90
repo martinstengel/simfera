@@ -147,8 +147,6 @@ MODULE SUBS
 
         PRINT*, "** CALC_INCLOUD_CWC"
 
-        CALL ALLOCATE_INCLOUD_CWC( inp, tmp )
-
         DO z=inp%zdim, 1, -1
 
             ! incloud liquid water content
@@ -190,8 +188,6 @@ MODULE SUBS
         REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: temperature
 
         PRINT*, "** CALC_CLD_VARS"
-
-        CALL ALLOCATE_CLD_VARS( inp, tmp )
 
         DO z=inp%zdim-1, 1, -1
 
@@ -388,46 +384,45 @@ MODULE SUBS
         ! set histogram definitions
     
         ! 2d histogram
-        cfg%hist_cot=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, &
-                       9.4, 15.0, 23.0, 41.0, 60.0, 80.0, 100./)
-        cfg%hist_cot_bin=cfg%hist_cot(1:n_hist_cot-1)*0.5 + &
-                         cfg%hist_cot(2:n_hist_cot)*0.5
+        cfg % hist_cot=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, &
+                         9.4, 15.0, 23.0, 41.0, 60.0, 80.0, 100./)
+        cfg % hist_cot_bin=cfg % hist_cot(1:n_hist_cot-1)*0.5 + &
+                           cfg % hist_cot(2:n_hist_cot)*0.5
     
-        cfg%hist_ctp=(/1.0, 90.0, 180.0, 245.0, 310.0, 375.0, &
-                       440.0, 500.0, 560.0, 620.0, 680.0, &
-                       740.0, 800.0, 875.0, 950.0, 1100./)
-        cfg%hist_ctp_bin=cfg%hist_ctp(1:n_hist_ctp-1)*0.5 + &
-                         cfg%hist_ctp(2:n_hist_ctp)*0.5
+        cfg % hist_ctp=(/1.0, 90.0, 180.0, 245.0, 310.0, 375.0, &
+                         440.0, 500.0, 560.0, 620.0, 680.0, &
+                         740.0, 800.0, 875.0, 950.0, 1100./)
+        cfg % hist_ctp_bin=cfg % hist_ctp(1:n_hist_ctp-1)*0.5 + &
+                           cfg % hist_ctp(2:n_hist_ctp)*0.5
     
         ! 1d histogram
+        cfg % hist_cot_1d_axis=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, &
+                                 9.4, 15.0, 23.0, 41.0, 60.0, 80.0, 100. /) 
+        cfg % hist_cot_1d_bin=cfg % hist_cot_1d_axis(1:n_cot_bins)*0.5 + &
+                              cfg % hist_cot_1d_axis(2:n_cot_bins+1)*0.5
     
-        cfg%hist_cot_1d_axis=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, &
-                               9.4, 15.0, 23.0, 41.0, 60.0, 80.0, 100. /) 
-        cfg%hist_cot_1d_bin=cfg%hist_cot_1d_axis(1:n_cot_bins)*0.5 + &
-                            cfg%hist_cot_1d_axis(2:n_cot_bins+1)*0.5
+        cfg % hist_ctp_1d_axis=(/ 1.0, 90.0, 180.0, 245.0, 310.0, 375.0, &
+                                  440.0, 500.0, 560.0, 620.0, 680.0, 740.0, 800.0, &
+                                  875.0, 950.0, 1100.0 /)
+        cfg % hist_ctp_1d_bin=cfg % hist_ctp_1d_axis(1:n_ctp_bins)*0.5 + &
+                              cfg % hist_ctp_1d_axis(2:n_ctp_bins+1)*0.5
     
-        cfg%hist_ctp_1d_axis=(/ 1.0, 90.0, 180.0, 245.0, 310.0, 375.0, &
-                                440.0, 500.0, 560.0, 620.0, 680.0, 740.0, 800.0, &
-                                875.0, 950.0, 1100.0 /)
-        cfg%hist_ctp_1d_bin=cfg%hist_ctp_1d_axis(1:n_ctp_bins)*0.5 + &
-                            cfg%hist_ctp_1d_axis(2:n_ctp_bins+1)*0.5
+        cfg % hist_ctt_1d_axis=(/ 200.0, 210.0, 220.0, 230.0, 235.0, &
+                                  240.0, 245.0, 250.0, 255.0, 260.0, 265.0, &
+                                  270.0, 280.0, 290.0, 300.0, 310.0, 350.0 /)
+        cfg % hist_ctt_1d_bin=cfg % hist_ctt_1d_axis(1:n_ctt_bins)*0.5 + & 
+                              cfg % hist_ctt_1d_axis(2:n_ctt_bins+1)*0.5
     
-        cfg%hist_ctt_1d_axis=(/ 200.0, 210.0, 220.0, 230.0, 235.0, &
-                                240.0, 245.0, 250.0, 255.0, 260.0, 265.0, &
-                                270.0, 280.0, 290.0, 300.0, 310.0, 350.0 /)
-        cfg%hist_ctt_1d_bin=cfg%hist_ctt_1d_axis(1:n_ctt_bins)*0.5 + & 
-                            cfg%hist_ctt_1d_axis(2:n_ctt_bins+1)*0.5
+        cfg % hist_cwp_1d_axis=(/ 0.0, 5.0, 10.0, 20.0, 35.0, 50.0, &
+                                  75.0, 100.0, 150.0, 200.0, 300.0, 500.0, &
+                                  1000.0, 2000.0, 100000.0 /)
+        cfg % hist_cwp_1d_bin=cfg % hist_cwp_1d_axis(1:n_cwp_bins)*0.5 + &
+                              cfg % hist_cwp_1d_axis(2:n_cwp_bins+1)*0.5
     
-        cfg%hist_cwp_1d_axis=(/ 0.0, 5.0, 10.0, 20.0, 35.0, 50.0, &
-                                75.0, 100.0, 150.0, 200.0, 300.0, 500.0, &
-                                1000.0, 2000.0, 100000.0 /)
-        cfg%hist_cwp_1d_bin=cfg%hist_cwp_1d_axis(1:n_cwp_bins)*0.5 + &
-                            cfg%hist_cwp_1d_axis(2:n_cwp_bins+1)*0.5
-    
-        cfg%hist_cer_1d_axis=(/ 0.0, 3.0, 6.0, 9.0, 12.0, 15.0, &
-                                20.0, 25.0, 30.0, 40.0, 60.0, 80.0 /)
-        cfg%hist_cer_1d_bin=cfg%hist_cer_1d_axis(1:n_cer_bins)*0.5 + &
-                            cfg%hist_cer_1d_axis(2:n_cer_bins+1)*0.5
+        cfg % hist_cer_1d_axis=(/ 0.0, 3.0, 6.0, 9.0, 12.0, 15.0, &
+                                  20.0, 25.0, 30.0, 40.0, 60.0, 80.0 /)
+        cfg % hist_cer_1d_bin=cfg % hist_cer_1d_axis(1:n_cer_bins)*0.5 + &
+                              cfg % hist_cer_1d_axis(2:n_cer_bins+1)*0.5
     
         PRINT('(A13, E8.2)'), "COT-THV: ", cfg%thv
         PRINT('(A13, I1)'), "MPC: ", cfg%mpc
@@ -443,36 +438,5 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE ALLOCATE_INCLOUD_CWC( inp, tmp )
-
-        USE STRUCTS
-        IMPLICIT NONE
-        TYPE(era_input),  INTENT(IN)    :: inp
-        TYPE(tmp_arrays), INTENT(INOUT) :: tmp
-
-        ALLOCATE( tmp % lwc_inc( inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % iwc_inc( inp % xdim, inp % ydim, inp % zdim) )
-
-    END SUBROUTINE ALLOCATE_INCLOUD_CWC
-
-    !==========================================================================
-
-    SUBROUTINE ALLOCATE_CLD_VARS( inp, tmp )
-
-        USE STRUCTS
-        IMPLICIT NONE
-        TYPE(era_input),  INTENT(IN)    :: inp
-        TYPE(tmp_arrays), INTENT(INOUT) :: tmp
-
-        ALLOCATE( tmp % lwp_lay ( inp % xdim, inp % ydim, inp % zdim-1) )
-        ALLOCATE( tmp % iwp_lay ( inp % xdim, inp % ydim, inp % zdim-1) )
-        ALLOCATE( tmp % lcer_lay( inp % xdim, inp % ydim, inp % zdim-1) )
-        ALLOCATE( tmp % icer_lay( inp % xdim, inp % ydim, inp % zdim-1) )
-        ALLOCATE( tmp % lcot_lay( inp % xdim, inp % ydim, inp % zdim-1) )
-        ALLOCATE( tmp % icot_lay( inp % xdim, inp % ydim, inp % zdim-1) )
-
-    END SUBROUTINE ALLOCATE_CLD_VARS
-
-    !==========================================================================
     
 END MODULE SUBS

@@ -7,6 +7,37 @@ MODULE FUNCS
 
     !==========================================================================
 
+    FUNCTION GET_MEAN( n, vector, phase, flag ) RESULT( mean )
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint)             :: i, n, cnt, flag
+        REAL(KIND=sreal), DIMENSION(n) :: vector, phase
+        REAL(KIND=sreal)               :: mean, isum
+
+        cnt = 0
+        isum = 0.0
+
+        DO i = 1, n
+            IF ( vector(i) >= 0.0 .AND. phase(i) /= sreal_fill_value ) THEN
+                cnt = cnt + 1
+                isum = isum + vector(i)
+            END IF
+        END DO
+
+        IF ( cnt > 0 ) THEN
+            IF ( flag == normal ) mean = isum / cnt
+            IF ( flag == allsky ) mean = isum / n
+        ELSE
+            mean = sreal_fill_value
+        END IF
+
+    END FUNCTION GET_MEAN
+
+    !==========================================================================
+
     FUNCTION RANDOM_NUMBER_DUPLICATES( n, vector ) RESULT( ret )
 
         USE COMMON_CONSTANTS

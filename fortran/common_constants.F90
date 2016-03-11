@@ -58,12 +58,21 @@ MODULE COMMON_CONSTANTS
     ! sim_core.F90
     INTEGER(KIND=sint), PARAMETER :: is_night=0
     INTEGER(KIND=sint), PARAMETER :: is_day=1
-    INTEGER(KIND=sint), PARAMETER :: no_mixed_phase=0
-    INTEGER(KIND=sint), PARAMETER :: mixed_phase=1
+    INTEGER(KIND=sint), PARAMETER :: no_mixed_phase=1
+    INTEGER(KIND=sint), PARAMETER :: mixed_phase=2
     INTEGER(KIND=sint), PARAMETER :: rand=1
     INTEGER(KIND=sint), PARAMETER :: max_rand=2
+    INTEGER(KIND=sint), PARAMETER :: max_cot=100.0
+    REAL(KIND=sreal),   PARAMETER :: is_clear=0.0
+    REAL(KIND=sreal),   PARAMETER :: is_cloud=1.0
+    REAL(KIND=sreal),   PARAMETER :: is_ice=0.0
+    REAL(KIND=sreal),   PARAMETER :: is_liq=1.0
 
-    ! phase definition
+    ! GET_MEAN in funcs.F90
+    INTEGER(KIND=sint), PARAMETER :: normal=0
+    INTEGER(KIND=sint), PARAMETER :: allsky=1
+
+    ! phase definition in CC4CL
     INTEGER(KIND=sint), PARAMETER :: liquid=0
     INTEGER(KIND=sint), PARAMETER :: ice=1
 

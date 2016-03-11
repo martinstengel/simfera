@@ -5,6 +5,7 @@ PROGRAM CLOUD_SIMULATOR
 !=============================================================================== 
 
     USE COMMON_CONSTANTS
+    USE INITIALIZE
     USE UNDEFINE
     USE STRUCTS
     USE SIM_NCDF
@@ -48,6 +49,9 @@ PROGRAM CLOUD_SIMULATOR
                 CALL READ_ERA_NCFILE( ncfile, input )
                 CALL INIT_SZA( input, aux )
 
+                IF ( ff == 1 ) CALL INITIALIZE_FINAL( cfg, input, final )
+
+                CALL INITIALIZE_TEMPS( input, temps )
                 CALL CALC_INCLOUD_CWC( input, temps )
                 CALL CALC_CLD_VARS( input, aux, temps )
                 CALL MAIN_PROC( cfg, input, temps, final )
