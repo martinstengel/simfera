@@ -156,5 +156,31 @@ MODULE UNDEFINE
 
     !==========================================================================
 
+    SUBROUTINE UNDEFINE_COUNTS( cnt )
+
+        USE STRUCTS
+        IMPLICIT NONE
+        TYPE(npoints), INTENT(INOUT) :: cnt
+
+        IF ( ALLOCATED (cnt % raw) )        DEALLOCATE( cnt % raw )
+        IF ( ALLOCATED (cnt % cfc) )        DEALLOCATE( cnt % cfc )
+        IF ( ALLOCATED (cnt % ctp) )        DEALLOCATE( cnt % ctp )
+        IF ( ALLOCATED (cnt % cwp) )        DEALLOCATE( cnt % cwp )
+        IF ( ALLOCATED (cnt % lwp) )        DEALLOCATE( cnt % lwp )
+        IF ( ALLOCATED (cnt % iwp) )        DEALLOCATE( cnt % iwp )
+        IF ( ALLOCATED (cnt % cwp_allsky) ) DEALLOCATE( cnt % cwp_allsky )
+        IF ( ALLOCATED (cnt % lwp_allsky) ) DEALLOCATE( cnt % lwp_allsky )
+        IF ( ALLOCATED (cnt % iwp_allsky) ) DEALLOCATE( cnt % iwp_allsky )
+        IF ( ALLOCATED (cnt % cot) )        DEALLOCATE( cnt % cot )
+        IF ( ALLOCATED (cnt % cot_liq) )    DEALLOCATE( cnt % cot_liq )
+        IF ( ALLOCATED (cnt % cot_ice) )    DEALLOCATE( cnt % cot_ice )
+        IF ( ALLOCATED (cnt % cer) )        DEALLOCATE( cnt % cer )
+        IF ( ALLOCATED (cnt % cer_liq) )    DEALLOCATE( cnt % cer_liq )
+        IF ( ALLOCATED (cnt % cer_ice) )    DEALLOCATE( cnt % cer_ice )
+        IF ( ALLOCATED (cnt % cph_day) )    DEALLOCATE( cnt % cph_day )
+
+    END SUBROUTINE UNDEFINE_COUNTS
+
+    !==========================================================================
 
 END MODULE UNDEFINE

@@ -21,6 +21,7 @@ PROGRAM CLOUD_SIMULATOR
     TYPE(era_aux)       :: aux
     TYPE(tmp_arrays)    :: temps
     TYPE(l3_vars)       :: final
+    TYPE(npoints)       :: counts
     CHARACTER(LEN=file_length)              :: ncfile
     CHARACTER(LEN=file_length), ALLOCATABLE :: files(:,:)
 
@@ -32,14 +33,17 @@ PROGRAM CLOUD_SIMULATOR
     CALL READ_CONFIG(cfg)
 
     ! create output directory if not already existing
-    CALL CREATE_DIR( TRIM(cfg%out_path) )
+    CALL CREATE_DIR( TRIM(cfg % out_path) )
 
     ! create land/sea mask from SST & era-grid
-    CALL READ_AUX_DATA( TRIM(cfg%sst_file), aux )
+    CALL READ_AUX_DATA( TRIM(cfg % sst_file), aux )
 
     ! loop over year and month
-    DO year = cfg%sy, cfg%ey, ystep !year-loop 
-        DO month = cfg%sm, cfg%em, mstep !month-loop
+    DO year = cfg%sy, cfg%ey, ystep
+        DO month = cfg%sm, cfg%em, mstep
+
+            CALL INITIALIZE_FINAL( cfg, aux, final )
+            CALL INITIALIZE_COUNTS( aux, counts )
 
             CALL GET_FILE_LIST(cfg, year, month, files, nfiles)
 
@@ -49,13 +53,13 @@ PROGRAM CLOUD_SIMULATOR
                 CALL READ_ERA_NCFILE( ncfile, input )
                 CALL INIT_SZA( input, aux )
 
-                IF ( ff == 1 ) CALL INITIALIZE_FINAL( cfg, input, final )
-
                 CALL INITIALIZE_TEMPS( input, temps )
                 CALL CALC_INCLOUD_CWC( input, temps )
                 CALL CALC_CLD_VARS( input, aux, temps )
                 CALL MAIN_PROC( cfg, input, temps, final )
-                stop
+
+                CALL SUMUP_VARS( temps, final, counts )
+                counts % raw = counts % raw + 1 !file count
 
                 CALL UNDEFINE_TEMPS( temps )
                 CALL UNDEFINE_INPUT( input )
@@ -64,9 +68,12 @@ PROGRAM CLOUD_SIMULATOR
 
             IF ( ALLOCATED( files ) ) DEALLOCATE( files )
 
-            ! make MM(L3) product and save it
+            CALL MEAN_VARS( final, counts )
+            stop
 
+            ! CALL WRITE_MONTHLY_MEAN( cfg, final, counts )
             CALL UNDEFINE_FINAL( final )
+            CALL UNDEFINE_COUNTS( counts )
 
         END DO !end of month-loop
     END DO !end of year-loop

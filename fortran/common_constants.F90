@@ -72,16 +72,15 @@ MODULE COMMON_CONSTANTS
     INTEGER(KIND=sint), PARAMETER :: normal=0
     INTEGER(KIND=sint), PARAMETER :: allsky=1
 
-    ! phase definition in CC4CL
-    INTEGER(KIND=sint), PARAMETER :: liquid=0
-    INTEGER(KIND=sint), PARAMETER :: ice=1
-
-    ! 2d histogram definitions
+    ! histogram definitions
     INTEGER(KIND=sint), PARAMETER :: n_hist_phase=2
+    INTEGER(KIND=sint), PARAMETER :: liq_bin=1
+    INTEGER(KIND=sint), PARAMETER :: ice_bin=2
+    ! 2d histogram definitions
     INTEGER(KIND=sint), PARAMETER :: n_hist_cot=14
     INTEGER(KIND=sint), PARAMETER :: n_hist_ctp=16
     ! 1d histogram definitions
-    INTEGER(KIND=sint), PARAMETER :: n_cot_bins=13
+    INTEGER(KIND=sint), PARAMETER :: n_cot_bins=14
     INTEGER(KIND=sint), PARAMETER :: n_ctp_bins=15
     INTEGER(KIND=sint), PARAMETER :: n_ctt_bins=16
     INTEGER(KIND=sint), PARAMETER :: n_cwp_bins=14

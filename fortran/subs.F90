@@ -206,8 +206,9 @@ MODULE SUBS
                                                  inp%xdim, inp%ydim  )
 
             ! COT computation: method of Han et al. (1994)
-            ! CWP = (4 * COT * R_eff * rho) / (3 * Q_ext)
-            ! COT = (3 * CWP * Q_ext) / (4 * R_eff * rho)
+            !   CWP = (4 * COT * R_eff * rho) / (3 * Q_ext)
+            !   COT = (3 * CWP * Q_ext) / (4 * R_eff * rho)
+
             tmp % lcot_lay(:,:,z) = (3.0*tmp % lwp_lay(:,:,z)*qext_water) / &
                                     (4.0*tmp % lcer_lay(:,:,z)*1.0E-6*rho_water)
             tmp % icot_lay(:,:,z) = (3.0*tmp % iwp_lay(:,:,z)*qext_ice) / &
@@ -221,23 +222,6 @@ MODULE SUBS
                 tmp % icot_lay(:,:,z) = 0.0
                 tmp % icer_lay(:,:,z) = 0.0
             END WHERE
-
-            !print('(A25, I4)'), "Layer : ", z
-            !print('(A25, F14.5)'), "pressure [Pa] : ", pressure
-            !print('(A25, 2F14.5)'), "temperature [K] : ", & 
-            !    minval(temperature),  maxval(temperature)
-            !print('(A25, 2F14.5)'), "lwp_lay [kg/m2] : ", & 
-            !    minval(tmp % lwp_lay(:,:,z)), maxval(tmp % lwp_lay(:,:,z))
-            !print('(A25, 2F14.5)'), "iwp_lay [kg/m2] : ", & 
-            !    minval(tmp % iwp_lay(:,:,z)), maxval(tmp % iwp_lay(:,:,z))
-            !print('(A25, 2F14.5)'), "lcer_lay [microns]: ", & 
-            !    minval(tmp % lcer_lay(:,:,z)), maxval(tmp % lcer_lay(:,:,z))
-            !print('(A25, 2F14.5)'), "icer_lay [microns]: ", & 
-            !    minval(tmp % icer_lay(:,:,z)), maxval(tmp % icer_lay(:,:,z))
-            !print('(A25, 2F14.5)'), "lcot_lay : ", & 
-            !    minval(tmp % lcot_lay(:,:,z)), maxval(tmp % lcot_lay(:,:,z))
-            !print('(A25, 2F14.5)'), "icot_lay : ", & 
-            !    minval(tmp % icot_lay(:,:,z)), maxval(tmp % icot_lay(:,:,z))
 
         END DO
 
@@ -384,20 +368,20 @@ MODULE SUBS
         ! set histogram definitions
     
         ! 2d histogram
-        cfg % hist_cot=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, &
-                         9.4, 15.0, 23.0, 41.0, 60.0, 80.0, 100./)
-        cfg % hist_cot_bin=cfg % hist_cot(1:n_hist_cot-1)*0.5 + &
-                           cfg % hist_cot(2:n_hist_cot)*0.5
+        cfg % hist_cot_2d_axis=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, & 
+                                 9.4, 15.0, 23.0, 41.0, 60.0, 80.0, 100./)
+        cfg % hist_cot_2d_bin=cfg % hist_cot_2d_axis(1:n_hist_cot-1)*0.5 + &
+                              cfg % hist_cot_2d_axis(2:n_hist_cot)*0.5
     
-        cfg % hist_ctp=(/1.0, 90.0, 180.0, 245.0, 310.0, 375.0, &
-                         440.0, 500.0, 560.0, 620.0, 680.0, &
-                         740.0, 800.0, 875.0, 950.0, 1100./)
-        cfg % hist_ctp_bin=cfg % hist_ctp(1:n_hist_ctp-1)*0.5 + &
-                           cfg % hist_ctp(2:n_hist_ctp)*0.5
+        cfg % hist_ctp_2d_axis=(/1.0, 90.0, 180.0, 245.0, 310.0, 375.0, &
+                                 440.0, 500.0, 560.0, 620.0, 680.0, &
+                                 740.0, 800.0, 875.0, 950.0, 1100./)
+        cfg % hist_ctp_2d_bin=cfg % hist_ctp_2d_axis(1:n_hist_ctp-1)*0.5 + &
+                              cfg % hist_ctp_2d_axis(2:n_hist_ctp)*0.5
     
         ! 1d histogram
-        cfg % hist_cot_1d_axis=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, &
-                                 9.4, 15.0, 23.0, 41.0, 60.0, 80.0, 100. /) 
+        cfg % hist_cot_1d_axis=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, 9.4, &
+                                 15.0, 23.0, 41.0, 60.0, 80.0, 99.99, 1000./) 
         cfg % hist_cot_1d_bin=cfg % hist_cot_1d_axis(1:n_cot_bins)*0.5 + &
                               cfg % hist_cot_1d_axis(2:n_cot_bins+1)*0.5
     
@@ -438,5 +422,245 @@ MODULE SUBS
 
     !==========================================================================
 
+    SUBROUTINE SUMUP_VARS ( tmp, fin, cnt )
+
+        USE STRUCTS
+
+        IMPLICIT NONE
+
+        TYPE(tmp_arrays), INTENT(IN)    :: tmp
+        TYPE(l3_vars),    INTENT(INOUT) :: fin
+        TYPE(npoints),    INTENT(INOUT) :: cnt
+
+        PRINT*, "** SUMUP_VARS"
+
+        WHERE ( tmp % cfc >= 0.0 )
+            fin % cfc = fin % cfc + tmp % cfc
+            cnt % cfc = cnt % cfc + 1
+        END WHERE
+
+
+        WHERE ( tmp % cph_day >= 0.0 )
+            fin % cph_day = fin % cph_day + tmp % cph_day
+            cnt % cph_day = cnt % cph_day + 1
+        END WHERE
+
+        WHERE ( tmp % ctp > 10.0 .AND. tmp % cth > 0.0 .AND. tmp % cph >= 0.0 )
+            fin % ctp = fin % ctp + tmp % ctp
+            fin % cth = fin % cth + tmp % cth
+            fin % ctt = fin % ctt + tmp % ctt
+            fin % cph = fin % cph + tmp % cph
+            cnt % ctp = cnt % ctp + 1
+        END WHERE
+
+
+        WHERE ( tmp % cer > 0.0 )
+            fin % cer = fin % cer + tmp % cer
+            cnt % cer = cnt % cer + 1
+        END WHERE
+
+        WHERE ( tmp % cer_liq > 0.0 )
+            fin % cer_liq = fin % cer_liq + tmp % cer_liq
+            cnt % cer_liq = cnt % cer_liq + 1
+        END WHERE
+
+        WHERE ( tmp % cer_ice > 0.0 )
+            fin % cer_ice = fin % cer_ice + tmp % cer_ice
+            cnt % cer_ice = cnt % cer_ice + 1
+        END WHERE
+
+
+        WHERE ( tmp % cot > 0.0 )
+            fin % cot = fin % cot + tmp % cot
+            cnt % cot = cnt % cot + 1
+        END WHERE
+
+        WHERE ( tmp % cot_liq > 0.0 )
+            fin % cot_liq = fin % cot_liq + tmp % cot_liq
+            cnt % cot_liq = cnt % cot_liq + 1
+        END WHERE
+
+        WHERE ( tmp % cot_ice > 0.0 )
+            fin % cot_ice = fin % cot_ice + tmp % cot_ice
+            cnt % cot_ice = cnt % cot_ice + 1
+        END WHERE
+
+
+        WHERE ( tmp % cwp > 0.0 )
+            fin % cwp = fin % cwp + tmp % cwp
+            cnt % cwp = cnt % cwp + 1
+        END WHERE
+
+        WHERE ( tmp % lwp > 0.0 )
+            fin % lwp = fin % lwp + tmp % lwp
+            cnt % lwp = cnt % lwp + 1
+        END WHERE
+
+        WHERE ( tmp % iwp > 0.0 )
+            fin % iwp = fin % iwp + tmp % iwp
+            cnt % iwp = cnt % iwp + 1
+        END WHERE
+
+
+        WHERE ( tmp % cwp_allsky >= 0.0 )
+            fin % cwp_allsky = fin % cwp_allsky + tmp % cwp_allsky
+            cnt % cwp_allsky = cnt % cwp_allsky + 1
+        END WHERE
+
+        WHERE ( tmp % lwp_allsky >= 0.0 )
+            fin % lwp_allsky = fin % lwp_allsky + tmp % lwp_allsky
+            cnt % lwp_allsky = cnt % lwp_allsky + 1
+        END WHERE
+
+        WHERE ( tmp % iwp_allsky >= 0.0 )
+            fin % iwp_allsky = fin % iwp_allsky + tmp % iwp_allsky
+            cnt % iwp_allsky = cnt % iwp_allsky + 1
+        END WHERE
+
+    END SUBROUTINE SUMUP_VARS
+
+    !==========================================================================
     
+    SUBROUTINE MEAN_VARS ( fin, cnt )
+
+        USE COMMON_CONSTANTS
+        USE STRUCTS
+
+        IMPLICIT NONE
+
+        TYPE(l3_vars),    INTENT(INOUT) :: fin
+        TYPE(npoints),    INTENT(INOUT) :: cnt
+
+
+        PRINT*, "** MEAN_VARS"
+
+
+        WHERE ( cnt % cfc > 0 ) 
+            fin % cfc = fin % cfc / cnt % cfc
+        ELSEWHERE
+            fin % cfc = sreal_fill_value
+        END WHERE
+
+
+        WHERE ( cnt % cph_day > 0 ) 
+            fin % cph_day = fin % cph_day / cnt % cph_day
+        ELSEWHERE
+            fin % cph_day = sreal_fill_value
+        END WHERE
+
+
+        WHERE ( cnt % ctp > 0 ) 
+            fin % ctp = fin % ctp / cnt % ctp
+            fin % ctt = fin % ctt / cnt % ctp
+            fin % cph = fin % cph / cnt % ctp
+            fin % cth = ( fin % cth / cnt % ctp ) / 1000.
+        ELSEWHERE
+            fin % ctp = sreal_fill_value
+            fin % ctt = sreal_fill_value
+            fin % cph = sreal_fill_value
+            fin % cth = sreal_fill_value
+        END WHERE
+
+
+        WHERE ( cnt % cwp > 0 ) 
+            fin % cwp = ( fin % cwp / cnt % cwp ) * 1000.
+        ELSEWHERE
+            fin % cwp = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % lwp > 0 ) 
+            fin % lwp = ( fin % lwp / cnt % lwp ) * 1000.
+        ELSEWHERE
+            fin % lwp = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % iwp > 0 ) 
+            fin % iwp = ( fin % iwp / cnt % iwp ) * 1000.
+        ELSEWHERE
+            fin % iwp = sreal_fill_value
+        END WHERE
+
+
+        WHERE ( cnt % cwp_allsky > 0 ) 
+            fin % cwp_allsky = ( fin % cwp_allsky / cnt % cwp_allsky ) * 1000.
+        ELSEWHERE
+            fin % cwp_allsky = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % lwp_allsky > 0 ) 
+            fin % lwp_allsky = ( fin % lwp_allsky / cnt % lwp_allsky ) * 1000.
+        ELSEWHERE
+            fin % lwp_allsky = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % iwp_allsky > 0 ) 
+            fin % iwp_allsky = ( fin % iwp_allsky / cnt % iwp_allsky ) * 1000.
+        ELSEWHERE
+            fin % iwp_allsky = sreal_fill_value
+        END WHERE
+
+
+        WHERE ( cnt % cot > 0 ) 
+            fin % cot = fin % cot / cnt % cot
+        ELSEWHERE
+            fin % cot = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % cot_liq > 0 ) 
+            fin % cot_liq = fin % cot_liq / cnt % cot_liq
+        ELSEWHERE
+            fin % cot_liq = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % cot_ice > 0 ) 
+            fin % cot_ice = fin % cot_ice / cnt % cot_ice
+        ELSEWHERE
+            fin % cot_ice = sreal_fill_value
+        END WHERE
+
+
+        WHERE ( cnt % cer > 0 ) 
+            fin % cer = fin % cer / cnt % cer
+        ELSEWHERE
+            fin % cer = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % cer_liq > 0 ) 
+            fin % cer_liq = fin % cer_liq / cnt % cer_liq
+        ELSEWHERE
+            fin % cer_liq = sreal_fill_value
+        END WHERE
+
+        WHERE ( cnt % cer_ice > 0 ) 
+            fin % cer_ice = fin % cer_ice / cnt % cer_ice
+        ELSEWHERE
+            fin % cer_ice = sreal_fill_value
+        END WHERE
+
+
+
+        print('(A20, 2F14.6)'), "cfc", minval(fin%cfc), maxval(fin%cfc)
+        print('(A20, 2F14.6)'), "cph", minval(fin%cph), maxval(fin%cph)
+        print('(A20, 2F14.6)'), "cph_day", minval(fin%cph_day), maxval(fin%cph_day)
+        print('(A20, 2F14.6)'), "ctp", minval(fin%ctp), maxval(fin%ctp)
+        print('(A20, 2F14.6)'), "cth", minval(fin%cth), maxval(fin%cth)
+        print('(A20, 2F14.6)'), "ctt", minval(fin%ctt), maxval(fin%ctt)
+        print('(A20, 2F14.6)'), "cwp", minval(fin%cwp), maxval(fin%cwp)
+        print('(A20, 2F14.6)'), "lwp", minval(fin%lwp), maxval(fin%lwp)
+        print('(A20, 2F14.6)'), "iwp", minval(fin%iwp), maxval(fin%iwp)
+        print('(A20, 2F14.6)'), "cwp_allsky", minval(fin%cwp_allsky), maxval(fin%cwp_allsky)
+        print('(A20, 2F14.6)'), "lwp_allsky", minval(fin%lwp_allsky), maxval(fin%lwp_allsky)
+        print('(A20, 2F14.6)'), "iwp_allsky", minval(fin%iwp_allsky), maxval(fin%iwp_allsky)
+        print('(A20, 2F14.6)'), "cot", minval(fin%cot), maxval(fin%cot)
+        print('(A20, 2F14.6)'), "cot_liq", minval(fin%cot_liq), maxval(fin%cot_liq)
+        print('(A20, 2F14.6)'), "cot_ice", minval(fin%cot_ice), maxval(fin%cot_ice)
+        print('(A20, 2F14.6)'), "cer", minval(fin%cer), maxval(fin%cer)
+        print('(A20, 2F14.6)'), "cer_liq", minval(fin%cer_liq), maxval(fin%cer_liq)
+        print('(A20, 2F14.6)'), "cer_ice", minval(fin%cer_ice), maxval(fin%cer_ice)
+        stop
+
+    END SUBROUTINE MEAN_VARS
+
+    !==========================================================================
+
 END MODULE SUBS

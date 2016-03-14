@@ -17,21 +17,21 @@ MODULE STRUCTS
         CHARACTER(LEN=path_length) :: out_path
         CHARACTER(LEN=path_length) :: sst_file
         ! 2d histogram definitions
-        REAL(KIND=sreal) :: hist_cot(n_hist_cot)
-        REAL(KIND=sreal) :: hist_ctp(n_hist_ctp)
-        REAL(KIND=sreal) :: hist_cot_bin(n_hist_cot-1)
-        REAL(KIND=sreal) :: hist_ctp_bin(n_hist_ctp-1)
+        REAL(KIND=sreal) :: hist_cot_2d_axis(n_hist_cot)
+        REAL(KIND=sreal) :: hist_cot_2d_bin(n_hist_cot-1)
+        REAL(KIND=sreal) :: hist_ctp_2d_axis(n_hist_ctp)
+        REAL(KIND=sreal) :: hist_ctp_2d_bin(n_hist_ctp-1)
         ! 1d histogram definitions
-        REAL(KIND=sreal) :: hist_cot_1d_bin(n_cot_bins)
         REAL(KIND=sreal) :: hist_cot_1d_axis(n_cot_bins+1)
-        REAL(KIND=sreal) :: hist_ctp_1d_bin(n_ctp_bins)
+        REAL(KIND=sreal) :: hist_cot_1d_bin(n_cot_bins)
         REAL(KIND=sreal) :: hist_ctp_1d_axis(n_ctp_bins+1)
-        REAL(KIND=sreal) :: hist_ctt_1d_bin(n_ctt_bins)
+        REAL(KIND=sreal) :: hist_ctp_1d_bin(n_ctp_bins)
         REAL(KIND=sreal) :: hist_ctt_1d_axis(n_ctt_bins+1)
-        REAL(KIND=sreal) :: hist_cer_1d_bin(n_cer_bins)
+        REAL(KIND=sreal) :: hist_ctt_1d_bin(n_ctt_bins)
         REAL(KIND=sreal) :: hist_cer_1d_axis(n_cer_bins+1)
-        REAL(KIND=sreal) :: hist_cwp_1d_bin(n_cwp_bins)
+        REAL(KIND=sreal) :: hist_cer_1d_bin(n_cer_bins)
         REAL(KIND=sreal) :: hist_cwp_1d_axis(n_cwp_bins+1)
+        REAL(KIND=sreal) :: hist_cwp_1d_bin(n_cwp_bins)
     END TYPE config
 
     ! era-sst
@@ -104,7 +104,7 @@ MODULE STRUCTS
     END TYPE l3_vars
 
 
-    TYPE counts
+    TYPE npoints
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cph_day
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: raw, cfc, ctp
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cwp, lwp, iwp
@@ -114,7 +114,7 @@ MODULE STRUCTS
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cot, cer
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cot_liq, cer_liq
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cot_ice, cer_ice
-    END TYPE counts
+    END TYPE npoints
 
 
 END MODULE STRUCTS

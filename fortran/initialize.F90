@@ -9,7 +9,54 @@ MODULE INITIALIZE
     ! ALLOCATE ARRAYS
     !==========================================================================
 
-    SUBROUTINE INITIALIZE_FINAL( cfg, inp, fin )
+    SUBROUTINE INITIALIZE_COUNTS( aux, cnt )
+
+        USE STRUCTS
+
+        IMPLICIT NONE
+
+        TYPE(era_aux), INTENT(IN)    :: aux
+        TYPE(npoints), INTENT(INOUT) :: cnt
+
+        ALLOCATE( cnt % raw ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cfc ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % ctp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % lwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % iwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cwp_allsky ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % lwp_allsky ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % iwp_allsky ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cot ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cot_liq ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cot_ice ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cer ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cer_liq ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cer_ice ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % cph_day ( aux % nlon, aux % nlat) )
+
+        cnt % raw = 0
+        cnt % cfc = 0
+        cnt % ctp = 0
+        cnt % cwp = 0
+        cnt % lwp = 0
+        cnt % iwp = 0
+        cnt % cwp_allsky = 0
+        cnt % lwp_allsky = 0
+        cnt % iwp_allsky = 0
+        cnt % cot = 0
+        cnt % cot_liq = 0
+        cnt % cot_ice = 0
+        cnt % cer = 0
+        cnt % cer_liq = 0
+        cnt % cer_ice = 0
+        cnt % cph_day = 0
+
+    END SUBROUTINE INITIALIZE_COUNTS
+
+    !==========================================================================
+
+    SUBROUTINE INITIALIZE_FINAL( cfg, aux, fin )
 
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -17,45 +64,45 @@ MODULE INITIALIZE
         IMPLICIT NONE
 
         TYPE(config),     INTENT(IN) :: cfg
-        TYPE(era_input),  INTENT(IN) :: inp
+        TYPE(era_aux),    INTENT(IN) :: aux
         TYPE(l3_vars), INTENT(INOUT) :: fin
 
-        ALLOCATE( fin % cfc (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cph (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cph_day (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % ctp (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cth (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % ctt (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cwp (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % lwp (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % iwp (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cwp_allsky (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % lwp_allsky (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % iwp_allsky (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cot (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cot_liq (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cot_ice (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cer (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cer_liq (inp % xdim, inp % ydim) )
-        ALLOCATE( fin % cer_ice (inp % xdim, inp % ydim) )
+        ALLOCATE( fin % cfc ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cph ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cph_day ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % ctp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cth ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % ctt ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % lwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % iwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cwp_allsky ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % lwp_allsky ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % iwp_allsky ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cot ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cot_liq ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cot_ice ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cer ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cer_liq ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cer_ice ( aux % nlon, aux % nlat) )
 
 
-        ALLOCATE( fin % hist_cot_ctp (inp % xdim, inp % ydim, &
-            SIZE(cfg % hist_cot_bin), SIZE(cfg % hist_ctp_bin), n_hist_phase ) )
+        ALLOCATE( fin % hist_cot_ctp ( aux % nlon, aux % nlat, &
+            SIZE(cfg % hist_cot_2d_bin), SIZE(cfg % hist_ctp_2d_bin), n_hist_phase ) )
 
-        ALLOCATE( fin % hist_ctp (inp % xdim, inp % ydim, &
+        ALLOCATE( fin % hist_ctp ( aux % nlon, aux % nlat, &
             SIZE(cfg % hist_ctp_1d_bin), n_hist_phase) )
 
-        ALLOCATE( fin % hist_ctt (inp % xdim, inp % ydim, &
+        ALLOCATE( fin % hist_ctt ( aux % nlon, aux % nlat, &
             SIZE(cfg % hist_ctt_1d_bin), n_hist_phase ) )
 
-        ALLOCATE( fin % hist_cot (inp % xdim, inp % ydim, &
+        ALLOCATE( fin % hist_cot ( aux % nlon, aux % nlat, &
             SIZE(cfg % hist_cot_1d_bin), n_hist_phase ) )
 
-        ALLOCATE( fin % hist_cwp (inp % xdim, inp % ydim, &
+        ALLOCATE( fin % hist_cwp ( aux % nlon, aux % nlat, &
             SIZE(cfg % hist_cwp_1d_bin), n_hist_phase ) )
 
-        ALLOCATE( fin % hist_cer (inp % xdim, inp % ydim, &
+        ALLOCATE( fin % hist_cer ( aux % nlon, aux % nlat, &
             SIZE(cfg % hist_cer_1d_bin), n_hist_phase ) )
 
         fin % cfc = 0.0
