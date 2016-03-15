@@ -6,8 +6,17 @@ MODULE SUBS
     CONTAINS
 
     !==========================================================================
+    
+    SUBROUTINE PRINT_MINMAX ( what, x, y, array )
+        INTEGER           :: x, y
+        REAL              :: array(x,y)
+        CHARACTER(LEN=20) :: what
+        PRINT('(A30, 2F14.6)'), what, minval(array), maxval(array)
+    END SUBROUTINE PRINT_MINMAX
 
-    SUBROUTINE GET_FILE_LIST(cfg, year, month, file_list, nfiles)
+    !==========================================================================
+
+    SUBROUTINE GET_FILE_LIST ( cfg, year, month, file_list, nfiles )
 
         USE STRUCTS
         USE COMMON_CONSTANTS
@@ -68,7 +77,7 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE CONVERT_ERA_FILE( ifile, ofile )
+    SUBROUTINE CONVERT_ERA_FILE ( ifile, ofile )
     
         USE COMMON_CONSTANTS
         IMPLICIT NONE
@@ -97,7 +106,7 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE CREATE_DIR( newDirPath )
+    SUBROUTINE CREATE_DIR ( newDirPath )
     
         USE COMMON_CONSTANTS
     
@@ -132,7 +141,7 @@ MODULE SUBS
     
     !==========================================================================
 
-    SUBROUTINE CALC_INCLOUD_CWC( inp, tmp )
+    SUBROUTINE CALC_INCLOUD_CWC ( inp, tmp )
 
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -169,7 +178,7 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE CALC_CLD_VARS( inp, aux, tmp )
+    SUBROUTINE CALC_CLD_VARS ( inp, aux, tmp )
 
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -229,7 +238,7 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE INIT_SZA( inp, aux )
+    SUBROUTINE INIT_SZA ( inp, aux )
 
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -262,7 +271,7 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE READ_CONFIG(cfg)
+    SUBROUTINE READ_CONFIG ( cfg )
     
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -366,6 +375,7 @@ MODULE SUBS
     
     
         ! set histogram definitions
+        cfg % hist_phase = (/0.0, 1.0/)
     
         ! 2d histogram
         cfg % hist_cot_2d_axis=(/0.0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, & 
@@ -422,6 +432,38 @@ MODULE SUBS
 
     !==========================================================================
 
+    SUBROUTINE ADDTO ( flag, i, j, input, output, counts )
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+
+        INTEGER,            INTENT(IN)      :: flag
+        INTEGER(KIND=sint), INTENT(IN)      :: i, j
+        REAL(KIND=sreal),   INTENT(IN)      :: input(i,j)
+        REAL(KIND=sreal),   INTENT(INOUT)   :: output(i,j)
+        INTEGER(KIND=lint), INTENT(INOUT)   :: counts(i,j)
+
+        IF ( flag == 1 ) THEN ! input GE 0.0
+
+            WHERE ( input >= 0.0 )
+                output = output + input
+                counts = counts + 1
+            END WHERE
+
+        ELSE ! input GT 0.0
+
+            WHERE ( input > 0.0 )
+                output = output + input
+                counts = counts + 1
+            END WHERE
+
+        END IF
+
+    END SUBROUTINE ADDTO
+
+    !==========================================================================
+
     SUBROUTINE SUMUP_VARS ( tmp, fin, cnt )
 
         USE STRUCTS
@@ -432,18 +474,13 @@ MODULE SUBS
         TYPE(l3_vars),    INTENT(INOUT) :: fin
         TYPE(npoints),    INTENT(INOUT) :: cnt
 
+        ! local variables
+        INTEGER(KIND=sint) :: x, y
+
         PRINT*, "** SUMUP_VARS"
 
-        WHERE ( tmp % cfc >= 0.0 )
-            fin % cfc = fin % cfc + tmp % cfc
-            cnt % cfc = cnt % cfc + 1
-        END WHERE
-
-
-        WHERE ( tmp % cph_day >= 0.0 )
-            fin % cph_day = fin % cph_day + tmp % cph_day
-            cnt % cph_day = cnt % cph_day + 1
-        END WHERE
+        x = SIZE( fin % cfc, 1 )
+        y = SIZE( fin % cfc, 2 )
 
         WHERE ( tmp % ctp > 10.0 .AND. tmp % cth > 0.0 .AND. tmp % cph >= 0.0 )
             fin % ctp = fin % ctp + tmp % ctp
@@ -453,71 +490,44 @@ MODULE SUBS
             cnt % ctp = cnt % ctp + 1
         END WHERE
 
+        CALL ADDTO( 1, x, y, tmp % cfc,        fin % cfc,        cnt % cfc )
+        CALL ADDTO( 1, x, y, tmp % cph_day,    fin % cph_day,    cnt % cph_day )
+        CALL ADDTO( 1, x, y, tmp % cwp_allsky, fin % cwp_allsky, cnt % cwp_allsky )
+        CALL ADDTO( 1, x, y, tmp % lwp_allsky, fin % lwp_allsky, cnt % lwp_allsky )
+        CALL ADDTO( 1, x, y, tmp % iwp_allsky, fin % iwp_allsky, cnt % iwp_allsky )
 
-        WHERE ( tmp % cer > 0.0 )
-            fin % cer = fin % cer + tmp % cer
-            cnt % cer = cnt % cer + 1
-        END WHERE
-
-        WHERE ( tmp % cer_liq > 0.0 )
-            fin % cer_liq = fin % cer_liq + tmp % cer_liq
-            cnt % cer_liq = cnt % cer_liq + 1
-        END WHERE
-
-        WHERE ( tmp % cer_ice > 0.0 )
-            fin % cer_ice = fin % cer_ice + tmp % cer_ice
-            cnt % cer_ice = cnt % cer_ice + 1
-        END WHERE
-
-
-        WHERE ( tmp % cot > 0.0 )
-            fin % cot = fin % cot + tmp % cot
-            cnt % cot = cnt % cot + 1
-        END WHERE
-
-        WHERE ( tmp % cot_liq > 0.0 )
-            fin % cot_liq = fin % cot_liq + tmp % cot_liq
-            cnt % cot_liq = cnt % cot_liq + 1
-        END WHERE
-
-        WHERE ( tmp % cot_ice > 0.0 )
-            fin % cot_ice = fin % cot_ice + tmp % cot_ice
-            cnt % cot_ice = cnt % cot_ice + 1
-        END WHERE
-
-
-        WHERE ( tmp % cwp > 0.0 )
-            fin % cwp = fin % cwp + tmp % cwp
-            cnt % cwp = cnt % cwp + 1
-        END WHERE
-
-        WHERE ( tmp % lwp > 0.0 )
-            fin % lwp = fin % lwp + tmp % lwp
-            cnt % lwp = cnt % lwp + 1
-        END WHERE
-
-        WHERE ( tmp % iwp > 0.0 )
-            fin % iwp = fin % iwp + tmp % iwp
-            cnt % iwp = cnt % iwp + 1
-        END WHERE
-
-
-        WHERE ( tmp % cwp_allsky >= 0.0 )
-            fin % cwp_allsky = fin % cwp_allsky + tmp % cwp_allsky
-            cnt % cwp_allsky = cnt % cwp_allsky + 1
-        END WHERE
-
-        WHERE ( tmp % lwp_allsky >= 0.0 )
-            fin % lwp_allsky = fin % lwp_allsky + tmp % lwp_allsky
-            cnt % lwp_allsky = cnt % lwp_allsky + 1
-        END WHERE
-
-        WHERE ( tmp % iwp_allsky >= 0.0 )
-            fin % iwp_allsky = fin % iwp_allsky + tmp % iwp_allsky
-            cnt % iwp_allsky = cnt % iwp_allsky + 1
-        END WHERE
+        CALL ADDTO( 2, x, y, tmp % cer,     fin % cer,     cnt % cer )
+        CALL ADDTO( 2, x, y, tmp % cer_liq, fin % cer_liq, cnt % cer_liq )
+        CALL ADDTO( 2, x, y, tmp % cer_ice, fin % cer_ice, cnt % cer_ice )
+        CALL ADDTO( 2, x, y, tmp % cot,     fin % cot,     cnt % cot )
+        CALL ADDTO( 2, x, y, tmp % cot_liq, fin % cot_liq, cnt % cot_liq )
+        CALL ADDTO( 2, x, y, tmp % cot_ice, fin % cot_ice, cnt % cot_ice )
+        CALL ADDTO( 2, x, y, tmp % cwp,     fin % cwp,     cnt % cwp )
+        CALL ADDTO( 2, x, y, tmp % lwp,     fin % lwp,     cnt % lwp )
+        CALL ADDTO( 2, x, y, tmp % iwp,     fin % iwp,     cnt % iwp )
 
     END SUBROUTINE SUMUP_VARS
+
+    !==========================================================================
+
+    SUBROUTINE AVG ( scale_factor, i, j, arr, num )
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+
+        REAL(KIND=sreal),   INTENT(IN)      :: scale_factor
+        INTEGER(KIND=sint), INTENT(IN)      :: i, j
+        REAL(KIND=sreal),   INTENT(INOUT)   :: arr(i,j)
+        INTEGER(KIND=lint), INTENT(INOUT)   :: num(i,j)
+
+        WHERE ( num > 0 ) 
+            arr = ( arr / num ) * scale_factor
+        ELSEWHERE
+            arr = sreal_fill_value
+        END WHERE
+
+    END SUBROUTINE AVG
 
     !==========================================================================
     
@@ -531,29 +541,20 @@ MODULE SUBS
         TYPE(l3_vars),    INTENT(INOUT) :: fin
         TYPE(npoints),    INTENT(INOUT) :: cnt
 
+        ! local variables
+        INTEGER(KIND=sint) :: x, y
+        REAL(KIND=sreal)   :: sf !scale_factor
 
         PRINT*, "** MEAN_VARS"
 
-
-        WHERE ( cnt % cfc > 0 ) 
-            fin % cfc = fin % cfc / cnt % cfc
-        ELSEWHERE
-            fin % cfc = sreal_fill_value
-        END WHERE
-
-
-        WHERE ( cnt % cph_day > 0 ) 
-            fin % cph_day = fin % cph_day / cnt % cph_day
-        ELSEWHERE
-            fin % cph_day = sreal_fill_value
-        END WHERE
-
+        x = SIZE( fin % cfc, 1 )
+        y = SIZE( fin % cfc, 2 )
 
         WHERE ( cnt % ctp > 0 ) 
-            fin % ctp = fin % ctp / cnt % ctp
-            fin % ctt = fin % ctt / cnt % ctp
-            fin % cph = fin % cph / cnt % ctp
-            fin % cth = ( fin % cth / cnt % ctp ) / 1000.
+            fin % ctp =   fin % ctp / cnt % ctp
+            fin % ctt =   fin % ctt / cnt % ctp
+            fin % cph =   fin % cph / cnt % ctp
+            fin % cth = ( fin % cth / cnt % ctp ) / 1000.0
         ELSEWHERE
             fin % ctp = sreal_fill_value
             fin % ctt = sreal_fill_value
@@ -561,103 +562,23 @@ MODULE SUBS
             fin % cth = sreal_fill_value
         END WHERE
 
+        sf = 1.0
+        CALL AVG ( sf, x, y, fin % cfc,     cnt % cfc )
+        CALL AVG ( sf, x, y, fin % cph_day, cnt % cph_day )
+        CALL AVG ( sf, x, y, fin % cot,     cnt % cot )
+        CALL AVG ( sf, x, y, fin % cot_liq, cnt % cot_liq )
+        CALL AVG ( sf, x, y, fin % cot_ice, cnt % cot_ice )
+        CALL AVG ( sf, x, y, fin % cer,     cnt % cer )
+        CALL AVG ( sf, x, y, fin % cer_liq, cnt % cer_liq )
+        CALL AVG ( sf, x, y, fin % cer_ice, cnt % cer_ice )
 
-        WHERE ( cnt % cwp > 0 ) 
-            fin % cwp = ( fin % cwp / cnt % cwp ) * 1000.
-        ELSEWHERE
-            fin % cwp = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % lwp > 0 ) 
-            fin % lwp = ( fin % lwp / cnt % lwp ) * 1000.
-        ELSEWHERE
-            fin % lwp = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % iwp > 0 ) 
-            fin % iwp = ( fin % iwp / cnt % iwp ) * 1000.
-        ELSEWHERE
-            fin % iwp = sreal_fill_value
-        END WHERE
-
-
-        WHERE ( cnt % cwp_allsky > 0 ) 
-            fin % cwp_allsky = ( fin % cwp_allsky / cnt % cwp_allsky ) * 1000.
-        ELSEWHERE
-            fin % cwp_allsky = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % lwp_allsky > 0 ) 
-            fin % lwp_allsky = ( fin % lwp_allsky / cnt % lwp_allsky ) * 1000.
-        ELSEWHERE
-            fin % lwp_allsky = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % iwp_allsky > 0 ) 
-            fin % iwp_allsky = ( fin % iwp_allsky / cnt % iwp_allsky ) * 1000.
-        ELSEWHERE
-            fin % iwp_allsky = sreal_fill_value
-        END WHERE
-
-
-        WHERE ( cnt % cot > 0 ) 
-            fin % cot = fin % cot / cnt % cot
-        ELSEWHERE
-            fin % cot = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % cot_liq > 0 ) 
-            fin % cot_liq = fin % cot_liq / cnt % cot_liq
-        ELSEWHERE
-            fin % cot_liq = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % cot_ice > 0 ) 
-            fin % cot_ice = fin % cot_ice / cnt % cot_ice
-        ELSEWHERE
-            fin % cot_ice = sreal_fill_value
-        END WHERE
-
-
-        WHERE ( cnt % cer > 0 ) 
-            fin % cer = fin % cer / cnt % cer
-        ELSEWHERE
-            fin % cer = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % cer_liq > 0 ) 
-            fin % cer_liq = fin % cer_liq / cnt % cer_liq
-        ELSEWHERE
-            fin % cer_liq = sreal_fill_value
-        END WHERE
-
-        WHERE ( cnt % cer_ice > 0 ) 
-            fin % cer_ice = fin % cer_ice / cnt % cer_ice
-        ELSEWHERE
-            fin % cer_ice = sreal_fill_value
-        END WHERE
-
-
-
-        print('(A20, 2F14.6)'), "cfc", minval(fin%cfc), maxval(fin%cfc)
-        print('(A20, 2F14.6)'), "cph", minval(fin%cph), maxval(fin%cph)
-        print('(A20, 2F14.6)'), "cph_day", minval(fin%cph_day), maxval(fin%cph_day)
-        print('(A20, 2F14.6)'), "ctp", minval(fin%ctp), maxval(fin%ctp)
-        print('(A20, 2F14.6)'), "cth", minval(fin%cth), maxval(fin%cth)
-        print('(A20, 2F14.6)'), "ctt", minval(fin%ctt), maxval(fin%ctt)
-        print('(A20, 2F14.6)'), "cwp", minval(fin%cwp), maxval(fin%cwp)
-        print('(A20, 2F14.6)'), "lwp", minval(fin%lwp), maxval(fin%lwp)
-        print('(A20, 2F14.6)'), "iwp", minval(fin%iwp), maxval(fin%iwp)
-        print('(A20, 2F14.6)'), "cwp_allsky", minval(fin%cwp_allsky), maxval(fin%cwp_allsky)
-        print('(A20, 2F14.6)'), "lwp_allsky", minval(fin%lwp_allsky), maxval(fin%lwp_allsky)
-        print('(A20, 2F14.6)'), "iwp_allsky", minval(fin%iwp_allsky), maxval(fin%iwp_allsky)
-        print('(A20, 2F14.6)'), "cot", minval(fin%cot), maxval(fin%cot)
-        print('(A20, 2F14.6)'), "cot_liq", minval(fin%cot_liq), maxval(fin%cot_liq)
-        print('(A20, 2F14.6)'), "cot_ice", minval(fin%cot_ice), maxval(fin%cot_ice)
-        print('(A20, 2F14.6)'), "cer", minval(fin%cer), maxval(fin%cer)
-        print('(A20, 2F14.6)'), "cer_liq", minval(fin%cer_liq), maxval(fin%cer_liq)
-        print('(A20, 2F14.6)'), "cer_ice", minval(fin%cer_ice), maxval(fin%cer_ice)
-        stop
+        sf = 1000.0
+        CALL AVG ( sf, x, y, fin % cwp, cnt % cwp )
+        CALL AVG ( sf, x, y, fin % lwp, cnt % lwp )
+        CALL AVG ( sf, x, y, fin % iwp, cnt % iwp )
+        CALL AVG ( sf, x, y, fin % cwp_allsky, cnt % cwp_allsky )
+        CALL AVG ( sf, x, y, fin % lwp_allsky, cnt % lwp_allsky )
+        CALL AVG ( sf, x, y, fin % iwp_allsky, cnt % iwp_allsky )
 
     END SUBROUTINE MEAN_VARS
 

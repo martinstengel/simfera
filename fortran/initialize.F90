@@ -18,7 +18,6 @@ MODULE INITIALIZE
         TYPE(era_aux), INTENT(IN)    :: aux
         TYPE(npoints), INTENT(INOUT) :: cnt
 
-        ALLOCATE( cnt % raw ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % cfc ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % ctp ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % cwp ( aux % nlon, aux % nlat) )
@@ -35,7 +34,7 @@ MODULE INITIALIZE
         ALLOCATE( cnt % cer_ice ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % cph_day ( aux % nlon, aux % nlat) )
 
-        cnt % raw = 0
+        cnt % file_counter = 0
         cnt % cfc = 0
         cnt % ctp = 0
         cnt % cwp = 0

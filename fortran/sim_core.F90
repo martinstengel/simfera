@@ -247,7 +247,7 @@ MODULE SIM_CORE
             rndRealArr = 0.0
             CALL RANDOM_NUMBER( rndRealArr )
             check = RANDOM_NUMBER_DUPLICATES( ncol, rndRealArr )
-            IF ( check ) PRINT*, "-- WARNING: dupliate random number -> try again!"
+            !IF ( check ) PRINT*, "-- WARNING: dupliate random number -> try again!"
         END DO
 
         ! Sort rndRealArr in ascending order and apply it to indices

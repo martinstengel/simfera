@@ -162,7 +162,8 @@ MODULE UNDEFINE
         IMPLICIT NONE
         TYPE(npoints), INTENT(INOUT) :: cnt
 
-        IF ( ALLOCATED (cnt % raw) )        DEALLOCATE( cnt % raw )
+        cnt % file_counter = 0
+
         IF ( ALLOCATED (cnt % cfc) )        DEALLOCATE( cnt % cfc )
         IF ( ALLOCATED (cnt % ctp) )        DEALLOCATE( cnt % ctp )
         IF ( ALLOCATED (cnt % cwp) )        DEALLOCATE( cnt % cwp )

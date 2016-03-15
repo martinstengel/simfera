@@ -17,6 +17,7 @@ MODULE STRUCTS
         CHARACTER(LEN=path_length) :: out_path
         CHARACTER(LEN=path_length) :: sst_file
         ! 2d histogram definitions
+        REAL(KIND=sreal) :: hist_phase(n_hist_phase)
         REAL(KIND=sreal) :: hist_cot_2d_axis(n_hist_cot)
         REAL(KIND=sreal) :: hist_cot_2d_bin(n_hist_cot-1)
         REAL(KIND=sreal) :: hist_ctp_2d_axis(n_hist_ctp)
@@ -105,8 +106,9 @@ MODULE STRUCTS
 
 
     TYPE npoints
+        INTEGER(KIND=sint) :: file_counter
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cph_day
-        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: raw, cfc, ctp
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cfc, ctp
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cwp, lwp, iwp
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cwp_allsky
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: lwp_allsky
