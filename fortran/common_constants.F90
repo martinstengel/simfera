@@ -61,10 +61,10 @@ MODULE COMMON_CONSTANTS
     INTEGER(KIND=sint), PARAMETER :: n_hist_phase = 2
     INTEGER(KIND=sint), PARAMETER :: liq_bin = 1
     INTEGER(KIND=sint), PARAMETER :: ice_bin = 2
-    ! 2d histogram definitions
+    ! 2d histogram definitions: number of axis = borders
     INTEGER(KIND=sint), PARAMETER :: n_hist_cot = 14
     INTEGER(KIND=sint), PARAMETER :: n_hist_ctp = 16
-    ! 1d histogram definitions
+    ! 1d histogram definitions, number of bins
     INTEGER(KIND=sint), PARAMETER :: n_cot_bins = 14
     INTEGER(KIND=sint), PARAMETER :: n_ctp_bins = 15
     INTEGER(KIND=sint), PARAMETER :: n_ctt_bins = 16

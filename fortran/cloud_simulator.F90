@@ -53,8 +53,6 @@ PROGRAM CLOUD_SIMULATOR
             CALL INITIALIZE_FINAL( cfg, aux, final )
             CALL INITIALIZE_COUNTS( aux, counts )
 
-            CALL WRITE_MONTHLY_MEAN( aux, cfg, final, counts )
-
             CALL GET_FILE_LIST(cfg, year, month, files, nfiles)
 
             DO ff = 1, nfiles ! loop over files per month
@@ -84,7 +82,7 @@ PROGRAM CLOUD_SIMULATOR
             IF ( ALLOCATED( files ) ) DEALLOCATE( files )
 
             CALL MEAN_VARS( final, counts )
-            !CALL WRITE_MONTHLY_MEAN( cfg, final, counts )
+            CALL WRITE_MONTHLY_MEAN( aux, cfg, final, counts )
 
             CALL PRINT_MINMAX( "cfc",        x, y, final % cfc )
             CALL PRINT_MINMAX( "cph",        x, y, final % cph )

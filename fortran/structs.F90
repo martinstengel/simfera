@@ -118,5 +118,28 @@ MODULE STRUCTS
         INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: cot_ice, cer_ice
     END TYPE npoints
 
+    TYPE hist1d_ids
+        INTEGER(KIND=lint) :: cot_axis, cot_bins, cot_hist
+        INTEGER(KIND=lint) :: ctp_axis, ctp_bins, ctp_hist
+        INTEGER(KIND=lint) :: ctt_axis, ctt_bins, ctt_hist
+        INTEGER(KIND=lint) :: cer_axis, cer_bins, cer_hist
+        INTEGER(KIND=lint) :: cwp_axis, cwp_bins, cwp_hist
+    END TYPE hist1d_ids
+
+    TYPE hist2d_ids
+        INTEGER(KIND=lint) :: cot_axis, cot_bins
+        INTEGER(KIND=lint) :: ctp_axis, ctp_bins
+        INTEGER(KIND=lint) :: hist
+    END TYPE hist2d_ids
+
+    TYPE mm_ids
+        INTEGER(KIND=lint) :: cfc, cph, cph_day
+        INTEGER(KIND=lint) :: ctp, cth, ctt
+        INTEGER(KIND=lint) :: cot, cot_liq, cot_ice
+        INTEGER(KIND=lint) :: cer, cer_liq, cer_ice
+        INTEGER(KIND=lint) :: cwp, lwp, iwp
+        INTEGER(KIND=lint) :: cwp_allsky, lwp_allsky, iwp_allsky
+        INTEGER(KIND=lint) :: nobs, nobs_lwp, nobs_iwp
+    END TYPE mm_ids
 
 END MODULE STRUCTS
