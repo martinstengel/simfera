@@ -22,7 +22,7 @@ PROGRAM CLOUD_SIMULATOR
     TYPE(tmp_arrays)    :: temps
     TYPE(l3_vars)       :: final
     TYPE(npoints)       :: counts
-    CHARACTER(LEN=file_length)              :: ncfile
+    CHARACTER(LEN=file_length)              :: ncfile, ts
     CHARACTER(LEN=file_length), ALLOCATABLE :: files(:,:)
 
     ! local variables

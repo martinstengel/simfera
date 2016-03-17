@@ -4,6 +4,7 @@
 MODULE SIM_NCDF 
 
     USE COMMON_CONSTANTS
+    USE NCDF_CONSTANTS
     USE STRUCTS
     USE NETCDF
 
@@ -11,13 +12,12 @@ MODULE SIM_NCDF
 
     !==========================================================================
 
-    SUBROUTINE DEFINE_VAR( fid, vartype, short, long, units, dim_var, &
-                           dimid, varid )
+    SUBROUTINE DEFINE_VAR( fid, vartype, short, dim_var, dimid, varid )
 
         IMPLICIT NONE
 
         INTEGER,           INTENT(IN)  :: fid, vartype, dim_var
-        CHARACTER(LEN=64), INTENT(IN)  :: short, long, units
+        CHARACTER(LEN=64), INTENT(IN)  :: short
         INTEGER,           INTENT(OUT) :: varid, dimid
 
         CALL CHECK ( nf90_def_dim( fid, short, dim_var, dimid ) )
@@ -28,44 +28,153 @@ MODULE SIM_NCDF
             CALL CHECK ( nf90_def_var( fid, short, NF90_FLOAT, dimid, varid ) )
         ELSE IF ( vartype == 3 ) THEN 
             CALL CHECK ( nf90_def_var( fid, short, NF90_DOUBLE, dimid, varid ) )
+        ELSE IF ( vartype == 4 ) THEN 
+            CALL CHECK ( nf90_def_var( fid, short, NF90_BYTE, dimid, varid ) )
         ELSE
             PRINT*, " --- ERROR: This vartype is not defined !", vartype
             STOP
         END IF
-
-        CALL CHECK ( nf90_put_att( fid, varid, "units", units ) )
-        CALL CHECK ( nf90_put_att( fid, varid, "long_name", long ) )
 
     END SUBROUTINE DEFINE_VAR
 
     !==========================================================================
 
-    SUBROUTINE DEFINE_OUT( fid, vartype, short, long, units, dimids, varid )
+    SUBROUTINE DEFINE_OUT( fid, vartype, short, dimids, varid )
 
         IMPLICIT NONE
 
         INTEGER,           INTENT(IN)  :: fid, vartype, dimids(:)
-        CHARACTER(LEN=64), INTENT(IN)  :: short, long, units
+        CHARACTER(LEN=64), INTENT(IN)  :: short
         INTEGER,           INTENT(OUT) :: varid
 
         IF ( vartype == 1 ) THEN 
             CALL CHECK ( nf90_def_var( fid, short, NF90_INT, dimids, varid ) )
-            CALL CHECK ( nf90_put_att( fid, varid, "_FillValue", lint_fill_value ) )
         ELSE IF ( vartype == 2 ) THEN 
             CALL CHECK ( nf90_def_var( fid, short, NF90_FLOAT, dimids, varid ) )
-            CALL CHECK ( nf90_put_att( fid, varid, "_FillValue", sreal_fill_value ) )
         ELSE IF ( vartype == 3 ) THEN 
             CALL CHECK ( nf90_def_var( fid, short, NF90_DOUBLE, dimids, varid ) )
-            CALL CHECK ( nf90_put_att( fid, varid, "_FillValue", dreal_fill_value ) )
         ELSE
             PRINT*, " --- ERROR: This vartype is not defined !", vartype
             STOP
         END IF
 
-        CALL CHECK ( nf90_put_att( fid, varid, "units", units ) )
-        CALL CHECK ( nf90_put_att( fid, varid, "long_name", long ) )
-
     END SUBROUTINE DEFINE_OUT
+
+    !==========================================================================
+
+    SUBROUTINE DEFINE_ATTRIBUTES( fid, phase_id, h2ids, h1ids, vids )
+
+        IMPLICIT NONE
+
+        INTEGER,          INTENT(IN) :: fid, phase_id
+        TYPE(hist2d_ids), INTENT(IN) :: h2ids
+        TYPE(hist1d_ids), INTENT(IN) :: h1ids
+        TYPE(mm_ids),     INTENT(IN) :: vids
+
+        CALL CHECK ( nf90_put_att( fid, phase_id, long, phase_bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, phase_id, units, unit_one ) )
+
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_axis, long, "cot"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_axis, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_bins, long, "cot"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_bins, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_axis, long, "ctp"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_axis, units, unit_ctp ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_bins, long, "ctp"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_bins, units, unit_ctp ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % hist, long, jointstr ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % hist, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % hist, fill, lint_fill_value ) )
+
+        CALL CHECK ( nf90_put_att( fid, h1ids % cot_axis, long, "cot"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cot_axis, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cot_bins, long, "cot"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cot_bins, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cot_hist, long, cot_hist_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cot_hist, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cot_hist, fill, lint_fill_value ) )
+
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctp_axis, long, "ctp"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctp_axis, units, unit_ctp ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctp_bins, long, "ctp"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctp_bins, units, unit_ctp ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctp_hist, long, ctp_hist_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctp_hist, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctp_hist, fill, lint_fill_value ) )
+
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctt_axis, long, "ctt"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctt_axis, units, unit_ctt ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctt_bins, long, "ctt"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctt_bins, units, unit_ctt ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctt_hist, long, ctt_hist_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctt_hist, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % ctt_hist, fill, lint_fill_value ) )
+
+        CALL CHECK ( nf90_put_att( fid, h1ids % cer_axis, long, "cer"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cer_axis, units, unit_cer ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cer_bins, long, "cer"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cer_bins, units, unit_cer ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cer_hist, long, cer_hist_str) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cer_hist, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cer_hist, fill, lint_fill_value ) )
+
+        CALL CHECK ( nf90_put_att( fid, h1ids % cwp_axis, long, "cwp"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cwp_axis, units, unit_cwp ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cwp_bins, long, "cwp"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cwp_bins, units, unit_cwp ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cwp_hist, long, cwp_hist_str ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cwp_hist, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h1ids % cwp_hist, fill, lint_fill_value ) )
+
+        CALL CHECK ( nf90_put_att( fid, vids % cfc, long, cfc_str ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cfc, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cfc, fill, sreal_fill_value ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cfc, fscale, 1.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cfc, offset, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cfc, vmin, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cfc, vmax, 1.0 ) )
+
+        CALL CHECK ( nf90_put_att( fid, vids % cph, long, cph_str ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph, fill, sreal_fill_value ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph, fscale, 1.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph, offset, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph, vmin, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph, vmax, 1.0 ) )
+
+        CALL CHECK ( nf90_put_att( fid, vids % cph_day, long, cph_day_str ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph_day, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph_day, fill, sreal_fill_value ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph_day, fscale, 1.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph_day, offset, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph_day, vmin, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cph_day, vmax, 1.0 ) )
+
+        CALL CHECK ( nf90_put_att( fid, vids % ctp, long, ctp_str ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctp, units, unit_ctp ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctp, fill, sreal_fill_value ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctp, fscale, 1.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctp, offset, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctp, vmin, 50.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctp, vmax, 1200.0 ) )
+
+        CALL CHECK ( nf90_put_att( fid, vids % ctt, long, ctt_str ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctt, units, unit_ctt ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctt, fill, sreal_fill_value ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctt, fscale, 1.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctt, offset, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctt, vmin, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % ctt, vmax, 320.0 ) )
+
+        CALL CHECK ( nf90_put_att( fid, vids % cth, long, cth_str ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cth, units, unit_cth ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cth, fill, sreal_fill_value ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cth, fscale, 1.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cth, offset, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cth, vmin, 0.0 ) )
+        CALL CHECK ( nf90_put_att( fid, vids % cth, vmax, 20.0 ) )
+
+    END SUBROUTINE DEFINE_ATTRIBUTES
 
     !==========================================================================
 
@@ -96,38 +205,56 @@ MODULE SIM_NCDF
 
     !==========================================================================
 
-    SUBROUTINE DEFINE_GLOBALS( fid, sdate, thres, nfiles, styp, mtyp  )
+    SUBROUTINE DEFINE_GLOBALS( fid, set, aux, nfiles )
 
+        USE FUNCS, only: timestamp
         IMPLICIT NONE
 
+        TYPE(era_aux),      INTENT(IN) :: aux
+        TYPE(config),       INTENT(IN) :: set
         INTEGER(KIND=lint), INTENT(IN) :: fid
-        INTEGER(KIND=sint), INTENT(IN) :: nfiles, styp, mtyp
-        REAL(KIND=sreal),   INTENT(IN) :: thres
-        CHARACTER(LEN=*),   INTENT(IN) :: sdate
+        INTEGER(KIND=sint), INTENT(IN) :: nfiles
 
         ! local 
-        CHARACTER(LEN=*), PARAMETER :: SRC = "Source"
-        CHARACTER(LEN=*), PARAMETER :: TCS = "TIME_COVERAGE_START"
-        CHARACTER(LEN=*), PARAMETER :: TCR = "TIME_COVERAGE_RESOLUTION"
-        CHARACTER(LEN=*), PARAMETER :: THV = "cot_thv"
-        CHARACTER(LEN=*), PARAMETER :: NOF = "number_of_files"
-        CHARACTER(LEN=*), PARAMETER :: SCO = "scops"
-        CHARACTER(LEN=*), PARAMETER :: MPC = "mpc"
+        CHARACTER(LEN=64) :: scops_def, mpc_def, ts
 
-        CHARACTER(LEN=20) :: scops_def, mpc_def
+        ts = timestamp()
 
-        IF ( styp == 1 ) scops_def = "random"
-        IF ( styp == 2 ) scops_def = "max/random"
-        IF ( mtyp == 1 ) mpc_def = "separated phase"
-        IF ( mtyp == 2 ) mpc_def = "mixed phase"
+        IF ( set % scops == 1 ) scops_def = "random"
+        IF ( set % scops == 2 ) scops_def = "max/random"
+        IF ( set % mpc == 1 ) mpc_def = "separated phase"
+        IF ( set % mpc == 2 ) mpc_def = "mixed phase"
 
-        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, SRC, "ERA-Interim" ) )
-        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, TCS, sdate ) )
-        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, TCR, "P1M" ) )
-        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, THV, thres ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, PROJECT, PROJECT_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, TITLE, TITLE_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, INS, DWD ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, SRC, SRC_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, TCS, set % start_date ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, TCE, set % end_date ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, TCR, TCR_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, THV, set % thv ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, NOF, nfiles ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, SCO, scops_def ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, MPC, mpc_def ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, RES, RES_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LONRES, RES_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LATRES, RES_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LONUNI, LONUNI_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LATUNI, LATUNI_STR ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, XMIN, MINVAL( aux % lon ) ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, XMAX, MAXVAL( aux % lon ) ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, YMIN, MINVAL( aux % lat ) ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, YMAX, MAXVAL( aux % lat ) ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, DTC, TRIM(ts) ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, CRU, DWD_URL ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, CRM, DWD_MAIL ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, CRE, DWD ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, CDMGRD, GRID ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, REFERENCES, ESA_URL ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, SUMMARY, SUMMARY_TXT ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, KEYWORDS, KEYWORDS_TXT ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, COMMENT, COMMENT_TXT ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LICENSE, LICENSE_TXT ) )
 
      END SUBROUTINE DEFINE_GLOBALS
 
@@ -162,16 +289,14 @@ MODULE SIM_NCDF
         CALL CHECK ( nf90_def_var( fid, "lat",  NF90_FLOAT,  lat_dimid, lat_id ) )
 
         ! assign units attributes
-        CALL CHECK ( nf90_put_att( fid, lon_id, "units", "degrees_east" ) )
-        CALL CHECK ( nf90_put_att( fid, lat_id, "units", "degrees_north" ) )
+        CALL CHECK ( nf90_put_att( fid, lon_id, units, LONUNI_STR ) )
+        CALL CHECK ( nf90_put_att( fid, lat_id, units, LATUNI_STR ) )
 
         ! long_names
-        CALL CHECK ( nf90_put_att( fid, lon_id, "long_name", "longitude" ) )
-        CALL CHECK ( nf90_put_att( fid, lat_id, "long_name", "latitude" ) )
+        CALL CHECK ( nf90_put_att( fid, lon_id, long, "longitude" ) )
+        CALL CHECK ( nf90_put_att( fid, lat_id, long, "latitude" ) )
 
-        ! DEFINE_VAR( fid, vartype, short, long, units, dim_var, dimid, varid )
-        CALL DEFINE_VAR( fid, 2, "hist_phase", "phase histogram bins", " ", &
-                         dim_phase, phase_dimid, phase_id )
+        CALL DEFINE_VAR( fid, 4, "hist_phase", dim_phase, phase_dimid, phase_id )
 
     END SUBROUTINE DEFINE_COORD_VARS
 
@@ -203,76 +328,63 @@ MODULE SIM_NCDF
         dim_cot_axis = n_cot_bins + 1
         dim_cot_bins = n_cot_bins
 
-        CALL DEFINE_VAR( fid, 2, "hist1d_cot_bin_border", "histogram_cot1d", &
-                         " ", dim_cot_axis, cot_axis_dimid, ids % cot_axis )
+        CALL DEFINE_VAR( fid, 2, "hist1d_cot_bin_border", &
+                         dim_cot_axis, cot_axis_dimid, ids % cot_axis )
+        CALL DEFINE_VAR( fid, 2, "hist1d_cot_bin_centre", &
+                         dim_cot_bins, cot_bins_dimid, ids % cot_bins )
 
-        CALL DEFINE_VAR( fid, 2, "hist1d_cot_bin_centre", "histogram_cot_bin1d", &
-                         " ", dim_cot_bins, cot_bins_dimid, ids % cot_bins )
-        
-        cot_hist_dims = (/ x_dimid, y_dimid, cot_bins_dimid, p_dimid, t_dimid /) 
+        cot_hist_dims = (/ x_dimid,y_dimid,cot_bins_dimid,p_dimid,t_dimid /)
 
-        CALL DEFINE_OUT( fid, 1, "hist1d_cot", "hist1d_cot", "counts", &
-                         cot_hist_dims, ids % cot_hist )
-
+        CALL DEFINE_OUT( fid, 1, "hist1d_cot", cot_hist_dims, ids % cot_hist )
 
         dim_ctp_axis = n_ctp_bins + 1
         dim_ctp_bins = n_ctp_bins
 
-        CALL DEFINE_VAR( fid, 2, "hist1d_ctp_bin_border", "histogram_ctp1d", &
-                         " ", dim_ctp_axis, ctp_axis_dimid, ids % ctp_axis )
-
-        CALL DEFINE_VAR( fid, 2, "hist1d_ctp_bin_centre", "histogram_ctp_bin1d", &
-                         " ", dim_ctp_bins, ctp_bins_dimid, ids % ctp_bins )
+        CALL DEFINE_VAR( fid, 2, "hist1d_ctp_bin_border", &
+                         dim_ctp_axis, ctp_axis_dimid, ids % ctp_axis )
+        CALL DEFINE_VAR( fid, 2, "hist1d_ctp_bin_centre", &
+                         dim_ctp_bins, ctp_bins_dimid, ids % ctp_bins )
         
         ctp_hist_dims = (/ x_dimid, y_dimid, ctp_bins_dimid, p_dimid, t_dimid /) 
 
-        CALL DEFINE_OUT( fid, 1, "hist1d_ctp", "hist1d_ctp", "counts", &
-                         ctp_hist_dims, ids % ctp_hist )
-
+        CALL DEFINE_OUT( fid, 1, "hist1d_ctp", ctp_hist_dims, ids % ctp_hist )
 
         dim_ctt_axis = n_ctt_bins + 1
         dim_ctt_bins = n_ctt_bins
 
-        CALL DEFINE_VAR( fid, 2, "hist1d_ctt_bin_border", "histogram_ctt1d", &
-                         " ", dim_ctt_axis, ctt_axis_dimid, ids % ctt_axis )
-
-        CALL DEFINE_VAR( fid, 2, "hist1d_ctt_bin_centre", "histogram_ctt_bin1d", &
-                         " ", dim_ctt_bins, ctt_bins_dimid, ids % ctt_bins )
+        CALL DEFINE_VAR( fid, 2, "hist1d_ctt_bin_border", &
+                         dim_ctt_axis, ctt_axis_dimid, ids % ctt_axis )
+        CALL DEFINE_VAR( fid, 2, "hist1d_ctt_bin_centre", &
+                         dim_ctt_bins, ctt_bins_dimid, ids % ctt_bins )
         
         ctt_hist_dims = (/ x_dimid, y_dimid, ctt_bins_dimid, p_dimid, t_dimid /) 
 
-        CALL DEFINE_OUT( fid, 1, "hist1d_ctt", "hist1d_ctt", "counts", &
-                         ctt_hist_dims, ids % ctt_hist )
-
+        CALL DEFINE_OUT( fid, 1, "hist1d_ctt", ctt_hist_dims, ids % ctt_hist )
 
         dim_cer_axis = n_cer_bins + 1
         dim_cer_bins = n_cer_bins
 
-        CALL DEFINE_VAR( fid, 2, "hist1d_cer_bin_border", "histogram_cer1d", &
-                         " ", dim_cer_axis, cer_axis_dimid, ids % cer_axis )
-
-        CALL DEFINE_VAR( fid, 2, "hist1d_cer_bin_centre", "histogram_cer_bin1d", &
-                         " ", dim_cer_bins, cer_bins_dimid, ids % cer_bins )
+        CALL DEFINE_VAR( fid, 2, "hist1d_cer_bin_border", &
+                         dim_cer_axis, cer_axis_dimid, ids % cer_axis )
+        CALL DEFINE_VAR( fid, 2, "hist1d_cer_bin_centre", &
+                         dim_cer_bins, cer_bins_dimid, ids % cer_bins )
         
         cer_hist_dims = (/ x_dimid, y_dimid, cer_bins_dimid, p_dimid, t_dimid /) 
 
-        CALL DEFINE_OUT( fid, 1, "hist1d_cer", "hist1d_cer", "counts", &
-                         cer_hist_dims, ids % cer_hist )
+        CALL DEFINE_OUT( fid, 1, "hist1d_cer", cer_hist_dims, ids % cer_hist )
 
 
         dim_cwp_axis = n_cwp_bins + 1
         dim_cwp_bins = n_cwp_bins
 
-        CALL DEFINE_VAR( fid, 2, "hist1d_cwp_bin_border", "histogram_cwp1d", &
-                         " ", dim_cwp_axis, cwp_axis_dimid, ids % cwp_axis )
-
-        CALL DEFINE_VAR( fid, 2, "hist1d_cwp_bin_centre", "histogram_cwp_bin1d", &
-                         " ", dim_cwp_bins, cwp_bins_dimid, ids % cwp_bins )
+        CALL DEFINE_VAR( fid, 2, "hist1d_cwp_bin_border", &
+                         dim_cwp_axis, cwp_axis_dimid, ids % cwp_axis )
+        CALL DEFINE_VAR( fid, 2, "hist1d_cwp_bin_centre", &
+                         dim_cwp_bins, cwp_bins_dimid, ids % cwp_bins )
         
         cwp_hist_dims = (/ x_dimid, y_dimid, cwp_bins_dimid, p_dimid, t_dimid /) 
 
-        CALL DEFINE_OUT( fid, 1, "hist1d_cwp", "hist1d_cwp", "counts", &
-                         cwp_hist_dims, ids % cwp_hist )
+        CALL DEFINE_OUT( fid, 1, "hist1d_cwp", cwp_hist_dims, ids % cwp_hist )
 
     END SUBROUTINE DEFINE_HIST1D
 
@@ -299,26 +411,18 @@ MODULE SIM_NCDF
         dim_ctp_bins = n_hist_ctp - 1
 
         CALL DEFINE_VAR( fid, 2, "hist2d_cot_bin_border", &
-                         "cot histogram border values", " ", dim_cot_axis, &
-                         cot_axis_dimid, ids % cot_axis )
-
+                         dim_cot_axis, cot_axis_dimid, ids % cot_axis )
         CALL DEFINE_VAR( fid, 2, "hist2d_cot_bin_centre", &
-                         "cot histogram bins", " ", dim_cot_bins, &
-                         cot_bins_dimid, ids % cot_bins )
-        
+                         dim_cot_bins, cot_bins_dimid, ids % cot_bins )
         CALL DEFINE_VAR( fid, 2, "hist2d_ctp_bin_border", &
-                         "ctp histogram border values", " ", dim_ctp_axis, &
-                         ctp_axis_dimid, ids % ctp_axis )
-
+                         dim_ctp_axis, ctp_axis_dimid, ids % ctp_axis )
         CALL DEFINE_VAR( fid, 2, "hist2d_ctp_bin_centre", &
-                         "ctp histogram bins", " ", dim_ctp_bins, &
-                         ctp_bins_dimid, ids % ctp_bins )
+                         dim_ctp_bins, ctp_bins_dimid, ids % ctp_bins )
 
         hist_dims = (/ x_dimid, y_dimid, cot_bins_dimid, &
                        ctp_bins_dimid, p_dimid, t_dimid /) 
 
-        CALL DEFINE_OUT( fid, 1, "hist2d_cot_ctp", "hist2d_cot_ctp", &
-                         "counts", hist_dims, ids % hist )
+        CALL DEFINE_OUT( fid, 1, "hist2d_cot_ctp", hist_dims, ids % hist )
 
     END SUBROUTINE DEFINE_HIST2D
 
@@ -332,47 +436,32 @@ MODULE SIM_NCDF
         INTEGER(KIND=lint), INTENT(IN)  :: x_dimid, y_dimid, t_dimid
         TYPE(mm_ids),       INTENT(OUT) :: ids
 
-        !TYPE mm_ids
-        !    INTEGER(KIND=lint) :: cfc, cph, cph_day
-        !    INTEGER(KIND=lint) :: ctp, cth, ctt
-        !    INTEGER(KIND=lint) :: cot, cot_liq, cot_ice
-        !    INTEGER(KIND=lint) :: cer, cer_liq, cer_ice
-        !    INTEGER(KIND=lint) :: cwp, lwp, iwp
-        !    INTEGER(KIND=lint) :: cwp_allsky, lwp_allsky, iwp_allsky
-        !    INTEGER(KIND=lint) :: nobs, nobs_lwp, nobs_iwp
-        !END TYPE mm_ids
-
         ! local
         INTEGER(KIND=lint), DIMENSION(3) :: dimids
 
         dimids = (/ x_dimid, y_dimid, t_dimid/)
 
-        CALL DEFINE_OUT( fid, 1, "nobs", "number of observations", &
-                         "counts", dimids, ids % nobs )
-        CALL DEFINE_OUT( fid, 1, "nobs_lwp", "number of observations", &
-                         "counts", dimids, ids % nobs_lwp )
-        CALL DEFINE_OUT( fid, 1, "nobs_iwp", "number of observations", &
-                         "counts", dimids, ids % nobs_iwp )
-
-        CALL DEFINE_OUT( fid, 2, "cfc", "cloud fraction", &
-                         " ", dimids, ids % cfc )
-        CALL DEFINE_OUT( fid, 2, "cph", "fraction of liquid water clouds", &
-                         " ", dimids, ids % cph )
-        CALL DEFINE_OUT( fid, 2, "cph_day", "daytime fraction of liquid water clouds", &
-                         " ", dimids, ids % cph_day )
-        CALL DEFINE_OUT( fid, 2, "ctp", "cloud top pressure", &
-                         "hPa", dimids, ids % ctp )
-        CALL DEFINE_OUT( fid, 2, "cth", "cloud top height", &
-                         "km", dimids, ids % cth )
-        CALL DEFINE_OUT( fid, 2, "ctt", "cloud top temperature", &
-                         "K", dimids, ids % ctt )
-
-        CALL DEFINE_OUT( fid, 2, "cot", "cloud optical thickness", &
-                         " ", dimids, ids % cot )
-        CALL DEFINE_OUT( fid, 2, "cot_liq", "liquid cloud optical thickness", &
-                         " ", dimids, ids % cot_liq )
-        CALL DEFINE_OUT( fid, 2, "cot_ice", "ice cloud optical thickness", &
-                         " ", dimids, ids % cot_ice )
+        CALL DEFINE_OUT( fid, 1, "nobs", dimids, ids % nobs )
+        CALL DEFINE_OUT( fid, 1, "nobs_lwp", dimids, ids % nobs_lwp )
+        CALL DEFINE_OUT( fid, 1, "nobs_iwp", dimids, ids % nobs_iwp )
+        CALL DEFINE_OUT( fid, 2, "cfc", dimids, ids % cfc )
+        CALL DEFINE_OUT( fid, 2, "cph", dimids, ids % cph )
+        CALL DEFINE_OUT( fid, 2, "cph_day", dimids, ids % cph_day )
+        CALL DEFINE_OUT( fid, 2, "ctp", dimids, ids % ctp )
+        CALL DEFINE_OUT( fid, 2, "cth", dimids, ids % cth )
+        CALL DEFINE_OUT( fid, 2, "ctt", dimids, ids % ctt )
+        CALL DEFINE_OUT( fid, 2, "cot", dimids, ids % cot )
+        CALL DEFINE_OUT( fid, 2, "cot_liq", dimids, ids % cot_liq )
+        CALL DEFINE_OUT( fid, 2, "cot_ice", dimids, ids % cot_ice )
+        CALL DEFINE_OUT( fid, 2, "cer", dimids, ids % cer )
+        CALL DEFINE_OUT( fid, 2, "cer_liq", dimids, ids % cer_liq )
+        CALL DEFINE_OUT( fid, 2, "cer_ice", dimids, ids % cer_ice )
+        CALL DEFINE_OUT( fid, 2, "cwp", dimids, ids % cwp )
+        CALL DEFINE_OUT( fid, 2, "lwp", dimids, ids % lwp )
+        CALL DEFINE_OUT( fid, 2, "iwp", dimids, ids % iwp )
+        CALL DEFINE_OUT( fid, 2, "cwp_allsky", dimids, ids % cwp_allsky )
+        CALL DEFINE_OUT( fid, 2, "lwp_allsky", dimids, ids % lwp_allsky )
+        CALL DEFINE_OUT( fid, 2, "iwp_allsky", dimids, ids % iwp_allsky )
 
     END SUBROUTINE DEFINE_MM
 
@@ -479,8 +568,7 @@ MODULE SIM_NCDF
         CALL CHECK ( nf90_create( TRIM(nc_file), nf90_clobber, ncid ) )
 
         ! global attributes
-        CALL DEFINE_GLOBALS( ncid, set % start_date(1:6), set % thv, &
-                             cnt % file_counter, set % scops, set % mpc  )
+        CALL DEFINE_GLOBALS( ncid, set, aux, cnt % file_counter )
 
         ! define phase, time, lon, lat
         CALL DEFINE_COORD_VARS( ncid, DIM_LON, DIM_LAT, &
@@ -497,6 +585,9 @@ MODULE SIM_NCDF
 
         ! define monthly mean variables
         CALL DEFINE_MM ( ncid, lon_dimid, lat_dimid, time_id, var_ids )
+
+        ! define attributes
+        CALL DEFINE_ATTRIBUTES( ncid, phase_id, h2d_ids, h1d_ids, var_ids )
 
         ! end define mode
         CALL CHECK ( nf90_enddef(ncid) )
@@ -546,6 +637,12 @@ MODULE SIM_NCDF
                             h1d_ids % cwp_hist, fin % hist_cwp )
 
         ! write netcdf monthly mean variables
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cfc, fin % cfc) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cph, fin % cph) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cph_day, fin % cph_day) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % ctp, fin % ctp) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % ctt, fin % ctt) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cth, fin % cth) )
 
         ! close ncdf file
         CALL CHECK( nf90_close(  ncid ) )
