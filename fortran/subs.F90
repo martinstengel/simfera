@@ -98,7 +98,7 @@ MODULE SUBS
             PRINT*, "   ERA ncfile already exists: '"//TRIM(ofile)//"'"
         ELSE
             command = "cdo -f nc copy "//TRIM(ifile)//" "//TRIM(ofile)
-            WRITE(*,'(a)') "** "//TRIM(command)
+            WRITE(*,'(a)') " ** "//TRIM(command)
             CALL system( command )
         ENDIF
     
