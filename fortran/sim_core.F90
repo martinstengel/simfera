@@ -78,34 +78,11 @@ MODULE SIM_CORE
                 CALL PSEUDO_RETRIEVAL( set % thv, flag, ncol, nlev, &
                                        xi, yi, inp, matrix, array )
 
+
                 CALL COMPUTE_SUMMARY_STATISTICS( xi, yi, ncol, flag, &
                                                  array, set, tmp, fin )
 
 
-                !IF ( inp % sza2d(xi,yi) > 46 .AND. inp % sza2d(xi,yi) < 47 ) THEN 
-                IF (inp%lat(xi) == 33. .AND. inp%lon(yi) == 13.5 ) THEN
-                    print*, "** SUMMARY-STAT results: "
-                    print('(A20, 3F14.6)'), "lat/lon/sza", inp % lat(xi), inp % lon(yi), inp % sza2d(xi,yi)
-                    print('(A20,F14.6)'), "ctp: ",          tmp % ctp (xi,yi)
-                    print('(A20,F14.6)'), "cth: ",          tmp % cth (xi,yi) 
-                    print('(A20,F14.6)'), "ctt: ",          tmp % ctt (xi,yi) 
-                    print('(A20,F14.6)'), "cfc: ",          tmp % cfc (xi,yi) 
-                    print('(A20,F14.6)'), "cph: ",          tmp % cph (xi,yi) 
-                    print('(A20,F14.6)'), "cph_day: ",      tmp % cph_day (xi,yi)
-                    print('(A20,F14.6)'), "cwp: ",          tmp % cwp (xi,yi) 
-                    print('(A20,F14.6)'), "lwp: ",          tmp % lwp (xi,yi) 
-                    print('(A20,F14.6)'), "iwp: ",          tmp % iwp (xi,yi) 
-                    print('(A20,F14.6)'), "cwp_allsky: ",   tmp % cwp_allsky (xi,yi) 
-                    print('(A20,F14.6)'), "lwp_allsky: ",   tmp % lwp_allsky (xi,yi) 
-                    print('(A20,F14.6)'), "iwp_allsky: ",   tmp % iwp_allsky (xi,yi) 
-                    print('(A20,F14.6)'), "cot: ",          tmp % cot (xi,yi) 
-                    print('(A20,F14.6)'), "cot_liq: ",      tmp % cot_liq (xi,yi) 
-                    print('(A20,F14.6)'), "cot_ice: ",      tmp % cot_ice (xi,yi) 
-                    print('(A20,F14.6)'), "cer: ",          tmp % cer (xi,yi)  
-                    print('(A20,F14.6)'), "cer_liq: ",      tmp % cer_liq (xi,yi) 
-                    print('(A20,F14.6)'), "cer_ice: ",      tmp % cer_ice (xi,yi) 
-                    stop
-                END IF
 
                 CALL UNDEFINE_MATRIX( matrix )
                 CALL UNDEFINE_ARRAYS( array )
@@ -270,7 +247,7 @@ MODULE SIM_CORE
             rndRealArr = 0.0
             CALL RANDOM_NUMBER( rndRealArr )
             check = RANDOM_NUMBER_DUPLICATES( ncol, rndRealArr )
-            IF ( check ) PRINT*, "-- WARNING: dupliate random number -> try again!"
+            !IF ( check ) PRINT*, "-- WARNING: dupliate random number -> try again!"
         END DO
 
         ! Sort rndRealArr in ascending order and apply it to indices
@@ -289,6 +266,7 @@ MODULE SIM_CORE
         INTEGER(KIND=sint)                              :: n   !ncols
         REAL(KIND=sreal),   DIMENSION(n), INTENT(INOUT) :: arr !real values
         INTEGER(KIND=sint), DIMENSION(n), INTENT(INOUT) :: brr !integer values
+
         ! local variables
         INTEGER :: i, j
         REAL    :: a, b
@@ -332,6 +310,7 @@ MODULE SIM_CORE
 
         ! local variables
         INTEGER(KIND=sint) :: icol, ilev
+        REAL(KIND=sreal)   :: scale_factor
 
 
         WHERE ( matrix % tcot < thv )
@@ -362,14 +341,15 @@ MODULE SIM_CORE
 
                     IF ( flag == is_day ) THEN
 
+                        array % cer (icol) = matrix % cer (icol, ilev)
                         array % cot (icol) = SUM( matrix % cot (icol,:) )
                         array % cwp (icol) = SUM( matrix % cwp (icol,:) )
-                        array % cer (icol) = matrix % cer (icol, ilev)
 
-                        WHERE ( array % cot > max_cot )
-                            array % cot = array % cot * ( max_cot / array % cot )
-                            array % cwp = array % cwp * ( max_cot / array % cot )
-                        END WHERE
+                        IF ( array % cot (icol) > max_cot ) THEN
+                            scale_factor = max_cot / array % cot (icol)
+                            array % cwp (icol) = array % cwp (icol) * scale_factor
+                            array % cot (icol) = array % cot (icol) * scale_factor
+                        END IF
 
                     END IF
 
@@ -400,6 +380,7 @@ MODULE SIM_CORE
         TYPE(l3_vars),    INTENT(INOUT) :: fin   ! collecting hist-results
 
         ! local variable
+        INTEGER(KIND=sint)                :: i
         REAL(KIND=sreal), DIMENSION(ncol) :: all_phase
         REAL(KIND=sreal), DIMENSION(ncol) :: liq_phase, ice_phase
 
@@ -415,6 +396,8 @@ MODULE SIM_CORE
 
         ! get all_phase parameters
         tmp % cfc (x,y) = GET_MEAN( ncol, array % cfc, all_phase, allsky )
+        IF ( tmp % cfc (x,y) == sreal_fill_value ) tmp % cfc (x,y) = 0.0
+
         tmp % ctp (x,y) = GET_MEAN( ncol, array % ctp, all_phase, normal )
         tmp % cth (x,y) = GET_MEAN( ncol, array % cth, all_phase, normal )
         tmp % ctt (x,y) = GET_MEAN( ncol, array % ctt, all_phase, normal )
@@ -466,15 +449,189 @@ MODULE SIM_CORE
 
         ! collect histogram information
 
-        print*, set % hist_cot_1d_bin
-        print*, set % hist_cot_1d_axis
-        print*, shape( fin % hist_cot )
-        print*, minval(fin % hist_cot)
-        stop
+        hist: DO i=1, ncol
+
+            IF ( array % cfc(i) == is_clear ) CYCLE hist
+
+            CALL MAKE_1D_HISTOGRAM( "ctp", array % ctp(i),  &
+                                    array % cph(i), x, y,   &
+                                    set % hist_ctp_1d_axis, &
+                                    fin % hist_ctp )
+
+            CALL MAKE_1D_HISTOGRAM( "ctt", array % ctt(i),  &
+                                    array % cph(i), x, y,   &
+                                    set % hist_ctt_1d_axis, &
+                                    fin % hist_ctt )
+
+            IF ( flag == is_day ) THEN 
+
+                CALL MAKE_2D_HISTOGRAM( array % cot(i), array %ctp(i), &
+                                        array % cph(i), x, y, &
+                                        set % hist_cot_2d_axis, &
+                                        set % hist_ctp_2d_axis, &
+                                        fin % hist_cot_ctp )
+
+                CALL MAKE_1D_HISTOGRAM( "cot", array % cot(i),  &
+                                        array % cph(i), x, y,   &
+                                        set % hist_cot_1d_axis, &
+                                        fin % hist_cot )
+
+                CALL MAKE_1D_HISTOGRAM( "cer", array % cer(i),  &
+                                        array % cph(i), x, y,   &
+                                        set % hist_cer_1d_axis, &
+                                        fin % hist_cer )
+
+                CALL MAKE_1D_HISTOGRAM( "cwp", array % cwp(i)*1000.,  &
+                                        array % cph(i), x, y,   &
+                                        set % hist_cwp_1d_axis, &
+                                        fin % hist_cwp )
+
+            END IF
+
+        END DO hist
 
 
     END SUBROUTINE COMPUTE_SUMMARY_STATISTICS
     
     !==========================================================================
+    
+    SUBROUTINE MAKE_1D_HISTOGRAM( what, value, phase, xi, yj, axis, res )
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+
+        CHARACTER(LEN=3),   INTENT(IN)    :: what
+        INTEGER(KIND=sint), INTENT(IN)    :: xi, yj
+        REAL(KIND=sreal),   INTENT(IN)    :: value
+        REAL(KIND=sreal),   INTENT(IN)    :: phase
+        REAL(KIND=sreal),   INTENT(IN)    :: axis(:)
+        INTEGER(KIND=lint), INTENT(INOUT) :: res(:,:,:,:)
+
+        ! local variable
+        INTEGER(KIND=sint) :: jp, jval, n_axis, n_bins
+
+        SELECT CASE (what)
+           CASE ("ctt")
+              n_bins = n_ctt_bins
+              n_axis = n_ctt_bins + 1
+           CASE ("ctp")
+              n_bins = n_ctp_bins
+              n_axis = n_ctp_bins + 1
+           CASE ("cot")
+              n_bins = n_cot_bins
+              n_axis = n_cot_bins + 1
+           CASE ("cwp")
+              n_bins = n_cwp_bins
+              n_axis = n_cwp_bins + 1
+           CASE ("cer")
+              n_bins = n_cer_bins
+              n_axis = n_cer_bins + 1
+           CASE DEFAULT
+              print*, " --- ERROR: This case is not defined: ", what
+              STOP
+        END SELECT
+
+        IF ( phase == is_liq ) THEN
+            jp = liq_bin
+        ELSE IF ( phase == is_ice ) THEN 
+            jp = ice_bin
+        ELSE 
+            RETURN
+        END IF
+
+        CALL LOCATE( axis, n_axis, value, jval )
+
+        IF ( jval  < 1 ) jval = 1
+        IF ( jval == n_axis ) jval = n_bins
+
+        res(xi,yj,jval,jp) = res(xi,yj,jval,jp) + 1
+
+    END SUBROUTINE MAKE_1D_HISTOGRAM
+
+    !==========================================================================
+
+    SUBROUTINE MAKE_2D_HISTOGRAM( cot, ctp, phase, xi, yj, &
+                                  cot_axis, ctp_axis, res )
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint), INTENT(IN)    :: xi, yj
+        REAL(KIND=sreal),   INTENT(IN)    :: cot, ctp
+        REAL(KIND=sreal),   INTENT(IN)    :: phase
+        REAL(KIND=sreal),   INTENT(IN)    :: cot_axis(:)
+        REAL(KIND=sreal),   INTENT(IN)    :: ctp_axis(:)
+        INTEGER(KIND=lint), INTENT(INOUT) :: res(:,:,:,:,:)
+
+        ! local variable
+        INTEGER(KIND=sint) :: jp, jcot, jctp
+
+        IF ( phase == is_liq ) THEN
+            jp = liq_bin
+        ELSE IF ( phase == is_ice ) THEN 
+            jp = ice_bin
+        ELSE 
+            RETURN
+        END IF
+
+        CALL LOCATE( cot_axis, n_hist_cot, cot, jcot )
+        CALL LOCATE( ctp_axis, n_hist_ctp, ctp, jctp )
+
+        IF ( jcot < 1 ) jcot = 1
+        IF ( jcot == n_hist_cot ) jcot = n_hist_cot - 1
+
+        IF ( jctp < 1 ) jctp = 1
+        IF ( jctp == n_hist_ctp ) jctp = n_hist_ctp - 1
+
+        res(xi,yj,jcot,jctp,jp) = res(xi,yj,jcot,jctp,jp) + 1
+
+    END SUBROUTINE MAKE_2D_HISTOGRAM
+
+    !==========================================================================
+
+    SUBROUTINE LOCATE( xx, n, x, j )
+      
+        USE COMMON_CONSTANTS
+        
+        IMPLICIT NONE
+        
+        INTEGER(KIND=sint), INTENT(IN)  :: n
+        REAL(KIND=sreal),   INTENT(IN)  :: x, xx(n)
+        INTEGER(KIND=sint), INTENT(OUT) :: j
+
+        ! local variables
+        INTEGER(KIND=sint) :: jl, jm, ju
+
+        jl = 0
+        ju = n + 1
+
+    10  if (ju-jl .gt. 1) then
+
+          jm = ( ju+jl ) / 2
+
+          if ( (xx(n) .ge. xx(1)) .eqv. (x.ge.xx(jm)) ) then
+             jl = jm
+          else
+             ju = jm
+          endif
+
+          goto 10
+
+        endif
+
+        if ( x .eq. xx(1) ) then
+           j = 1
+        else if ( x .eq. xx(n) ) then
+           j = n-1
+        else
+           j = jl
+        endif
+
+    END SUBROUTINE LOCATE
+
+    !==========================================================================
+
 
 END MODULE SIM_CORE

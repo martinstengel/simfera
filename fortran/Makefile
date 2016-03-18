@@ -13,7 +13,7 @@ FCFLAGS += -I/usr/include
 # libraries needed for linking, unused in the examples
 #LDFLAGS = -li_need_this_lib
 
-src1 = common_constants.o funcs.o structs.o
+src1 = common_constants.o ncdf_constants.o calender.o funcs.o structs.o
 src2 = initialize.o undefine.o sim_ncdf.o subs.o sim_core.o
 main = cloud_simulator.o
 objects = $(src1) $(src2) $(main)
