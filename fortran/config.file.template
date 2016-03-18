@@ -7,8 +7,8 @@
 #
 # Explanations:
 # SCOPS         1=random, 2=max/random
-# MPC           0=no mixed phase clouds, only separate liquid & ice clouds
-#               1=all clouds are mixed phase clouds if both water/ice contents exists
+# MPC           1=no mixed phase clouds, only separate liquid & ice clouds
+#               2=all clouds are mixed phase clouds if both water/ice contents exists
 # THV           cloud optical thickness threshold for upper-most cloud detection
 # REP_PWD       simulator git repository
 # INP_PWD       simulator input, i.e. original ERA-Interim files
@@ -16,15 +16,14 @@
 # SSTFILE       ERA-Interim Sea Surface Temperature file required for LSmask
 
 THV=0.3
-MPC=1
-SCOPS=2
-THV=0.3
-MPC=1
+MPC=2
 SCOPS=2
 REP_PWD=/perm/ms/de/sf7/cschlund/cloud_simulator
 SSTFILE=/perm/ms/de/sf7/cschlund/cloud_simulator/aux/sst_era_interim_0.5_0.5.nc
 INP_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/input
-OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/v5.7_fortran
+# INP_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/test_input
+OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/output/v5.7_fortran
+# OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/test_output/v5.7_fortran
 
 # define date range
 STARTYEAR=2008
