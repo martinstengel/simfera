@@ -81,23 +81,23 @@ PRO WRITE_MONTHLY_MEAN, path_out, year, month, grd, inp, hist, $
 
     ; === HISTOGRAMS ===
 
-    vid  = NCDF_VARDEF(id, 'hist_phase', [dim_phase], /DOUBLE)
+    vid  = NCDF_VARDEF(id, 'hist_phase', [dim_phase], /FLOAT)
     NCDF_ATTPUT, id, 'hist_phase', 'long_name', 'phase histogram bins'
     NCDF_ATTPUT, id, 'hist_phase', 'units', ' '
 
-    vid  = NCDF_VARDEF(id, 'hist2d_cot_bin_border', [hist2d_cot_bin_border], /DOUBLE)
+    vid  = NCDF_VARDEF(id, 'hist2d_cot_bin_border', [hist2d_cot_bin_border], /FLOAT)
     NCDF_ATTPUT, id, 'hist2d_cot_bin_border', 'long_name', 'cot histogram border values'
     NCDF_ATTPUT, id, 'hist2d_cot_bin_border', 'units', ' '
 
-    vid  = NCDF_VARDEF(id, 'hist2d_cot_bin_centre', [hist2d_cot_bin_centre], /DOUBLE)
+    vid  = NCDF_VARDEF(id, 'hist2d_cot_bin_centre', [hist2d_cot_bin_centre], /FLOAT)
     NCDF_ATTPUT, id, 'hist2d_cot_bin_centre', 'long_name', 'cot histogram bins'
     NCDF_ATTPUT, id, 'hist2d_cot_bin_centre', 'units', ' '
 
-    vid  = NCDF_VARDEF(id, 'hist2d_ctp_bin_border', [hist2d_ctp_bin_border], /DOUBLE)
+    vid  = NCDF_VARDEF(id, 'hist2d_ctp_bin_border', [hist2d_ctp_bin_border], /FLOAT)
     NCDF_ATTPUT, id, 'hist2d_ctp_bin_border', 'long_name', 'ctp histogram border values'
     NCDF_ATTPUT, id, 'hist2d_ctp_bin_border', 'units', ' '
 
-    vid  = NCDF_VARDEF(id, 'hist2d_ctp_bin_centre', [hist2d_ctp_bin_centre], /DOUBLE)
+    vid  = NCDF_VARDEF(id, 'hist2d_ctp_bin_centre', [hist2d_ctp_bin_centre], /FLOAT)
     NCDF_ATTPUT, id, 'hist2d_ctp_bin_centre', 'long_name', 'ctp histogram bins'
     NCDF_ATTPUT, id, 'hist2d_ctp_bin_centre', 'units', ' '
 
