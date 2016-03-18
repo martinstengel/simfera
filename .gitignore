@@ -31,3 +31,5 @@ config_doc.tex
 *.o
 *.mod
 *.MOD
+*.out
+*.err
