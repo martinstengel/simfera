@@ -13,5 +13,5 @@
 #PBS -e /perm/ms/de/sf7/cschlund/cloud_simulator/fortran/log_cloud_simulator.err
 
 set -x
-/perm/ms/de/sf7/cschlund/cloud_simulator/fortran/cloud_simulator
+/perm/ms/de/sf7/cschlund/cloud_simulator/fortran/cloud_simulator /perm/ms/de/sf7/cschlund/cloud_simulator/fortran/config.file
 

@@ -14,6 +14,9 @@ PROGRAM CLOUD_SIMULATOR
 
     IMPLICIT NONE
 
+    CHARACTER(LEN=path_length) :: config_file
+
+    ! local variables
     INTEGER(KIND=sint)  :: year, ystep=1, month, mstep=1
     INTEGER(KIND=sint)  :: ff, nfiles
     TYPE(config)        :: cfg
@@ -25,16 +28,23 @@ PROGRAM CLOUD_SIMULATOR
     CHARACTER(LEN=file_length)              :: ncfile, ts
     CHARACTER(LEN=file_length), ALLOCATABLE :: files(:,:)
 
-    ! local variables
-    INTEGER :: x, y
+    INTEGER :: x, y, nargs
     REAL    :: start, finish, start_month, finish_month
 
     PRINT*, ""
     PRINT*, "** cloud_simulator started"
     PRINT*, ""
 
+    ! get number of arguments
+    nargs = COMMAND_ARGUMENT_COUNT()
+    IF ( nargs == 1 ) THEN
+        CALL GET_COMMAND_ARGUMENT( 1, TRIM(config_file) )
+    ELSE
+        PRINT*, " --- ERROR: more arguments passed than expected!"
+    END IF
+
     ! get config settings
-    CALL READ_CONFIG(cfg)
+    CALL READ_CONFIG( TRIM(config_file), cfg )
 
     ! create output directory if not already existing
     CALL CREATE_DIR( TRIM(cfg % out_path) )
@@ -89,7 +99,7 @@ PROGRAM CLOUD_SIMULATOR
 
             CALL CPU_TIME( finish_month )
             PRINT*, ""
-            PRINT '(" ++ Elapsed time = ",F6.3," seconds for ",I4, "/", I2)',&
+            PRINT '(" ++ Elapsed time = ",F10.3," seconds for ",I4, "/", I2)',&
                 finish_month - start_month, year, month
 
         END DO !end of month-loop

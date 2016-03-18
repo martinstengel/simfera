@@ -271,7 +271,7 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE READ_CONFIG ( cfg )
+    SUBROUTINE READ_CONFIG ( cfile, cfg )
     
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -279,7 +279,8 @@ MODULE SUBS
     
         IMPLICIT NONE
     
-        TYPE(config), INTENT(INOUT) :: cfg
+        CHARACTER(LEN=path_length), INTENT(IN)    :: cfile
+        TYPE(config),               INTENT(INOUT) :: cfg
 
         ! local variables
         INTEGER(KIND=sint) :: io, idx, lun, ilen
@@ -287,9 +288,9 @@ MODULE SUBS
         CHARACTER(LEN=2)   :: month, day
         CHARACTER(LEN=500) :: line, what
     
-        PRINT*, "** READ_CONFIG"
+        PRINT*, "** READ_CONFIG: ", TRIM(cfile)
 
-        OPEN(NEWUNIT=lun, FILE="config.file", STATUS="old")
+        OPEN(NEWUNIT=lun, FILE=TRIM(cfile), STATUS="old")
         DO
             READ(lun,"(a)",IOSTAT=io) line
             IF (io>0) THEN
