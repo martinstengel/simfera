@@ -2,6 +2,8 @@
 fortran/cloud_simulator
 fortran/fort*
 fortran/config.file
+fortran/input*
+fortran/output*
 config_simulator.pro
 config_vis.pro
 config_doc.tex
