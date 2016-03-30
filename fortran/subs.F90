@@ -286,7 +286,8 @@ MODULE SUBS
         INTEGER(KIND=sint) :: io, idx, lun, ilen
         CHARACTER(LEN=4)   :: year
         CHARACTER(LEN=2)   :: month, day
-        CHARACTER(LEN=500) :: line, what
+        CHARACTER(LEN=50)  :: crun
+        CHARACTER(LEN=500) :: line, what, input, output, perm
     
         PRINT*, "** READ_CONFIG: ", TRIM(cfile)
 
@@ -316,17 +317,17 @@ MODULE SUBS
                     ELSEIF (TRIM(what) == "SCOPS") THEN
                         READ(line(idx+1:ilen),'(I1)') cfg%scops
     
-                    ELSEIF (TRIM(what) == "OUT_PWD") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') cfg%out_path
+                    ELSEIF (TRIM(what) == "CRUN") THEN
+                        READ(TRIM(line(idx+1:ilen)),'(A)') crun 
+
+                    ELSEIF (TRIM(what) == "ITMP") THEN
+                        READ(TRIM(line(idx+1:ilen)),'(A)') input
     
-                    ELSEIF (TRIM(what) == "INP_PWD") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') cfg%inp_path
+                    ELSEIF (TRIM(what) == "OTMP") THEN
+                        READ(TRIM(line(idx+1:ilen)),'(A)') output
     
-                    ELSEIF (TRIM(what) == "REP_PWD") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') cfg%rep_path
-    
-                    ELSEIF (TRIM(what) == "SSTFILE") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') cfg%sst_file
+                    ELSEIF (TRIM(what) == "PERM") THEN
+                        READ(TRIM(line(idx+1:ilen)),'(A)') perm
     
                     ELSEIF (TRIM(what) == "STARTYEAR") THEN
                         READ(line(idx+1:ilen),'(I4)') cfg%sy
@@ -419,15 +420,21 @@ MODULE SUBS
         cfg % hist_cer_1d_bin=cfg % hist_cer_1d_axis(1:n_cer_bins)*0.5 + &
                               cfg % hist_cer_1d_axis(2:n_cer_bins+1)*0.5
     
-        PRINT('(A13, E8.2)'), "COT-THV: ", cfg%thv
-        PRINT('(A13, I1)'), "MPC: ", cfg%mpc
-        PRINT('(A13, I1)'), "SCOPS: ", cfg%scops
-        PRINT('(A13, A8)'), "START: ", cfg%start_date
-        PRINT('(A13, A8)'), "STOP: ", cfg%end_date
-        PRINT('(A13, A)'), "REP_PWD: ", TRIM(cfg%rep_path)
-        PRINT('(A13, A)'), "INP_PWD: ", TRIM(cfg%inp_path)
-        PRINT('(A13, A)'), "OUT_PWD: ", TRIM(cfg%out_path)
-        PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg%sst_file)
+
+        cfg % rep_path = TRIM(perm)
+        cfg % sst_file = TRIM(perm) // "/aux/sst_era_interim_0.5_0.5.nc"
+        cfg % inp_path = TRIM(input)
+        cfg % out_path = TRIM(output) // "/" // TRIM(crun)
+
+        PRINT('(A13, E8.2)'), "COT-THV: ", cfg % thv
+        PRINT('(A13, I1)'), "MPC: ", cfg % mpc
+        PRINT('(A13, I1)'), "SCOPS: ", cfg % scops
+        PRINT('(A13, A8)'), "START: ", cfg % start_date
+        PRINT('(A13, A8)'), "STOP: ", cfg % end_date
+        PRINT('(A13, A)'), "REP_PWD: ", TRIM(cfg % rep_path)
+        PRINT('(A13, A)'), "INP_PWD: ", TRIM(cfg % inp_path)
+        PRINT('(A13, A)'), "OUT_PWD: ", TRIM(cfg % out_path)
+        PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg % sst_file)
 
     END SUBROUTINE READ_CONFIG
 

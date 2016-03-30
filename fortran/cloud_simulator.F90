@@ -40,7 +40,7 @@ PROGRAM CLOUD_SIMULATOR
     IF ( nargs == 1 ) THEN
         CALL GET_COMMAND_ARGUMENT( 1, TRIM(config_file) )
     ELSE
-        PRINT*, " --- ERROR: more arguments passed than expected!"
+        PRINT*, " --- ERROR! usage: executable config.file !"
     END IF
 
     ! get config settings

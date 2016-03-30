@@ -2,8 +2,9 @@
 fortran/cloud_simulator
 fortran/fort*
 fortran/config.file
-fortran/input*
-fortran/output*
+fortran/input
+fortran/output
+fortran/scratch
 config_simulator.pro
 config_vis.pro
 config_doc.tex
@@ -27,9 +28,9 @@ config_doc.tex
 *.txt
 *.swp
 *error*
-.directory
 *.o
 *.mod
 *.MOD
 *.out
 *.err
+.directory

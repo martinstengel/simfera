@@ -2,28 +2,23 @@
 #
 # Config file for cloud simulator 
 #
-# Original ERA-Interim files located here:
-# /cmsaf/cmsaf-cld1/mstengel/ERA_Interim/ERA_simulator/MARS_data/ERA_simulator/
-#
-# Explanations:
-# SCOPS         1=random, 2=max/random
-# MPC           1=no mixed phase clouds, only separate liquid & ice clouds
-#               2=all clouds are mixed phase clouds if both water/ice contents exists
-# THV           cloud optical thickness threshold for upper-most cloud detection
-# REP_PWD       simulator git repository
-# INP_PWD       simulator input, i.e. original ERA-Interim files
-# OUT_PWD       simulator output, i.e. simulated monthly mean parameters
-# SSTFILE       ERA-Interim Sea Surface Temperature file required for LSmask
+# SCOPS:  1=random, 2=max/random
+# MPC  :  1=no mixed phase clouds, only separate liquid & ice clouds
+#      :  2=all clouds are mixed phase clouds if both water/ice contents exists
+# THV  :  cloud optical thickness threshold for upper-most cloud detection
+# CRUN :  final output directory
+# PERM :  simulator git repository
+# ITMP :  input directory
+# OTMP :  output directory
 
+# basic settings
 THV=0.3
 MPC=2
 SCOPS=2
-REP_PWD=/perm/ms/de/sf7/cschlund/cloud_simulator
-SSTFILE=/perm/ms/de/sf7/cschlund/cloud_simulator/aux/sst_era_interim_0.5_0.5.nc
-INP_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/input
-# INP_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/test_input
-OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/output/v5.7_fortran
-# OUT_PWD=/scratch/ms/de/sf7/cschlund/cloud_simulator/test_output/v5.7_fortran
+CRUN=v5.8_fortran
+PERM=/perm/ms/de/sf7/cschlund/cloud_simulator
+ITMP=/scratch/ms/de/dec4/cloud_simulator/input
+OTMP=/scratch/ms/de/dec4/cloud_simulator/output
 
 # define date range
 STARTYEAR=2008
@@ -33,4 +28,3 @@ STOPMONTH=7
 STARTDAY=1
 STOPDAY=0
 # 0 means complete month
-
