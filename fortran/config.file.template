@@ -16,9 +16,9 @@ THV=0.3
 MPC=2
 SCOPS=2
 CRUN=v5.8_fortran
-PERM=/perm/ms/de/sf7/cschlund/cloud_simulator
-ITMP=/scratch/ms/de/dec4/cloud_simulator/input
-OTMP=/scratch/ms/de/dec4/cloud_simulator/output
+PERM=/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator
+ITMP=/scratch/ms/de/dec4/SIMULATOR/cloud_simulator/input
+OTMP=/scratch/ms/de/dec4/SIMULATOR/cloud_simulator/output
 
 # define date range
 STARTYEAR=2008

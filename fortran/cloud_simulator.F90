@@ -14,17 +14,22 @@ PROGRAM CLOUD_SIMULATOR
 
     IMPLICIT NONE
 
-    CHARACTER(LEN=path_length) :: config_file
-
     ! local variables
     INTEGER(KIND=sint)  :: year, ystep=1, month, mstep=1
     INTEGER(KIND=sint)  :: ff, nfiles
+
     TYPE(config)        :: cfg
     TYPE(era_input)     :: input
     TYPE(era_aux)       :: aux
     TYPE(tmp_arrays)    :: temps
     TYPE(l3_vars)       :: final
     TYPE(npoints)       :: counts
+
+    CHARACTER(LEN=10)   :: thv_str
+    CHARACTER(LEN=1)    :: mpc_str, scops_str
+    CHARACTER(LEN=4)    :: sy_str, ey_str
+    CHARACTER(LEN=2)    :: sm_str, em_str, sd_str, ed_str
+
     CHARACTER(LEN=file_length)              :: ncfile, ts
     CHARACTER(LEN=file_length), ALLOCATABLE :: files(:,:)
 
@@ -37,14 +42,38 @@ PROGRAM CLOUD_SIMULATOR
 
     ! get number of arguments
     nargs = COMMAND_ARGUMENT_COUNT()
-    IF ( nargs == 1 ) THEN
-        CALL GET_COMMAND_ARGUMENT( 1, TRIM(config_file) )
+    IF ( nargs == 13 ) THEN
+        CALL GET_COMMAND_ARGUMENT(  1, thv_str )
+        CALL GET_COMMAND_ARGUMENT(  2, mpc_str )
+        CALL GET_COMMAND_ARGUMENT(  3, scops_str )
+        CALL GET_COMMAND_ARGUMENT(  4, cfg % crun )
+        CALL GET_COMMAND_ARGUMENT(  5, cfg % perm )
+        CALL GET_COMMAND_ARGUMENT(  6, cfg % itmp )
+        CALL GET_COMMAND_ARGUMENT(  7, cfg % otmp )
+        CALL GET_COMMAND_ARGUMENT(  8, sy_str )
+        CALL GET_COMMAND_ARGUMENT(  9, ey_str )
+        CALL GET_COMMAND_ARGUMENT( 10, sm_str )
+        CALL GET_COMMAND_ARGUMENT( 11, em_str )
+        CALL GET_COMMAND_ARGUMENT( 12, sd_str )
+        CALL GET_COMMAND_ARGUMENT( 13, ed_str )
     ELSE
-        PRINT*, " --- ERROR! usage: executable config.file !"
+        PRINT*, " --- ERROR! 13 arguments are expected !"
+        STOP
     END IF
 
+    ! convert strings to real & integer
+    READ( thv_str, '(F8.3)' ) cfg % thv
+    READ( mpc_str, '(I1)' ) cfg % mpc
+    READ( scops_str, '(I1)' ) cfg % scops
+    READ( sy_str, '(I4)' ) cfg % sy
+    READ( ey_str, '(I4)' ) cfg % ey
+    READ( sm_str, '(I2)' ) cfg % sm
+    READ( em_str, '(I2)' ) cfg % em
+    READ( sd_str, '(I2)' ) cfg % sd
+    READ( ed_str, '(I2)' ) cfg % ed
+
     ! get config settings
-    CALL READ_CONFIG( TRIM(config_file), cfg )
+    CALL READ_CONFIG( cfg )
 
     ! create output directory if not already existing
     CALL CREATE_DIR( TRIM(cfg % out_path) )
@@ -55,8 +84,8 @@ PROGRAM CLOUD_SIMULATOR
     y = aux % nlat
 
     ! loop over year and month
-    DO year = cfg%sy, cfg%ey, ystep
-        DO month = cfg%sm, cfg%em, mstep
+    DO year = cfg % sy, cfg % ey, ystep
+        DO month = cfg % sm, cfg % em, mstep
 
             CALL CPU_TIME( start_month )
 
