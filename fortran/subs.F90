@@ -271,7 +271,7 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE READ_CONFIG ( cfile, cfg )
+    SUBROUTINE READ_CONFIG ( cfg )
     
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -279,103 +279,47 @@ MODULE SUBS
     
         IMPLICIT NONE
     
-        CHARACTER(LEN=path_length), INTENT(IN)    :: cfile
-        TYPE(config),               INTENT(INOUT) :: cfg
+        TYPE(config), INTENT(INOUT) :: cfg
 
         ! local variables
         INTEGER(KIND=sint) :: io, idx, lun, ilen
         CHARACTER(LEN=4)   :: year
         CHARACTER(LEN=2)   :: month, day
-        CHARACTER(LEN=50)  :: crun
-        CHARACTER(LEN=500) :: line, what, input, output, perm
+        CHARACTER(LEN=500) :: line, what 
     
-        PRINT*, "** READ_CONFIG: ", TRIM(cfile)
+        PRINT*, "** READ_CONFIG "
 
-        OPEN(NEWUNIT=lun, FILE=TRIM(cfile), STATUS="old")
-        DO
-            READ(lun,"(a)",IOSTAT=io) line
-            IF (io>0) THEN
-                WRITE(*,*) "Check input. Something was wrong."
-                EXIT
-            ELSE IF (io<0) THEN
-                EXIT
-            ELSE
-                IF ((line(1:1) == '#') .OR. (line(1:1) == ';') .OR. &
-                    (LEN_TRIM(line) == 0) ) THEN
-                    CYCLE
-                ELSE
-                    idx = SCAN(line,"=")
-                    what = TRIM(line(:idx-1))
-                    ilen = LEN_TRIM(line)
-    
-                    IF (TRIM(what) == "THV") THEN 
-                        READ(line(idx+1:ilen),'(F8.2)') cfg%thv
-    
-                    ELSEIF (TRIM(what) == "MPC") THEN
-                        READ(line(idx+1:ilen),'(I1)') cfg%mpc
-    
-                    ELSEIF (TRIM(what) == "SCOPS") THEN
-                        READ(line(idx+1:ilen),'(I1)') cfg%scops
-    
-                    ELSEIF (TRIM(what) == "CRUN") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') crun 
-
-                    ELSEIF (TRIM(what) == "ITMP") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') input
-    
-                    ELSEIF (TRIM(what) == "OTMP") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') output
-    
-                    ELSEIF (TRIM(what) == "PERM") THEN
-                        READ(TRIM(line(idx+1:ilen)),'(A)') perm
-    
-                    ELSEIF (TRIM(what) == "STARTYEAR") THEN
-                        READ(line(idx+1:ilen),'(I4)') cfg%sy
-    
-                    ELSEIF (TRIM(what) == "STOPYEAR") THEN
-                        READ(line(idx+1:ilen),'(I4)') cfg%ey
-    
-                    ELSEIF (TRIM(what) == "STARTMONTH") THEN
-                        READ(line(idx+1:ilen),'(I2)') cfg%sm
-    
-                    ELSEIF (TRIM(what) == "STOPMONTH") THEN
-                        READ(line(idx+1:ilen),'(I2)') cfg%em
-    
-                    ELSEIF (TRIM(what) == "STARTDAY") THEN
-                        READ(line(idx+1:ilen),'(I2)') cfg%sd
-    
-                    ELSEIF (TRIM(what) == "STOPDAY") THEN
-                        READ(line(idx+1:ilen),'(I2)') cfg%ed
-    
-                    ELSE
-                        PRINT*, "   NOT defined in config.file"
-                        STOP
-                    END IF
-    
-                END IF
-            END IF
-        END DO
-        CLOSE(lun)
-    
-    
-        ! convert character to integer
-        ! READ(character, '(I2)') integer
-    
         ! get last day of month if ed=0
-        IF (cfg%ed == 0) cfg%ed = NUMBER_OF_DAYS(cfg%em,cfg%ed)
+        IF (cfg % ed == 0) cfg % ed = NUMBER_OF_DAYS(cfg % em, cfg % ed)
     
         ! convert integer to character
-        WRITE(year,'(I4)') cfg%sy
-        WRITE(month,'(I0.2)') cfg%sm
-        WRITE(day,'(I0.2)') cfg%sd
-        cfg%start_date = year//month//day
+        WRITE(year,'(I4)') cfg % sy
+        WRITE(month,'(I0.2)') cfg % sm
+        WRITE(day,'(I0.2)') cfg % sd
+        cfg % start_date = year//month//day
     
-        WRITE(year,'(I4)') cfg%ey
-        WRITE(month,'(I0.2)') cfg%em
-        WRITE(day,'(I0.2)') cfg%ed
-        cfg%end_date = year//month//day
+        ! convert integer to character
+        WRITE(year,'(I4)') cfg % ey
+        WRITE(month,'(I0.2)') cfg % em
+        WRITE(day,'(I0.2)') cfg % ed
+        cfg % end_date = year//month//day
     
-    
+        cfg % rep_path = TRIM(cfg % perm)
+        cfg % sst_file = TRIM(cfg % perm) // "/aux/sst_era_interim_0.5_0.5.nc"
+        cfg % inp_path = TRIM(cfg % itmp)
+        cfg % out_path = TRIM(cfg % otmp) // "/" // TRIM(cfg % crun)
+
+        PRINT('(A13, E8.2)'), "COT-THV: ", cfg % thv
+        PRINT('(A13, I1)'), "MPC: ", cfg % mpc
+        PRINT('(A13, I1)'), "SCOPS: ", cfg % scops
+        PRINT('(A13, A8)'), "START: ", cfg % start_date
+        PRINT('(A13, A8)'), "STOP: ", cfg % end_date
+        PRINT('(A13, A)'), "REP_PWD: ", TRIM(cfg % rep_path)
+        PRINT('(A13, A)'), "INP_PWD: ", TRIM(cfg % inp_path)
+        PRINT('(A13, A)'), "OUT_PWD: ", TRIM(cfg % out_path)
+        PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg % sst_file)
+
+
         ! set histogram definitions
         cfg % hist_phase = (/0.0, 1.0/)
     
@@ -420,22 +364,6 @@ MODULE SUBS
         cfg % hist_cer_1d_bin=cfg % hist_cer_1d_axis(1:n_cer_bins)*0.5 + &
                               cfg % hist_cer_1d_axis(2:n_cer_bins+1)*0.5
     
-
-        cfg % rep_path = TRIM(perm)
-        cfg % sst_file = TRIM(perm) // "/aux/sst_era_interim_0.5_0.5.nc"
-        cfg % inp_path = TRIM(input)
-        cfg % out_path = TRIM(output) // "/" // TRIM(crun)
-
-        PRINT('(A13, E8.2)'), "COT-THV: ", cfg % thv
-        PRINT('(A13, I1)'), "MPC: ", cfg % mpc
-        PRINT('(A13, I1)'), "SCOPS: ", cfg % scops
-        PRINT('(A13, A8)'), "START: ", cfg % start_date
-        PRINT('(A13, A8)'), "STOP: ", cfg % end_date
-        PRINT('(A13, A)'), "REP_PWD: ", TRIM(cfg % rep_path)
-        PRINT('(A13, A)'), "INP_PWD: ", TRIM(cfg % inp_path)
-        PRINT('(A13, A)'), "OUT_PWD: ", TRIM(cfg % out_path)
-        PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg % sst_file)
-
     END SUBROUTINE READ_CONFIG
 
     !==========================================================================
