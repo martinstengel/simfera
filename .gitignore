@@ -1,14 +1,15 @@
 # Ignore following files
-fortran/cloud_simulator
-fortran/fort*
-fortran/config.file
-fortran/input
-fortran/output
-fortran/scratch
 config_simulator.pro
 config_vis.pro
-config_doc.tex
+fortran/cloud_simulator
+fortran/fort*
+fortran/scratch
+latex/config_doc.tex
+mpmd/config.sh
+mpmd/ecflow_suite/config_suite.py
+mpmd/ecflow_suite/*.def
 *~
+*pyc
 *test*
 *.log
 *.pdf

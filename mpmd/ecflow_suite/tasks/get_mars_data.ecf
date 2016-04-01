@@ -1,0 +1,11 @@
+%include <pbs_mars_serial.h>
+%include <head.h>
+%include <myexport.h>
+
+echo "I am task %TASK% in family %FAMILY% responsible for dearchiving ERA-Interim data to: %INPUT%/%SY%%SM%"
+
+mkdir -p %INPUT%/%SY%%SM%
+
+python -c "import time; import numpy; time.sleep(numpy.random.randint(1, 20))"
+
+%include <tail.h>
