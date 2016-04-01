@@ -1,9 +1,9 @@
 # Ignore following files
-config_simulator.pro
-config_vis.pro
 fortran/cloud_simulator
 fortran/fort*
 fortran/scratch
+idl/config_simulator.pro
+idl/config_vis.pro
 latex/config_doc.tex
 mpmd/config.sh
 mpmd/ecflow_suite/config_suite.py
