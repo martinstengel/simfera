@@ -18,8 +18,8 @@ set -x
 THV=0.3
 MPC=2
 SCOPS=2
-CRUN="test1"
-PERM="/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator"
+CRUN="test2"
+SSTF="/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/aux/sst_era_interim_0.5_0.5.nc"
 ITMP="/scratch/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/input"
 OTMP="/scratch/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/output"
 SY=2008
@@ -31,5 +31,5 @@ ED=0
 
 EXE="/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/cloud_simulator" 
 
-${EXE} ${THV} ${MPC} ${SCOPS} ${CRUN} ${PERM} ${ITMP} ${OTMP} ${SY} ${EY} ${SM} ${EM} ${SD} ${ED}
+${EXE} ${THV} ${MPC} ${SCOPS} ${SSTF} ${ITMP} ${OTMP}/${CRUN}/${SY} ${SY} ${EY} ${SM} ${EM} ${SD} ${ED}
 

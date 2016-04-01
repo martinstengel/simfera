@@ -12,8 +12,6 @@ MODULE STRUCTS
         INTEGER(KIND=sint)         :: mpc, scops
         INTEGER(KIND=sint)         :: sy, ey, sm, em, sd, ed
         CHARACTER(LEN=8)           :: start_date, end_date
-        CHARACTER(LEN=path_length) :: crun, perm, itmp, otmp
-        CHARACTER(LEN=path_length) :: rep_path
         CHARACTER(LEN=path_length) :: inp_path
         CHARACTER(LEN=path_length) :: out_path
         CHARACTER(LEN=path_length) :: sst_file

@@ -42,11 +42,9 @@ MODULE SUBS
         WRITE(mstr,'(I0.2)') month
     
         ! get the files
-        txtfile = TRIM(cfg%out_path)//'/'//&
-                  ystr//mstr//'_file_list.txt'
-        inppath = TRIM(cfg%inp_path)//'/'//ystr//mstr
-        command = 'ls '//TRIM(inppath)//'/ERA*plev > '//&
-                  TRIM(txtfile)
+        txtfile = TRIM(cfg % out_path)//'/'//ystr//mstr//'_file_list.txt'
+        inppath = TRIM(cfg % inp_path)//'/'//ystr//mstr
+        command = 'ls '//TRIM(inppath)//'/ERA*plev > '//TRIM(txtfile)
         CALL system(command)
     
         !how many files
@@ -304,19 +302,13 @@ MODULE SUBS
         WRITE(day,'(I0.2)') cfg % ed
         cfg % end_date = year//month//day
     
-        cfg % rep_path = TRIM(cfg % perm)
-        cfg % sst_file = TRIM(cfg % perm) // "/aux/sst_era_interim_0.5_0.5.nc"
-        cfg % inp_path = TRIM(cfg % itmp)
-        cfg % out_path = TRIM(cfg % otmp) // "/" // TRIM(cfg % crun)
-
         PRINT('(A13, E8.2)'), "COT-THV: ", cfg % thv
         PRINT('(A13, I1)'), "MPC: ", cfg % mpc
         PRINT('(A13, I1)'), "SCOPS: ", cfg % scops
         PRINT('(A13, A8)'), "START: ", cfg % start_date
         PRINT('(A13, A8)'), "STOP: ", cfg % end_date
-        PRINT('(A13, A)'), "REP_PWD: ", TRIM(cfg % rep_path)
-        PRINT('(A13, A)'), "INP_PWD: ", TRIM(cfg % inp_path)
-        PRINT('(A13, A)'), "OUT_PWD: ", TRIM(cfg % out_path)
+        PRINT('(A13, A)'), "INP_PATH: ", TRIM(cfg % inp_path)
+        PRINT('(A13, A)'), "OUT_PATH: ", TRIM(cfg % out_path)
         PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg % sst_file)
 
 

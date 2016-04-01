@@ -8,6 +8,7 @@ latex/config_doc.tex
 mpmd/config.sh
 mpmd/ecflow_suite/config_suite.py
 mpmd/ecflow_suite/*.def
+/mpmd/generated/
 *~
 *pyc
 *test*

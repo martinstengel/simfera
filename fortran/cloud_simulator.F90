@@ -42,20 +42,19 @@ PROGRAM CLOUD_SIMULATOR
 
     ! get number of arguments
     nargs = COMMAND_ARGUMENT_COUNT()
-    IF ( nargs == 13 ) THEN
+    IF ( nargs == 12 ) THEN
         CALL GET_COMMAND_ARGUMENT(  1, thv_str )
         CALL GET_COMMAND_ARGUMENT(  2, mpc_str )
         CALL GET_COMMAND_ARGUMENT(  3, scops_str )
-        CALL GET_COMMAND_ARGUMENT(  4, cfg % crun )
-        CALL GET_COMMAND_ARGUMENT(  5, cfg % perm )
-        CALL GET_COMMAND_ARGUMENT(  6, cfg % itmp )
-        CALL GET_COMMAND_ARGUMENT(  7, cfg % otmp )
-        CALL GET_COMMAND_ARGUMENT(  8, sy_str )
-        CALL GET_COMMAND_ARGUMENT(  9, ey_str )
-        CALL GET_COMMAND_ARGUMENT( 10, sm_str )
-        CALL GET_COMMAND_ARGUMENT( 11, em_str )
-        CALL GET_COMMAND_ARGUMENT( 12, sd_str )
-        CALL GET_COMMAND_ARGUMENT( 13, ed_str )
+        CALL GET_COMMAND_ARGUMENT(  4, cfg % sst_file )
+        CALL GET_COMMAND_ARGUMENT(  5, cfg % inp_path )
+        CALL GET_COMMAND_ARGUMENT(  6, cfg % out_path )
+        CALL GET_COMMAND_ARGUMENT(  7, sy_str )
+        CALL GET_COMMAND_ARGUMENT(  8, ey_str )
+        CALL GET_COMMAND_ARGUMENT(  9, sm_str )
+        CALL GET_COMMAND_ARGUMENT( 10, em_str )
+        CALL GET_COMMAND_ARGUMENT( 11, sd_str )
+        CALL GET_COMMAND_ARGUMENT( 12, ed_str )
     ELSE
         PRINT*, " --- ERROR! 13 arguments are expected !"
         STOP
