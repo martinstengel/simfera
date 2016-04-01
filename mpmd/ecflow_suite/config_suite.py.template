@@ -1,0 +1,96 @@
+#!/usr/bin/env python2.7
+
+import os
+
+# -------------------------------------------------------
+# -- modify this ----------------------------------------
+# -------------------------------------------------------
+
+# user settings
+remote_host_name = "cca"
+remote_user_name = "sf7"
+
+# base path, user specific
+perm = "/perm/ms/de/sf7/cschlund"
+scratch = "/scratch/ms/de/sf7/cschlund"
+
+# subfolder, where your repository is located
+# e.g. /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator
+itype = "SIMULATOR"
+
+# suite name
+mysuite = "CLOUD_SIMULATOR"
+
+# mpmd_threads_number must be >= $LENGTH defined in config.sh
+mpmd_threads_number = 2
+serial_threads_number = 1
+
+# cloud optical thickness threshold for upper-most cloud detection
+thv = "0.3"
+
+# 1=no mixed phase clouds, only separate liquid & ice clouds
+# 2=all clouds are mixed phase clouds if both water/ice contents exists
+mpc = "2"
+
+# 1=random, 2=max/random
+scops = "2"
+
+# final output directory for netCDF files under "output"
+crun = "v6.0_ecflow"
+
+# store final output in ECFS archive
+ecfs_path = "ec:/sf7/cloud_simulator"
+
+# -------------------------------------------------------
+# -- modify below if you know what you are doing!
+# -------------------------------------------------------
+
+# -- ecgate and cca
+repository = "cloud_simulator"
+perm_base = os.path.join(perm, itype, repository)
+scratch_base = os.path.join(scratch, itype, repository)
+
+# -- cca:
+input = os.path.join(scratch_base, "input")
+output = os.path.join(scratch_base, "output")
+prog = os.path.join(perm_base, "fortran", "cloud_simulator")
+
+# -- pycmsaf software
+pycmsaf = "/perm/ms/de/sf7/cschlund/pycmsaf"
+
+# -- paths to be exported: $PATH, $PYTHONPATH
+pycmsaf_bin = os.path.join(pycmsaf, "bin")
+python_path = "/usr/local/apps/python/current/bin/python"
+
+# -- server settings @ ecgate
+mpmd_mode = "remote"
+mpmd_submit_cmd = "qsub"
+mpmd_submit_script = os.path.join(pycmsaf_bin, "mpmd_submit.py")
+mpmd_database = os.path.join(perm_base, "mpmd", "mpmd_" + itype + ".sqlite3")
+ecflow_submit = os.path.join(pycmsaf_bin, "ecf_submit.py")
+mpmd_client_prog = os.path.join(pycmsaf_bin, "mpmd_client.py")
+suite_home_dir = os.path.join(perm_base, "mpmd/ecflow_suite")
+ecf_files_dir = os.path.join(suite_home_dir, "tasks")
+ecf_include_dir = os.path.join(suite_home_dir, "include")
+ecf_home_dir = os.path.join(scratch_base, "generated")
+ecf_out_dir = os.path.join(scratch_base, "log")
+remote_home_dir = os.path.join(perm_base, "mpmd/generated")
+remote_log_dir = os.path.join(scratch_base, "mpmd/log")
+
+# -- command for submitting serial and mpmd jobs
+serial_job_cmd = "%PYTHON% %ECF_SUBMIT% " \
+                 "%REMOTE_USER% %REMOTE_HOST% " \
+                 "%ECF_JOB% %REMOTE_LOGDIR%%ECF_NAME%.%ECF_TRYNO% > " \
+                 "%ECF_OUT%%ECF_NAME%.%ECF_TRYNO% 2>&1"
+
+mpmd_job_cmd = "%PYTHON% %MPMD_CLIENT% --dbfile=%MPMD_DATABASE% " \
+               "add_task --suite=%SUITE% " \
+               "--queue=%TASK% --ecf_jobfile=%ECF_JOB% " \
+               "--logfile=%ECF_JOBOUT% " \
+               "--remote_ecf_jobfile=%REMOTE_HOME%%ECF_NAME%.job%ECF_TRYNO% " \
+               "--remote_logfile=%REMOTE_LOGDIR%%ECF_NAME%.%ECF_TRYNO% " \
+               "--abs_node_path=%ECF_NAME% > %ECF_OUT%%ECF_NAME%.mpmdsub 2>&1 "
+
+ecgate_job_cmd = "sbatch %ECF_JOB% > " \
+                 "%ECF_OUT%%ECF_NAME%.%ECF_TRYNO%.sub 2>&1"
+
