@@ -97,7 +97,8 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
             time      = STRTRIM(STRING(gatt.TIME_COVERAGE_START),2)
             cot_thv   = STRTRIM(STRING(gatt.COT_THV,FORMAT='(F4.2)'),2)
             nfiles    = STRTRIM(STRING(gatt.NUMBER_OF_FILES),2)
-            scops     = STRTRIM(STRING(gatt.SCOPS_TYPE),2)
+            ;scops     = STRTRIM(STRING(gatt.SCOPS_TYPE),2)
+            scops     = STRTRIM(STRING(gatt.SCOPS),2)
             long_name = STRTRIM(STRING(vatt.LONG_NAME),2)
             units     = ' ['+STRTRIM(STRING(vatt.UNITS),2)+']'
             fillvalue = vatt._FILLVALUE
