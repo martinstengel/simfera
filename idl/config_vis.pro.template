@@ -4,13 +4,13 @@ PRO CONFIG_VIS, settings, FILE=file, VARS=vars, REFS=refs, $
 ;------------------------------------------------------------------------------
 
     ; subfolder of file location
-    run = 'v5.2_cph_day_added/'
+    run = 'v5.7_fortran/'
     ; input
     inp = '/cmsaf/cmsaf-cld7/cschlund/output/simulator/' + run
     ; figure output
     fig = '/cmsaf/cmsaf-cld7/cschlund/figures/simulator/' + run
     ; simulator git repository
-    rep = '/home/cschlund/Programme/idl/cloud_simulator/subtools/'
+    rep = '/home/cschlund/Programme/idl/cloud_simulator/idl/subtools/'
     ; eps2png bash script
     eps = rep + 'eps2png.sh '
     ; latest CC4CL outputs
