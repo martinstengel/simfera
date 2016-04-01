@@ -54,6 +54,7 @@ scratch_base = os.path.join(scratch, itype, repository)
 input = os.path.join(scratch_base, "input")
 output = os.path.join(scratch_base, "output")
 prog = os.path.join(perm_base, "fortran", "cloud_simulator")
+sstfile = os.path.join(perm_base, "aux", "sst_era_interim_0.5_0.5.nc")
 
 # -- pycmsaf software
 pycmsaf = "/perm/ms/de/sf7/cschlund/pycmsaf"

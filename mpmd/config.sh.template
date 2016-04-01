@@ -41,7 +41,9 @@ export SCRATCH_BASE=/scratch/$BASE/$TYPE/$REPOSITORY
 export PERM_BASE=/perm/$BASE/$TYPE/$REPOSITORY
 
 # Location of the MPMD Database file
-export MPMD_DATABASE=$CWD/mpmd_${TYPE}.sqlite3
+#/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/mpmd
+#export MPMD_DATABASE=$CWD/mpmd_${TYPE}.sqlite3
+export MPMD_DATABASE=$PERM_BASE/mpmd/mpmd_${TYPE}.sqlite3
 
 # MPMD Server mode
 export MPMD_MODE=remote

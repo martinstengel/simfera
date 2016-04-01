@@ -3,11 +3,18 @@
 
 echo "I am task %TASK% in family %FAMILY% responsible for calling the cloud_simulator for %SY%/%SM%/%SD% - %EY%/%EM%/%ED%"
 
+mkdir -p %OUTPUT%/%CRUN%/%SY%
+
 python -c "import time; import numpy; time.sleep(numpy.random.randint(1, 20))"
 
 # fortran.exe cot_thv mpc scops subfolder_output perm input output 
 #   start_year end_year start_month end_month start_day end_day
 #
-# %PROG% %THV% %MPC% %SCOPS% %CRUN% %PERM% %INPUT% %OUTPUT% %SY% %EY% %SM% %EM% %SD% %ED%
+# %PROG% \
+#  %THV% %MPC% %SCOPS% \
+#  %SSTFILE% \
+#  %INPUT% \
+#  %OUTPUT%/%CRUN%/%SY% \
+#  %SY% %EY% %SM% %EM% %SD% %ED%
 
 %include <tail.h>

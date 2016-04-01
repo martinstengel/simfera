@@ -61,10 +61,23 @@ def set_vars(suite):
     suite.add_variable("MPC", mpc)
     suite.add_variable("SCOPS", scops)
     suite.add_variable("CRUN", crun)
-    suite.add_variable("PERM", perm_base)
+    suite.add_variable("SSTFILE", sstfile)
     suite.add_variable("INPUT", input)
     suite.add_variable("OUTPUT", output)
     suite.add_variable("PROG", prog)
+
+
+def add_trigger(node, trigger):
+    """
+    Make a given node wait for the trigger node to complete.
+    @param node: The node that has to wait.
+    @param trigger: The trigger node.
+    @type node: ecflow.[family/task]
+    @type trigger: ecflow.[family/task]
+    @return: None
+    """
+    node.add_trigger('{0} == complete'.
+            format(trigger.get_abs_node_path()))
 
 
 def add_fam(node, fam):
@@ -82,7 +95,7 @@ def add_mpmd_task(family, taskname):
 
 
 def add_archiving_tasks(family):
-    family.add_task('put_ecfs_data')
+    family.add_task('put_sim_data')
 
 
 def add_mpmd_tasks(family):
@@ -91,7 +104,7 @@ def add_mpmd_tasks(family):
 
 
 def add_dearchiving_tasks(family):
-    family.add_task('get_mars_data')
+    family.add_task('get_era_data')
 
 
 def familytree(node, tree=None):
@@ -157,28 +170,31 @@ def build_suite():
     time_series = ecflow.TimeSeries(start, finish, incr, False)
     cron = ecflow.Cron()
     cron.set_time_series(time_series)
-    fam_submit = suite.add_family('queue_submitter')
-    submit = fam_submit.add_task('submit')
+    fam_submit = suite.add_family( 'queue_submitter' )
+    submit = fam_submit.add_task( 'submit' )
     submit.add_cron(cron)
-    fam_submit.add_variable('ECF_JOB_CMD', ecgate_job_cmd)
+    fam_submit.add_variable( 'ECF_JOB_CMD', ecgate_job_cmd )
 
     # ========================
     # DEFINE TOPLEVEL FAMILIES
     # ========================
 
-    fam_dearch = suite.add_family('dearchiving')
-    fam_proc = suite.add_family('processing')
-    fam_arch = suite.add_family('archiving')
+    fam_dearch = suite.add_family( 'dearchiving' )
+    fam_proc = suite.add_family( 'processing' )
+    fam_arch = suite.add_family( 'archiving' )
+
+    #add_trigger( fam_proc, fam_dearch )
+    #add_trigger( fam_arch, fam_proc )
 
     # Activate thread limits
-    fam_dearch.add_inlimit('serial_threads')
-    fam_proc.add_inlimit('mpmd_threads')
-    fam_arch.add_inlimit('serial_threads')
+    fam_dearch.add_inlimit( 'serial_threads' )
+    fam_proc.add_inlimit( 'mpmd_threads' )
+    fam_arch.add_inlimit( 'serial_threads' )
 
     # Define job commands
-    fam_dearch.add_variable('ECF_JOB_CMD', serial_job_cmd)
-    fam_proc.add_variable('ECF_JOB_CMD', mpmd_job_cmd)
-    fam_arch.add_variable('ECF_JOB_CMD', serial_job_cmd)
+    fam_dearch.add_variable( 'ECF_JOB_CMD', serial_job_cmd )
+    fam_proc.add_variable( 'ECF_JOB_CMD', mpmd_job_cmd )
+    fam_arch.add_variable( 'ECF_JOB_CMD', serial_job_cmd )
 
     # ===============================
     # DEFINE DYNAMIC FAMILIES & TASKS
@@ -192,19 +208,19 @@ def build_suite():
 
         try:
             # dearchiving family
-            fam_year_dearch = add_fam(fam_dearch, yearstr)
-            fam_year_dearch.add_variable("SY", yearstr)
-            fam_year_dearch.add_variable("EY", yearstr)
+            fam_year_dearch = add_fam( fam_dearch, yearstr )
+            fam_year_dearch.add_variable( "SY", yearstr )
+            fam_year_dearch.add_variable( "EY", yearstr )
 
             # processing family
-            fam_year_proc = add_fam(fam_proc, yearstr)
-            fam_year_proc.add_variable("SY", yearstr)
-            fam_year_proc.add_variable("EY", yearstr)
+            fam_year_proc = add_fam( fam_proc, yearstr )
+            fam_year_proc.add_variable( "SY", yearstr )
+            fam_year_proc.add_variable( "EY", yearstr )
 
             # archiving family
-            fam_year_arch = add_fam(fam_arch, yearstr)
-            fam_year_arch.add_variable("SY", yearstr)
-            fam_year_arch.add_variable("EY", yearstr)
+            fam_year_arch = add_fam( fam_arch, yearstr )
+            fam_year_arch.add_variable( "SY", yearstr )
+            fam_year_arch.add_variable( "EY", yearstr )
             # store final results in yearly tar-ball files
             add_archiving_tasks( fam_year_arch )
 
@@ -212,21 +228,20 @@ def build_suite():
             pass
 
         # dearchiving family
-        fam_month_dearch = add_fam(fam_year_dearch, monthstr)
-        fam_month_dearch.add_variable("SM", monthstr)
-        fam_month_dearch.add_variable("EM", monthstr)
-        fam_month_dearch.add_variable("SD", "01")
-        fam_month_dearch.add_variable("ED", ndays_of_month)
+        fam_month_dearch = add_fam( fam_year_dearch, monthstr )
+        fam_month_dearch.add_variable( "SM", monthstr )
+        fam_month_dearch.add_variable( "EM", monthstr )
+        fam_month_dearch.add_variable( "SD", "01" )
+        fam_month_dearch.add_variable( "ED", ndays_of_month )
         add_dearchiving_tasks( fam_month_dearch )
 
         # processing family
-        fam_month_proc = add_fam(fam_year_proc, monthstr)
-        fam_month_proc.add_variable("SM", monthstr)
-        fam_month_proc.add_variable("EM", monthstr)
-        fam_month_proc.add_variable("SD", "01")
-        fam_month_proc.add_variable("ED", ndays_of_month)
+        fam_month_proc = add_fam( fam_year_proc, monthstr )
+        fam_month_proc.add_variable( "SM", monthstr )
+        fam_month_proc.add_variable( "EM", monthstr )
+        fam_month_proc.add_variable( "SD", "01" )
+        fam_month_proc.add_variable( "ED", ndays_of_month )
         add_mpmd_tasks( fam_month_proc )
-
 
 
     # ============================
@@ -238,7 +253,8 @@ def build_suite():
 
     # Save suite to file
     suite_def_file = mysuite + '.def'
-    logger.info('Saving suite definition to file: {0}'.format(suite_def_file))
+    logger.info('Saving suite definition to file: {0}'.
+            format(suite_def_file))
     defs.save_as_defs(suite_def_file)
 
     # ======================
