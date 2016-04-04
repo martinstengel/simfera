@@ -201,27 +201,26 @@ def build_suite():
     # ===============================
 
     for mm in rrule(MONTHLY, dtstart=args.sdate, until=args.edate):
-        yearstr = mm.strftime("%Y")
-        monthstr = mm.strftime("%m")
-        act_date = datetime.date(int(yearstr), int(monthstr), 1)
-        ndays_of_month = calendar.monthrange(int(yearstr),int(monthstr))[1]
+
+        yearstr    = mm.strftime("%Y")
+        monthstr   = mm.strftime("%m")
+        act_date   = datetime.date(int(yearstr), int(monthstr), 1)
+        first_day  = "01"
+        last_day   = calendar.monthrange(int(yearstr),int(monthstr))[1]
+        yyyymm     = yearstr + monthstr
+        start_date = yearstr + monthstr + first_day 
+        end_date   = yearstr + monthstr + str(last_day)
 
         try:
             # dearchiving family
             fam_year_dearch = add_fam( fam_dearch, yearstr )
-            fam_year_dearch.add_variable( "SY", yearstr )
-            fam_year_dearch.add_variable( "EY", yearstr )
 
             # processing family
             fam_year_proc = add_fam( fam_proc, yearstr )
-            fam_year_proc.add_variable( "SY", yearstr )
-            fam_year_proc.add_variable( "EY", yearstr )
 
             # archiving family
             fam_year_arch = add_fam( fam_arch, yearstr )
-            fam_year_arch.add_variable( "SY", yearstr )
-            fam_year_arch.add_variable( "EY", yearstr )
-            # store final results in yearly tar-ball files
+            fam_year_arch.add_variable( "YEAR", yearstr )
             add_archiving_tasks( fam_year_arch )
 
         except RuntimeError:
@@ -229,18 +228,19 @@ def build_suite():
 
         # dearchiving family
         fam_month_dearch = add_fam( fam_year_dearch, monthstr )
-        fam_month_dearch.add_variable( "SM", monthstr )
-        fam_month_dearch.add_variable( "EM", monthstr )
-        fam_month_dearch.add_variable( "SD", "01" )
-        fam_month_dearch.add_variable( "ED", ndays_of_month )
+        fam_month_dearch.add_variable( "YYYYMM", yyyymm )
+        fam_month_dearch.add_variable( "START_DATE", start_date )
+        fam_month_dearch.add_variable( "END_DATE", end_date )
         add_dearchiving_tasks( fam_month_dearch )
 
         # processing family
         fam_month_proc = add_fam( fam_year_proc, monthstr )
+        fam_month_proc.add_variable( "SY", yearstr )
+        fam_month_proc.add_variable( "EY", yearstr )
         fam_month_proc.add_variable( "SM", monthstr )
         fam_month_proc.add_variable( "EM", monthstr )
-        fam_month_proc.add_variable( "SD", "01" )
-        fam_month_proc.add_variable( "ED", ndays_of_month )
+        fam_month_proc.add_variable( "SD", first_day )
+        fam_month_proc.add_variable( "ED", last_day )
         add_mpmd_tasks( fam_month_proc )
 
 

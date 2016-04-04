@@ -2,10 +2,82 @@
 %include <head.h>
 %include <myexport.h>
 
-echo "I am task %TASK% in family %FAMILY% responsible for dearchiving ERA-Interim data to: %INPUT%/%SY%%SM%"
+ERA_PATH=%INPUT%/%YYYYMM%
 
-mkdir -p %INPUT%/%SY%%SM%
+echo "I am task %TASK% in family %FAMILY% responsible for dearchiving ERA-Interim data to: ${ERA_PATH}"
 
-python -c "import time; import numpy; time.sleep(numpy.random.randint(1, 20))"
+#python -c "import time; import numpy; time.sleep(numpy.random.randint(1, 20))"
+
+mkdir -p ${ERA_PATH}
+
+# -- upper air parameters on model and pressure level
+# 129: surface geopotential    [  m^2 s^-2 ]
+# 130: temperature             [ K ]
+# 246: liquid water content    [ kg/kg ]
+# 247: ice water content       [ kg/kg ]
+# 248: cloud cover             ( 0 - 1 )
+
+
+export MARS_MULTITARGET_STRICT_FORMAT=1
+
+TYPE=an
+STEP=00
+DATE=%START_DATE%/to/%END_DATE%
+
+mars << EOF
+     retrieve,
+        time     = 0000/0600/1200/1800,
+        date     = ${DATE},
+        stream   = oper,
+        levtype  = pl,
+        levelist = all,
+        expver   = 1,
+        type     = ${TYPE},
+        step     = ${STEP},
+        class    = ei,
+        param    = 130/129/246/247/248,
+        grid     = 0.5/0.5,
+        resol    = AV,
+        target   = "${ERA_PATH}/ERA_Interim_${TYPE}_[date]_[time]+${STEP}_plev.grib"
+EOF
+
+rc=$?
+
+if [ ${rc} -eq 0 ]; then
+    echo "The MARS ERA Interim request for ${DATE} was successfully at `date`!"
+fi
+
+if [ ${rc} -ge 1 ]; then
+    echo " --- ERROR: The MARS ERA Interim request for ${DATE} FAILED at `date`!"
+    exit 1
+fi
+
+
+# convert grib-file to ncdf-file
+GRIB_FILES="${ERA_PATH}/*.grib"
+
+for gf in ${GRIB_FILES}
+do
+
+    echo " Convert grib-file ${gf} using cdo"
+
+    basen=$(basename "${gf}" | cut -d. -f1)
+    ncfil="${ERA_PATH}/${basen}.nc"
+
+    cdo -t ecmwf -f nc copy ${gf} ${ncfil}
+
+    rc=$?
+    
+    if [ ${rc} -eq 0 ]; then
+        echo "cdo for ${gf} was successfully at `date`: ${ncfil}!"
+    fi
+    
+    if [ ${rc} -ge 1 ]; then
+        echo " --- ERROR: cdo for ${gf} FAILED at `date`!"
+        exit 1
+    fi
+
+done
+
 
 %include <tail.h>

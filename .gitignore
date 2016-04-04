@@ -10,6 +10,8 @@ mpmd/ecflow_suite/config_suite.py
 mpmd/ecflow_suite/*.def
 /mpmd/generated/
 *~
+*.old
+*.sqlite3
 *pyc
 *test*
 *.log
