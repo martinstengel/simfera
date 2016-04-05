@@ -10,8 +10,8 @@
 #PBS -l EC_total_tasks=1
 #PBS -l EC_threads_per_task=1
 #PBS -l EC_memory_per_task=3000mb
-#PBS -o /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160401_cloud_simulator.out
-#PBS -e /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160401_cloud_simulator.err
+#PBS -o /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160405_cloud_simulator.out
+#PBS -e /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160405_cloud_simulator.err
 
 set -x
 

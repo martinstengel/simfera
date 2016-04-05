@@ -908,29 +908,29 @@ MODULE SIM_NCDF
         CALL CHECK( nf90_get_var( ncid, VarID, idata % plevel ) )
 
         ! cloud cover
-        CALL CHECK( nf90_inq_varid( ncid, 'var248', VarID ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'CC', VarID ) )
         ALLOCATE( idata % cc( idata % xdim, idata % ydim, idata % zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata % cc ) )
 
         ! liquid cloud water content [kg kg**-1] 
         ! i.e., [mass of condensate / mass of moist air]
-        CALL CHECK( nf90_inq_varid( ncid, 'var246', VarID ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'CLWC', VarID ) )
         ALLOCATE( idata % lwc( idata % xdim, idata % ydim, idata % zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata % lwc ) )
 
         ! ice cloud water content [kg kg**-1] 
         ! i.e., [mass of condensate / mass of moist air]
-        CALL CHECK( nf90_inq_varid( ncid, 'var247', VarID ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'CIWC', VarID ) )
         ALLOCATE( idata % iwc( idata % xdim, idata % ydim, idata % zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata % iwc ) )
 
-        ! geopotential height [m2/s2]
-        CALL CHECK( nf90_inq_varid( ncid, 'var129', VarID ) )
+        ! geopotential height [m^2/s^2]
+        CALL CHECK( nf90_inq_varid( ncid, 'Z', VarID ) )
         ALLOCATE( idata % geop( idata % xdim, idata % ydim, idata % zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata % geop ) )
 
         ! temperature [K]
-        CALL CHECK( nf90_inq_varid( ncid, 'var130', VarID ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'T', VarID ) )
         ALLOCATE( idata % temp( idata % xdim, idata % ydim, idata % zdim ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata % temp ) )
 
@@ -953,7 +953,7 @@ MODULE SIM_NCDF
                         idata % plevel(1:SIZE(idata % plevel)-1)
         
 
-        ! split filename ! ERA_Interim_an_20080701_00+00_plev
+        ! split filename ERA_Interim_an_20080701_0000+00_plev.nc
         idx = INDEX( TRIM(ifile), filbase )
 
         idata % filename = TRIM( ifile(idx:LEN_TRIM(ifile)) )

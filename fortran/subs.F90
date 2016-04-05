@@ -44,7 +44,9 @@ MODULE SUBS
         ! get the files
         txtfile = TRIM(cfg % out_path)//'/'//ystr//mstr//'_file_list.txt'
         inppath = TRIM(cfg % inp_path)//'/'//ystr//mstr
-        command = 'ls '//TRIM(inppath)//'/ERA*plev > '//TRIM(txtfile)
+
+        ! ERA_Interim_an_20080130_0000+00_plev.grib
+        command = 'ls '//TRIM(inppath)//'/ERA*.grib > '//TRIM(txtfile)
         CALL system(command)
     
         !how many files
@@ -84,18 +86,28 @@ MODULE SUBS
         CHARACTER(LEN=file_length), INTENT(OUT) :: ofile
 
         !local variables 
+        INTEGER            :: idx
         LOGICAL            :: file_exists
         CHARACTER(LEN=900) :: command
+        CHARACTER(LEN=500) :: filename, dirname, basename
+        INTEGER(KIND=sint), PARAMETER :: fb=15
+        CHARACTER(LEN=fb),  PARAMETER :: filbase="ERA_Interim_an_"
 
         PRINT*, "** CONVERT_ERA_FILE"
 
-        ofile = TRIM(ifile)//'.nc'
+        ! split filename: ERA_Interim_an_20080130_0000+00_plev.grib
+        idx = INDEX( TRIM(ifile), filbase )
+        filename = TRIM( ifile(idx:LEN_TRIM(ifile)) )
+        dirname  = TRIM( ifile(1:idx-1) )
+        basename = TRIM( ifile(idx:SCAN(TRIM(ifile),'.')-1) )
+
+        ofile = TRIM(dirname)//TRIM(basename)//'.nc'
         INQUIRE( FILE=TRIM(ofile), EXIST=file_exists )
     
         IF (file_exists) THEN 
             PRINT*, "   ERA ncfile already exists: '"//TRIM(ofile)//"'"
         ELSE
-            command = "cdo -f nc copy "//TRIM(ifile)//" "//TRIM(ofile)
+            command = "cdo -t ecmwf -f nc copy "//TRIM(ifile)//" "//TRIM(ofile)
             WRITE(*,'(a)') " ** "//TRIM(command)
             CALL system( command )
         ENDIF
