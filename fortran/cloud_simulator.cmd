@@ -10,15 +10,15 @@
 #PBS -l EC_total_tasks=1
 #PBS -l EC_threads_per_task=1
 #PBS -l EC_memory_per_task=3000mb
-#PBS -o /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160405_cloud_simulator.out
-#PBS -e /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160405_cloud_simulator.err
+#PBS -o /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160607_cloud_simulator.out
+#PBS -e /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/log/20160607_cloud_simulator.err
 
 set -x
 
-THV=0.3
+THV=0.0001
 MPC=2
 SCOPS=2
-CRUN="test2"
+CRUN="test_cfc_thv_0.0001_ceiling"
 SSTF="/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/aux/sst_era_interim_0.5_0.5.nc"
 ITMP="/scratch/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/input"
 OTMP="/scratch/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/output"

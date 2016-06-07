@@ -127,7 +127,11 @@ MODULE SIM_CORE
 
         DO, zi=1, nlev !loop over model levels 
 
-            nfb = FLOOR( ncol * cfc_profile(zi) ) !no. of filled boxes
+            ! number of filled boxes
+            !nfb = CEILING( ncol * cfc_profile(zi) )
+            nfb = NINT( ncol * cfc_profile(zi) )
+
+            IF ( nfb > ncol ) nfb = ncol
 
             IF ( nfb > 0 ) THEN
 
