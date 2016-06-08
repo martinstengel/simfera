@@ -33,6 +33,7 @@ mpmd/ecflow_suite/*.def
 *.swp
 *error*
 *.o
+*.x
 *.mod
 *.MOD
 *.out

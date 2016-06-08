@@ -29,7 +29,7 @@ EM=7
 SD=1
 ED=0
 
-EXE="/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/cloud_simulator" 
+EXE="/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/fortran/cloud_simulator.x" 
 
 ${EXE} ${THV} ${MPC} ${SCOPS} ${SSTF} ${ITMP} ${OTMP}/${CRUN}/${SY} ${SY} ${EY} ${SM} ${EM} ${SD} ${ED}
 
