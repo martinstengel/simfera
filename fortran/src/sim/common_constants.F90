@@ -47,6 +47,8 @@ MODULE COMMON_CONSTANTS
     INTEGER(KIND=sint), PARAMETER :: mixed_phase = 2
     INTEGER(KIND=sint), PARAMETER :: rand = 1
     INTEGER(KIND=sint), PARAMETER :: max_rand = 2
+    INTEGER(KIND=sint), PARAMETER :: no_cosp_scops = 1
+    INTEGER(KIND=sint), PARAMETER :: is_cosp_scops = 2
     INTEGER(KIND=sint), PARAMETER :: max_cot = 100.0
     REAL(KIND=sreal),   PARAMETER :: is_clear = 0.0
     REAL(KIND=sreal),   PARAMETER :: is_cloud = 1.0

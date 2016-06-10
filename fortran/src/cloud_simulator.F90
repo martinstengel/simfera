@@ -115,6 +115,8 @@ PROGRAM CLOUD_SIMULATOR
                 CALL UNDEFINE_TEMPS( temps )
                 CALL UNDEFINE_INPUT( input )
 
+                IF ( (cfg % ed - cfg % sd) == 0 .AND. (ff == 4) ) EXIT
+
             END DO ! end of files
 
             IF ( ALLOCATED( files ) ) DEALLOCATE( files )

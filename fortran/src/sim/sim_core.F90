@@ -128,8 +128,8 @@ MODULE SIM_CORE
         DO, zi=1, nlev !loop over model levels 
 
             ! number of filled boxes
-            !nfb = CEILING( ncol * cfc_profile(zi) )
             nfb = NINT( ncol * cfc_profile(zi) )
+            !nfb = FLOOR( ncol * cfc_profile(zi) )
 
             IF ( nfb > ncol ) nfb = ncol
 
@@ -140,7 +140,7 @@ MODULE SIM_CORE
                 cwp_all = lwp(zi)  + iwp(zi)
                 cot_all = lcot(zi) + icot(zi)
 
-                IF ( lastcloud .NE. (zi-1) .OR. overlap == rand) &
+                IF ( lastcloud .NE. (zi-1) .OR. overlap == rand ) &
                     CALL GET_RANDOMU( ncol, ci )
 
                 IF ( mpc == no_mixed_phase ) THEN

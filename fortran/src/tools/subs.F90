@@ -8,10 +8,15 @@ MODULE SUBS
     !==========================================================================
     
     SUBROUTINE PRINT_MINMAX ( what, x, y, array )
-        INTEGER           :: x, y
-        REAL              :: array(x,y)
-        CHARACTER(LEN=20) :: what
+
+        USE COMMON_CONSTANTS
+
+        INTEGER(KIND=sint) :: x, y
+        REAL(KIND=sreal)   :: array(x,y)
+        CHARACTER(LEN=20)  :: what
+
         PRINT('(A30, 2F14.6)'), what, minval(array), maxval(array)
+
     END SUBROUTINE PRINT_MINMAX
 
     !==========================================================================
@@ -237,6 +242,7 @@ MODULE SUBS
                 tmp % lcot_lay(:,:,z) = 0.0
                 tmp % lcer_lay(:,:,z) = 0.0
             END WHERE
+
             WHERE ( tmp % iwp_lay(:,:,z) == 0.0 )
                 tmp % icot_lay(:,:,z) = 0.0
                 tmp % icer_lay(:,:,z) = 0.0
@@ -450,16 +456,16 @@ MODULE SUBS
 
     !==========================================================================
 
-    SUBROUTINE AVG ( scale_factor, i, j, arr, num )
+    SUBROUTINE AVG ( scale_factor, londim, latdim, arr, num )
 
         USE COMMON_CONSTANTS
 
         IMPLICIT NONE
 
         REAL(KIND=sreal),   INTENT(IN)      :: scale_factor
-        INTEGER(KIND=sint), INTENT(IN)      :: i, j
-        REAL(KIND=sreal),   INTENT(INOUT)   :: arr(i,j)
-        INTEGER(KIND=lint), INTENT(INOUT)   :: num(i,j)
+        INTEGER(KIND=sint), INTENT(IN)      :: londim, latdim
+        REAL(KIND=sreal),   INTENT(INOUT)   :: arr(londim,latdim)
+        INTEGER(KIND=lint), INTENT(INOUT)   :: num(londim,latdim)
 
         WHERE ( num > 0 ) 
             arr = ( arr / num ) * scale_factor
@@ -490,17 +496,13 @@ MODULE SUBS
         x = SIZE( fin % cfc, 1 )
         y = SIZE( fin % cfc, 2 )
 
-        WHERE ( cnt % ctp > 0 ) 
-            fin % ctp =   fin % ctp / cnt % ctp
-            fin % ctt =   fin % ctt / cnt % ctp
-            fin % cph =   fin % cph / cnt % ctp
-            fin % cth = ( fin % cth / cnt % ctp ) / 1000.0
-        ELSEWHERE
-            fin % ctp = sreal_fill_value
-            fin % ctt = sreal_fill_value
-            fin % cph = sreal_fill_value
-            fin % cth = sreal_fill_value
-        END WHERE
+        sf = 1.0
+        CALL AVG ( sf, x, y, fin % ctp, cnt % ctp )
+        CALL AVG ( sf, x, y, fin % ctt, cnt % ctp )
+        CALL AVG ( sf, x, y, fin % cph, cnt % ctp )
+
+        sf = 0.001
+        CALL AVG ( sf, x, y, fin % cth, cnt % ctp )
 
         sf = 1.0
         CALL AVG ( sf, x, y, fin % cfc,     cnt % cfc )
