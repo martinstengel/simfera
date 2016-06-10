@@ -9,7 +9,7 @@ MODULE STRUCTS
 
     TYPE config
         REAL(KIND=sreal)           :: thv
-        INTEGER(KIND=sint)         :: mpc, scops
+        INTEGER(KIND=sint)         :: mpc, scops, overlap
         INTEGER(KIND=sint)         :: sy, ey, sm, em, sd, ed
         CHARACTER(LEN=8)           :: start_date, end_date
         CHARACTER(LEN=path_length) :: inp_path

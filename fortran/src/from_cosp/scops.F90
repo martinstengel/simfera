@@ -30,6 +30,7 @@
 ! May 2015 - D. Swales - Modified for COSPv2.0
 ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 module mod_scops
+  USE COMMON_CONSTANTS, ONLY: sint
   USE COSP_KINDS,     ONLY: wp
   USE MOD_RNG!,        ONLY: rng_state,get_rng
   use mod_cosp_error, ONLY: errorMessage
@@ -40,10 +41,10 @@ module mod_scops
   
 contains
   subroutine scops(npoints,nlev,ncol,seed,rngs,cc,conv,overlap,frac_out,ncolprint)
-    INTEGER :: npoints,    &    ! Number of model points in the horizontal
-               nlev,       &    ! Number of model levels in column
-               ncol,       &    ! Number of subcolumns
-               overlap          ! Overlap type (1=max, 2=rand, 3=max/rand)
+    INTEGER(KIND=sint) :: npoints,    &    ! Number of model points in the horizontal
+                          nlev,       &    ! Number of model levels in column
+                          ncol,       &    ! Number of subcolumns
+                          overlap          ! Overlap type (1=max, 2=rand, 3=max/rand)
     type(rng_state),dimension(npoints) :: rngs            
     INTEGER, parameter :: huge32 = 2147483647
     INTEGER, parameter :: i2_16  = 65536

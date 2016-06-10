@@ -15,6 +15,7 @@ MODULE SIM_CORE
         USE INITIALIZE
         USE UNDEFINE
         USE STRUCTS
+        USE mod_rng, ONLY: rng_state, init_rng
 
         IMPLICIT NONE
 
@@ -24,23 +25,14 @@ MODULE SIM_CORE
         TYPE(l3_vars),    INTENT(INOUT) :: fin
 
         ! local variables
-        INTEGER(KIND=sint)                 :: xi, yi, flag, nlev, ncol
-        TYPE(scops_matrix)                 :: matrix
-        TYPE(pseudo_arrays)                :: array
-        INTEGER                            :: seedSize
-        INTEGER, DIMENSION(:), ALLOCATABLE :: seed
-        INTEGER, DIMENSION(8)              :: dtVals
-
-        ! Get Seed
-        CALL DATE_AND_TIME(VALUES=dtVals)
-        CALL RANDOM_SEED( SIZE=seedSize )
-        IF ( seedSize > 8 ) THEN
-            PRINT*, " -- ERROR: Seed size too large to init with DATE_AND_TIME "
-            STOP
-        END IF
-        ALLOCATE( seed(seedSize) )
-        CALL RANDOM_SEED( PUT=dtVals((9-seedSize):8) )
-        CALL RANDOM_SEED( GET=seed )
+        INTEGER(KIND=sint)  :: nlev, ncol
+        INTEGER(KIND=sint)  :: xi, yi, flag
+        TYPE(scops_matrix)  :: matrix
+        TYPE(pseudo_arrays) :: array
+        INTEGER(KIND=sint)  :: npoints_model
+        ! random number generator
+        INTEGER, DIMENSION(:), ALLOCATABLE         :: seed
+        TYPE(rng_state), ALLOCATABLE, DIMENSION(:) :: rngs
 
 
         PRINT*, "** MAIN_PROC: includes "
@@ -49,6 +41,7 @@ MODULE SIM_CORE
         PRINT*, "   Computing summary statistics"
 
 
+        npoints_model = 1   !number of model points in the horizontal
         ncol = 20           !number of subcolumns (profiles)
         nlev = inp % zdim-1 !number of layers, i.e. model levels
 
@@ -64,16 +57,52 @@ MODULE SIM_CORE
                 CALL INITIALIZE_MATRIX( flag, ncol, nlev, matrix )
                 CALL INITIALIZE_ARRAYS( flag, ncol, array )
 
-                CALL DOWNSCALING( ncol, nlev, flag, &
-                                  set % scops, set % mpc,   &
-                                  inp % cc(xi,yi,:),        &
-                                  tmp % lcot_lay(xi,yi,:),  &
-                                  tmp % icot_lay(xi,yi,:),  &
-                                  tmp % lcer_lay(xi,yi,:),  &
-                                  tmp % icer_lay(xi,yi,:),  &
-                                  tmp % lwp_lay(xi,yi,:),   &
-                                  tmp % iwp_lay(xi,yi,:),   &
-                                  matrix )
+
+                ! ------------------------
+                ! Random number generator
+                ! ------------------------
+
+                CALL GET_SEED( inp % temp(xi,yi,:), &
+                               nlev, npoints_model, seed, rngs )
+                CALL INIT_RNG( rngs, seed )
+
+
+                ! ------------------------------------------------------------
+                ! Generate subcolumns for clouds: return "matrix" structure
+                ! ------------------------------------------------------------
+
+                IF ( set % scops == cosp_scops ) THEN 
+
+                    CALL COSP_SUBCOLS( ncol, nlev, flag,         &
+                                       npoints_model,            &
+                                       seed, rngs,               &
+                                       set % overlap,            &
+                                       inp % cc(xi,yi,:),        &
+                                       tmp % lcot_lay(xi,yi,:),  &
+                                       tmp % icot_lay(xi,yi,:),  &
+                                       tmp % lcer_lay(xi,yi,:),  &
+                                       tmp % icer_lay(xi,yi,:),  &
+                                       tmp % lwp_lay(xi,yi,:),   &
+                                       tmp % iwp_lay(xi,yi,:),   &
+                                       matrix )
+
+                ELSEIF ( set % scops == dwd_scops ) THEN 
+
+                    CALL DWD_SUBCOLS( ncol, nlev, flag,         &
+                                      set % overlap,            &
+                                      set % mpc,                &
+                                      inp % cc(xi,yi,:),        &
+                                      tmp % lcot_lay(xi,yi,:),  &
+                                      tmp % icot_lay(xi,yi,:),  &
+                                      tmp % lcer_lay(xi,yi,:),  &
+                                      tmp % icer_lay(xi,yi,:),  &
+                                      tmp % lwp_lay(xi,yi,:),   &
+                                      tmp % iwp_lay(xi,yi,:),   &
+                                      matrix )
+                ELSE 
+                    PRINT*, "This scops type is not defined: 1=dwd, 2=cosp"
+                    stop
+                END IF
 
                 CALL PSEUDO_RETRIEVAL( set % thv, flag, ncol, nlev, &
                                        xi, yi, inp, matrix, array )
@@ -87,17 +116,18 @@ MODULE SIM_CORE
                 CALL UNDEFINE_MATRIX( matrix )
                 CALL UNDEFINE_ARRAYS( array )
 
+                DEALLOCATE( rngs )
+                DEALLOCATE( seed )
+
             END DO !end of yi=latitude
         END DO     !end of xi=longitude
-
-        DEALLOCATE( seed )
 
     END SUBROUTINE MAIN_PROC
 
     !==========================================================================
 
-    SUBROUTINE DOWNSCALING( ncol, nlev, flag, overlap, mpc, &
-                            icc, lcot, icot, lcer, icer, lwp, iwp, matrix )
+    SUBROUTINE DWD_SUBCOLS( ncol, nlev, flag, overlap, mpc, &
+                      icc, lcot, icot, lcer, icer, lwp, iwp, matrix )
 
         USE COMMON_CONSTANTS
         USE STRUCTS
@@ -129,7 +159,6 @@ MODULE SIM_CORE
 
             ! number of filled boxes
             nfb = NINT( ncol * cfc_profile(zi) )
-            !nfb = FLOOR( ncol * cfc_profile(zi) )
 
             IF ( nfb > ncol ) nfb = ncol
 
@@ -140,7 +169,7 @@ MODULE SIM_CORE
                 cwp_all = lwp(zi)  + iwp(zi)
                 cot_all = lcot(zi) + icot(zi)
 
-                IF ( lastcloud .NE. (zi-1) .OR. overlap == rand ) &
+                IF ( lastcloud .NE. (zi-1) .OR. overlap == over_rand ) &
                     CALL GET_RANDOMU( ncol, ci )
 
                 IF ( mpc == no_mixed_phase ) THEN
@@ -216,7 +245,7 @@ MODULE SIM_CORE
 
         END DO !end of zi-loop
 
-    END SUBROUTINE DOWNSCALING
+    END SUBROUTINE DWD_SUBCOLS
 
     !==========================================================================
 
@@ -637,5 +666,143 @@ MODULE SIM_CORE
 
     !==========================================================================
 
+    ! from mod4sim.F90 (Salomon Eliasson)
+    SUBROUTINE GET_SEED(era_temp, nlev, nps, seed, rngs)
+
+        USE COMMON_CONSTANTS, ONLY: sint, sreal
+        USE cosp_kinds, ONLY: wp
+        USE mod_rng,    ONLY: rng_state
+
+        INTEGER(KIND=sint),                         INTENT(IN)  :: nlev
+        INTEGER(KIND=sint),                         INTENT(IN)  :: nps
+        REAL(KIND=sreal), DIMENSION(nlev+1),        INTENT(IN)  :: era_temp
+        INTEGER, DIMENSION(:), ALLOCATABLE,         INTENT(OUT) :: seed
+        TYPE(rng_state), ALLOCATABLE, DIMENSION(:), INTENT(OUT) :: rngs
+
+        ! local
+        REAL(wp), DIMENSION(nlev) :: temperature
+
+        ALLOCATE( seed(nps) )
+        ALLOCATE( rngs(nps) )
+
+        seed(:) = 0
+        temperature = era_temp(1:nlev+1-1)*0.5 + era_temp(2:nlev+1)*0.5
+        seed = INT( temperature(1)*10.0 )
+
+    END SUBROUTINE GET_SEED
+
+    !==========================================================================
+
+    SUBROUTINE COSP_SUBCOLS( ncol, nlev, flag, npoints_m, seed, rngs, &
+                           overlap, icc, lcot, icot, lcer, icer, lwp, iwp, &
+                           matrix )
+
+        USE COMMON_CONSTANTS
+        USE STRUCTS
+        USE cosp_kinds, ONLY: wp
+        USE mod_scops,  ONLY: scops
+        USE mod_rng,    ONLY: rng_state
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint),                    INTENT(IN) :: overlap
+        INTEGER(KIND=sint),                    INTENT(IN) :: npoints_m
+        INTEGER(KIND=sint),                    INTENT(IN) :: flag, nlev, ncol
+        INTEGER, DIMENSION(npoints_m),         INTENT(IN) :: seed
+        TYPE(rng_state), DIMENSION(npoints_m), INTENT(IN) :: rngs
+        REAL(KIND=sreal), DIMENSION(nlev),     INTENT(IN) :: lcot, icot
+        REAL(KIND=sreal), DIMENSION(nlev),     INTENT(IN) :: lcer, icer
+        REAL(KIND=sreal), DIMENSION(nlev),     INTENT(IN) :: lwp, iwp
+        REAL(KIND=sreal), DIMENSION(nlev+1),   INTENT(IN) :: icc
+        TYPE(scops_matrix),                 INTENT(INOUT) :: matrix
+
+        ! local variables
+        INTEGER(KIND=sint)                :: i,j, zi
+        REAL(KIND=sreal), DIMENSION(nlev) :: cwp_all, cot_all
+        REAL(wp), DIMENSION(:),   ALLOCATABLE :: cc, cv
+        REAL(wp), DIMENSION(:,:), ALLOCATABLE :: frac_out
+
+        cwp_all(1:nlev) =  lwp(1:nlev) +  iwp(1:nlev)
+        cot_all(1:nlev) = lcot(1:nlev) + icot(1:nlev)
+
+        ALLOCATE( cc(nlev) )
+        ALLOCATE( cv(nlev) )
+        ALLOCATE( frac_out(ncol,nlev) )
+
+        frac_out(1:ncol,1:nlev) = 0.0
+
+        cv(1:nlev) = 0.0 ! convective cloud cover is zero
+        cc(1:nlev) = 0.0 ! cloud cover
+        cc(1:nlev) = icc(1:nlev+1-1) * 0.5 + icc(2:nlev+1) * 0.5
+
+        CALL SCOPS( npoints_m, nlev, ncol, seed, rngs, &
+                    cc, cv, overlap, frac_out, 0 )
+
+        print '(A10)', "frac_out: "
+        do j=nlev-6, nlev 
+            print '(20F8.3)', frac_out(:,j)
+        end do
+
+        DO, zi=1, nlev !loop over model levels 
+
+            WHERE ( frac_out(:,zi) == 1.0 )
+
+                matrix % cfc (:,zi) = 1.0
+                matrix % cot (:,zi) = cot_all(zi)
+                matrix % cwp (:,zi) = cwp_all(zi)
+
+            ENDWHERE
+
+            !TOP = upper-most layer: zi=1
+            IF ( zi == 1 ) matrix % tcot(:,zi) = matrix % cot(:,1) 
+            IF ( zi  > 1 ) matrix % tcot(:,zi) = SUM( matrix % cot(:,1:zi), 2 )
+
+        END DO
+
+        print*, "cfc profile"
+        print '(36F8.3)', cc(1:nlev)
+        print*, "cwp_all profile"
+        print '(36F8.3)', cwp_all(1:nlev)
+        print '(A10)', "matrix%cwp: "
+        do j=nlev-6, nlev 
+            print '(20F8.3)', matrix % cwp (:,j)
+        end do
+        stop
+        !    ELSE !mpc == mixed_phase
+
+        !        von = 1
+        !        bis = nfb
+
+        !        matrix % cot (ci(von:bis),zi) = cot_all
+        !        matrix % cfc (ci(von:bis),zi) = is_cloud
+
+        !        IF ( flag == is_day ) &
+        !            matrix % cwp (ci(von:bis),zi) = cwp_all
+
+        !        IF ( cwp_all > 0 ) THEN
+
+        !            ! liquid fraction
+        !            matrix % cph (ci(von:bis),zi) = lwp(zi) / cwp_all
+
+        !            !weighted mean CER day only
+        !            IF ( flag == is_day ) matrix % cer (ci(von:bis),zi) = & 
+        !                ( lcer(zi)*lwp(zi) + icer(zi)*iwp(zi) ) / cwp_all
+
+        !        END IF
+
+        !    END IF !endif of mpc options
+
+        !    lastcloud = zi
+
+        !END IF !end of nfb > 0 if-loop
+
+
+        DEALLOCATE( cc )
+        DEALLOCATE( cv )
+        DEALLOCATE( frac_out )
+
+    END SUBROUTINE COSP_SUBCOLS
+
+    !==========================================================================
 
 END MODULE SIM_CORE

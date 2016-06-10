@@ -7,7 +7,7 @@ MODULE COMMON_CONSTANTS
 
     ! Type KIND value
     INTEGER, PARAMETER :: byte = 1
-    INTEGER, PARAMETER :: sint = 2
+    INTEGER, PARAMETER :: sint = 2 
     INTEGER, PARAMETER :: lint = 4
     INTEGER, PARAMETER :: sREAL = 4
     INTEGER, PARAMETER :: dREAL = 8
@@ -43,12 +43,16 @@ MODULE COMMON_CONSTANTS
     ! sim_core.F90
     INTEGER(KIND=sint), PARAMETER :: is_night = 0
     INTEGER(KIND=sint), PARAMETER :: is_day = 1
-    INTEGER(KIND=sint), PARAMETER :: no_mixed_phase = 1
-    INTEGER(KIND=sint), PARAMETER :: mixed_phase = 2
-    INTEGER(KIND=sint), PARAMETER :: rand = 1
-    INTEGER(KIND=sint), PARAMETER :: max_rand = 2
-    INTEGER(KIND=sint), PARAMETER :: no_cosp_scops = 1
-    INTEGER(KIND=sint), PARAMETER :: is_cosp_scops = 2
+
+    ! cosp scops overlap type (1=max, 2=rand, 3=max/rand)
+    INTEGER(KIND=sint), PARAMETER :: dwd_scops = 1
+    INTEGER(KIND=sint), PARAMETER :: cosp_scops = 2
+    INTEGER(KIND=sint), PARAMETER :: over_max = 1 !not used in dwd_scops
+    INTEGER(KIND=sint), PARAMETER :: over_rand = 2
+    INTEGER(KIND=sint), PARAMETER :: over_max_rand = 3
+    INTEGER(KIND=sint), PARAMETER :: no_mixed_phase = 1 !for dwd_scops
+    INTEGER(KIND=sint), PARAMETER :: mixed_phase = 2    !for dwd_scops
+
     INTEGER(KIND=sint), PARAMETER :: max_cot = 100.0
     REAL(KIND=sreal),   PARAMETER :: is_clear = 0.0
     REAL(KIND=sreal),   PARAMETER :: is_cloud = 1.0

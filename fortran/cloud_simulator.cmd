@@ -16,8 +16,9 @@
 set -x
 
 THV=0.3
-MPC=2
 SCOPS=2
+OVERLAP=3
+MPC=2
 CRUN="v6.0_dwd_scops"
 SSTF="/perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/aux/sst_era_interim_0.5_0.5.nc"
 ITMP="/scratch/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator/input"

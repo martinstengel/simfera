@@ -26,7 +26,7 @@ PROGRAM CLOUD_SIMULATOR
     TYPE(npoints)       :: counts
 
     CHARACTER(LEN=10)   :: thv_str
-    CHARACTER(LEN=1)    :: mpc_str, scops_str
+    CHARACTER(LEN=1)    :: mpc_str, scops_str, overlap_str
     CHARACTER(LEN=4)    :: sy_str, ey_str
     CHARACTER(LEN=2)    :: sm_str, em_str, sd_str, ed_str
 
@@ -42,19 +42,20 @@ PROGRAM CLOUD_SIMULATOR
 
     ! get number of arguments
     nargs = COMMAND_ARGUMENT_COUNT()
-    IF ( nargs == 12 ) THEN
+    IF ( nargs == 13 ) THEN
         CALL GET_COMMAND_ARGUMENT(  1, thv_str )
-        CALL GET_COMMAND_ARGUMENT(  2, mpc_str )
-        CALL GET_COMMAND_ARGUMENT(  3, scops_str )
-        CALL GET_COMMAND_ARGUMENT(  4, cfg % sst_file )
-        CALL GET_COMMAND_ARGUMENT(  5, cfg % inp_path )
-        CALL GET_COMMAND_ARGUMENT(  6, cfg % out_path )
-        CALL GET_COMMAND_ARGUMENT(  7, sy_str )
-        CALL GET_COMMAND_ARGUMENT(  8, ey_str )
-        CALL GET_COMMAND_ARGUMENT(  9, sm_str )
-        CALL GET_COMMAND_ARGUMENT( 10, em_str )
-        CALL GET_COMMAND_ARGUMENT( 11, sd_str )
-        CALL GET_COMMAND_ARGUMENT( 12, ed_str )
+        CALL GET_COMMAND_ARGUMENT(  2, scops_str )
+        CALL GET_COMMAND_ARGUMENT(  3, overlap_str )
+        CALL GET_COMMAND_ARGUMENT(  4, mpc_str )
+        CALL GET_COMMAND_ARGUMENT(  5, cfg % sst_file )
+        CALL GET_COMMAND_ARGUMENT(  6, cfg % inp_path )
+        CALL GET_COMMAND_ARGUMENT(  7, cfg % out_path )
+        CALL GET_COMMAND_ARGUMENT(  8, sy_str )
+        CALL GET_COMMAND_ARGUMENT(  9, ey_str )
+        CALL GET_COMMAND_ARGUMENT( 10, sm_str )
+        CALL GET_COMMAND_ARGUMENT( 11, em_str )
+        CALL GET_COMMAND_ARGUMENT( 12, sd_str )
+        CALL GET_COMMAND_ARGUMENT( 13, ed_str )
     ELSE
         PRINT*, " --- ERROR! 13 arguments are expected !"
         STOP
@@ -63,6 +64,7 @@ PROGRAM CLOUD_SIMULATOR
     ! convert strings to real & integer
     READ( thv_str, '(F8.3)' ) cfg % thv
     READ( mpc_str, '(I1)' ) cfg % mpc
+    READ( overlap_str, '(I1)' ) cfg % overlap
     READ( scops_str, '(I1)' ) cfg % scops
     READ( sy_str, '(I4)' ) cfg % sy
     READ( ey_str, '(I4)' ) cfg % ey

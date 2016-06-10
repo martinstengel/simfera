@@ -320,14 +320,30 @@ MODULE SUBS
         WRITE(day,'(I0.2)') cfg % ed
         cfg % end_date = year//month//day
     
-        PRINT('(A13, E8.2)'), "COT-THV: ", cfg % thv
-        PRINT('(A13, I1)'), "MPC: ", cfg % mpc
-        PRINT('(A13, I1)'), "SCOPS: ", cfg % scops
-        PRINT('(A13, A8)'), "START: ", cfg % start_date
-        PRINT('(A13, A8)'), "STOP: ", cfg % end_date
-        PRINT('(A13, A)'), "INP_PATH: ", TRIM(cfg % inp_path)
-        PRINT('(A13, A)'), "OUT_PATH: ", TRIM(cfg % out_path)
-        PRINT('(A13, A)'), "SST_FILE: ", TRIM(cfg % sst_file)
+        PRINT('(A30, E8.2)'), "COT-THV: ", cfg % thv
+
+        IF ( cfg % mpc == no_mixed_phase) & 
+            PRINT('(A30, I1)'), "no_mixed_phase: ", cfg % mpc
+        IF ( cfg % mpc == mixed_phase) &
+            PRINT('(A30, I1)'), "mixed_phase: ", cfg % mpc
+
+        IF ( cfg % overlap == over_max ) & 
+            PRINT('(A30, I1)'), "OVERLAP type max: ", cfg % overlap
+        IF ( cfg % overlap == over_rand ) & 
+            PRINT('(A30, I1)'), "OVERLAP type random: ", cfg % overlap
+        IF ( cfg % overlap == over_max_rand ) & 
+            PRINT('(A30, I1)'), "OVERLAP type max/random: ", cfg % overlap
+
+        IF ( cfg % scops == dwd_scops)  &
+            PRINT('(A30, I1)'), "dwd SCOPS: ", cfg % scops
+        IF ( cfg % scops == cosp_scops) &
+            PRINT('(A30, I1)'), "cosp SCOPS: ", cfg % scops
+
+        PRINT('(A30, A8)'), "START: ", cfg % start_date
+        PRINT('(A30, A8)'), "STOP: ", cfg % end_date
+        PRINT('(A30, A)'), "INP_PATH: ", TRIM(cfg % inp_path)
+        PRINT('(A30, A)'), "OUT_PATH: ", TRIM(cfg % out_path)
+        PRINT('(A30, A)'), "SST_FILE: ", TRIM(cfg % sst_file)
 
 
         ! set histogram definitions

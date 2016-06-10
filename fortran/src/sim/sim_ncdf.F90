@@ -311,28 +311,54 @@ MODULE SIM_NCDF
 
     !==========================================================================
 
-    SUBROUTINE CREATE_NC_FILENAME( pwd, sdate, thv, scops, mpc, nc_file )
+    SUBROUTINE CREATE_NC_FILENAME( pwd, sdate, thv, overlap, scops, mpc, nc_file )
 
         IMPLICIT NONE
 
-        INTEGER(KIND=sint),         INTENT(IN)  :: scops, mpc
+        INTEGER(KIND=sint),         INTENT(IN)  :: scops, mpc, overlap
         REAL(KIND=sreal),           INTENT(IN)  :: thv
         CHARACTER(LEN=6),           INTENT(IN)  :: sdate
         CHARACTER(LEN=path_length), INTENT(IN)  :: pwd
         CHARACTER(LEN=path_length), INTENT(OUT) :: nc_file
 
         ! local variables
-        CHARACTER(LEN=7) :: thv_int
-        CHARACTER(LEN=1) :: scops_int, mpc_int
+        CHARACTER(LEN=20) :: thv_int
+        CHARACTER(LEN=20) :: mpc_str, overlap_str, scops_str
 
-        WRITE(thv_int,   '(F4.2)') thv
-        WRITE(scops_int, '(I1)')   scops
-        WRITE(mpc_int,   '(I1)')   mpc
+        WRITE(thv_int, '(F4.2)') thv
+
+        IF ( mpc == no_mixed_phase) THEN 
+            mpc_str = "_no_mixed_phase"
+        ELSEIF ( mpc == mixed_phase) THEN 
+            mpc_str = "_mixed_phase"
+        ELSE 
+            mpc_str = ""
+        END IF
+
+        IF ( overlap == over_max ) THEN
+            overlap_str = "_overlap_max" 
+        ELSEIF ( overlap == over_rand ) THEN
+            overlap_str = "_overlap_rand"
+        ELSEIF ( overlap == over_max_rand ) THEN
+            overlap_str = "_overlap_maxrand"
+        ELSE
+            overlap_str = ""
+        END IF
+
+        IF ( scops == dwd_scops) THEN
+            scops_str = "_dwd_scops"
+        ELSEIF ( scops == cosp_scops) THEN
+            scops_str = "_cosp_scops"
+            mpc_str = ""
+        ELSE
+            scops_str = ""
+        END IF
+
 
         ! create output nc-filename
         nc_file = TRIM( pwd ) // "/ERA_Interim_MM" // TRIM(sdate) // &
-                  '_cot-thv-' // TRIM(thv_int) // &
-                  '_scops-' // scops_int // '_mpc-' // mpc_int // '.nc' 
+                  '_thv-' // TRIM(thv_int) // TRIM(scops_str) // &
+                  TRIM(overlap_str) // TRIM(mpc_str)// '.nc' 
 
     END SUBROUTINE CREATE_NC_FILENAME
 
@@ -696,7 +722,8 @@ MODULE SIM_NCDF
 
         ! create output nc-filename
         CALL CREATE_NC_FILENAME( set % out_path, set % start_date(1:6), &
-                                 set % thv, set % scops, set % mpc, nc_file )
+                                 set % thv, set % overlap, set % scops, &
+                                 set % mpc, nc_file )
 
         ! create ncdf file
         CALL CHECK ( nf90_create( TRIM(nc_file), nf90_clobber, ncid ) )
