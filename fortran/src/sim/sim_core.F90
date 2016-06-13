@@ -717,7 +717,7 @@ MODULE SIM_CORE
         TYPE(scops_matrix),                 INTENT(INOUT) :: matrix
 
         ! local variables
-        INTEGER(KIND=sint)                :: i,j, zi
+        INTEGER(KIND=sint)                :: i,j, zi, ci
         REAL(KIND=sreal), DIMENSION(nlev) :: cwp_all, cot_all
         REAL(wp), DIMENSION(:),   ALLOCATABLE :: cc, cv
         REAL(wp), DIMENSION(:,:), ALLOCATABLE :: frac_out
@@ -738,64 +738,34 @@ MODULE SIM_CORE
         CALL SCOPS( npoints_m, nlev, ncol, seed, rngs, &
                     cc, cv, overlap, frac_out, 0 )
 
-        print '(A10)', "frac_out: "
-        do j=nlev-6, nlev 
-            print '(20F8.3)', frac_out(:,j)
-        end do
+        DO zi=1, nlev !loop over model levels 
+            DO ci=1, ncol !loop over subcolumns
 
-        DO, zi=1, nlev !loop over model levels 
+                IF ( frac_out(ci,zi) == 1.0 ) THEN
 
-            WHERE ( frac_out(:,zi) == 1.0 )
+                    matrix % cfc (ci,zi) = 1.0
+                    matrix % cot (ci,zi) = cot_all(zi)
+                    
+                    IF ( flag == is_day ) matrix % cwp (ci,zi) = cwp_all(zi)
 
-                matrix % cfc (:,zi) = 1.0
-                matrix % cot (:,zi) = cot_all(zi)
-                matrix % cwp (:,zi) = cwp_all(zi)
+                    IF ( cwp_all(zi) > 0 ) THEN 
+                        !liquid fraction
+                        matrix % cph (ci,zi) = lwp(zi) / cwp_all(zi)
 
-            ENDWHERE
+                        !weighted mean CER day only
+                        IF ( flag == is_day ) matrix % cer (ci,zi) = &
+                            ( lcer(zi)*lwp(zi) + icer(zi)*iwp(zi) ) / cwp_all(zi)
+                    ENDIF
+
+                END IF
+
+            END DO !end loop ci-subcol
 
             !TOP = upper-most layer: zi=1
             IF ( zi == 1 ) matrix % tcot(:,zi) = matrix % cot(:,1) 
             IF ( zi  > 1 ) matrix % tcot(:,zi) = SUM( matrix % cot(:,1:zi), 2 )
 
-        END DO
-
-        print*, "cfc profile"
-        print '(36F8.3)', cc(1:nlev)
-        print*, "cwp_all profile"
-        print '(36F8.3)', cwp_all(1:nlev)
-        print '(A10)', "matrix%cwp: "
-        do j=nlev-6, nlev 
-            print '(20F8.3)', matrix % cwp (:,j)
-        end do
-        stop
-        !    ELSE !mpc == mixed_phase
-
-        !        von = 1
-        !        bis = nfb
-
-        !        matrix % cot (ci(von:bis),zi) = cot_all
-        !        matrix % cfc (ci(von:bis),zi) = is_cloud
-
-        !        IF ( flag == is_day ) &
-        !            matrix % cwp (ci(von:bis),zi) = cwp_all
-
-        !        IF ( cwp_all > 0 ) THEN
-
-        !            ! liquid fraction
-        !            matrix % cph (ci(von:bis),zi) = lwp(zi) / cwp_all
-
-        !            !weighted mean CER day only
-        !            IF ( flag == is_day ) matrix % cer (ci(von:bis),zi) = & 
-        !                ( lcer(zi)*lwp(zi) + icer(zi)*iwp(zi) ) / cwp_all
-
-        !        END IF
-
-        !    END IF !endif of mpc options
-
-        !    lastcloud = zi
-
-        !END IF !end of nfb > 0 if-loop
-
+        END DO !end loop zi-level
 
         DEALLOCATE( cc )
         DEALLOCATE( cv )

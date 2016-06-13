@@ -35,6 +35,7 @@ MODULE SUBS
 
         ! local variables
         REAL                       :: r
+        LOGICAL                    :: file_exists
         CHARACTER(LEN=4)           :: ystr
         CHARACTER(LEN=2)           :: mstr
         INTEGER(KIND=sint)         :: i, reason, ilen
@@ -50,9 +51,15 @@ MODULE SUBS
         txtfile = TRIM(cfg % out_path)//'/'//ystr//mstr//'_file_list.txt'
         inppath = TRIM(cfg % inp_path)//'/'//ystr//mstr
 
-        ! ERA_Interim_an_20080130_0000+00_plev.grib
-        command = 'ls '//TRIM(inppath)//'/ERA*.grib > '//TRIM(txtfile)
-        CALL system(command)
+        INQUIRE( FILE=TRIM(txtfile), EXIST=file_exists )
+    
+        IF (file_exists) THEN 
+            PRINT*, "   File_List already exists: '"//TRIM(txtfile)//"'"
+        ELSE
+            ! ERA_Interim_an_20080130_0000+00_plev.grib
+            command = 'ls '//TRIM(inppath)//'/ERA*.grib > '//TRIM(txtfile)
+            CALL system(command)
+        ENDIF
     
         !how many files
         OPEN(31, FILE=TRIM(txtfile), ACTION="read")
