@@ -6,10 +6,7 @@
 FC = ftn
 
 # flags for debugging or for maximum performance, 
-#FCFLAGS = -O3 -m0 -K trap=fp -R b -hbyteswapio -N 132
-#FCFLAGS = -O3 -K trap=fp -R b -hbyteswapio -N 132
-FCFLAGS = -O3 -K trap=fp -R b -N 132
-#FCFLAGS += -I/usr/include -Iobj
+FCFLAGS = -O3 -K trap=fp -R b -N 132 -Wl,--as-needed
 FCFLAGS += -Iobj
 # ==============================================================
 # Objects 

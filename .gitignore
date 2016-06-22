@@ -1,6 +1,8 @@
 # Ignore following files
-fortran/cloud_simulator
-fortran/fort*
+fortran/*.x
+fortran/*.cmd
+fortran/obj
+fortran/log
 fortran/scratch
 idl/config_simulator.pro
 idl/config_vis.pro
@@ -38,4 +40,5 @@ mpmd/ecflow_suite/*.def
 *.MOD
 *.out
 *.err
+*.cmd
 .directory
