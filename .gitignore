@@ -1,6 +1,5 @@
 # Ignore following files
 fortran/*.x
-fortran/*.cmd
 fortran/obj
 fortran/log
 fortran/scratch
@@ -40,5 +39,4 @@ mpmd/ecflow_suite/*.def
 *.MOD
 *.out
 *.err
-*.cmd
 .directory
