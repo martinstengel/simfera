@@ -5,6 +5,10 @@ if [[ $host == cc* ]] || [[ $host == nid* ]]; then
     module load ecflow/4.0.6
 fi
 
+module switch cdo/1.6.1 cdo/1.6.4
+module load cray-netcdf
+module list
+
 ECF_NAME=%ECF_NAME%
 ECF_NODE=%ECF_NODE%
 ECF_PASS=%ECF_PASS%

@@ -57,14 +57,19 @@ def set_vars(suite):
     # Miscellaneous:
     suite.add_variable("ECF_TRIES", '1')
     suite.add_variable("ECF_SUBMIT", ecflow_submit)
+    suite.add_variable("ECFS_PATH", ecfs_path)
+    suite.add_variable("TAR_PREFIX", tar_prefix)
+    suite.add_variable("TAR_SUFFIX", tar_suffix)
     suite.add_variable("THV", thv)
     suite.add_variable("MPC", mpc)
     suite.add_variable("SCOPS", scops)
+    suite.add_variable("OVERLAP", overlap)
     suite.add_variable("CRUN", crun)
     suite.add_variable("SSTFILE", sstfile)
     suite.add_variable("INPUT", input)
     suite.add_variable("OUTPUT", output)
     suite.add_variable("PROG", prog)
+    suite.add_variable("CALL_STOREDATA", storedata)
 
 
 def add_trigger(node, trigger):
@@ -94,17 +99,21 @@ def add_mpmd_task(family, taskname):
     return task
 
 
-def add_archiving_tasks(family):
+def add_dearchiving_task(family):
+    family.add_task('get_era_data')
+
+
+def add_archiving_task(family):
     family.add_task('put_sim_data')
 
 
 def add_mpmd_tasks(family):
+    grib2ncdf = add_mpmd_task(family, 'grib2ncdf')
     simulator = add_mpmd_task(family, 'simulator')
-    return dict(simulator=simulator)
 
+    add_trigger( simulator, grib2ncdf )
 
-def add_dearchiving_tasks(family):
-    family.add_task('get_era_data')
+    return dict( grib2ncdf=grib2ncdf, simulator=simulator )
 
 
 def familytree(node, tree=None):
@@ -183,9 +192,6 @@ def build_suite():
     fam_proc = suite.add_family( 'processing' )
     fam_arch = suite.add_family( 'archiving' )
 
-    #add_trigger( fam_proc, fam_dearch )
-    #add_trigger( fam_arch, fam_proc )
-
     # Activate thread limits
     fam_dearch.add_inlimit( 'serial_threads' )
     fam_proc.add_inlimit( 'mpmd_threads' )
@@ -217,11 +223,13 @@ def build_suite():
 
             # processing family
             fam_year_proc = add_fam( fam_proc, yearstr )
+            add_trigger( fam_year_proc, fam_year_dearch )
 
             # archiving family
             fam_year_arch = add_fam( fam_arch, yearstr )
             fam_year_arch.add_variable( "YEAR", yearstr )
-            add_archiving_tasks( fam_year_arch )
+            add_archiving_task( fam_year_arch )
+            add_trigger( fam_year_arch, fam_year_proc )
 
         except RuntimeError:
             pass
@@ -231,10 +239,12 @@ def build_suite():
         fam_month_dearch.add_variable( "YYYYMM", yyyymm )
         fam_month_dearch.add_variable( "START_DATE", start_date )
         fam_month_dearch.add_variable( "END_DATE", end_date )
-        add_dearchiving_tasks( fam_month_dearch )
+        fam_month_dearch.add_variable( "NDAYS", last_day )
+        add_dearchiving_task( fam_month_dearch )
 
         # processing family
         fam_month_proc = add_fam( fam_year_proc, monthstr )
+        fam_month_proc.add_variable( "YYYYMM", yyyymm )
         fam_month_proc.add_variable( "SY", yearstr )
         fam_month_proc.add_variable( "EY", yearstr )
         fam_month_proc.add_variable( "SM", monthstr )
@@ -289,7 +299,8 @@ def build_suite():
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description=sys.argv[0] + " creates the suite " + mysuite + " required by ecflow.")
+        description=sys.argv[0] + " creates the suite " 
+        + mysuite + " required by ecflow.")
 
     parser.add_argument('--sdate', type=str2date, required=True, 
                         help='start date, e.g. 20090101')

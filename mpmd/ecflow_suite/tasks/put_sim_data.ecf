@@ -2,8 +2,24 @@
 %include <head.h>
 %include <myexport.h>
 
-echo "I am task %TASK% in family %FAMILY% responsible for archiving results from: %OUTPUT%/%CRUN%/%YEAR%"
+SIM_PATH=%OUTPUT%/%CRUN%/%YEAR%
+
+echo "I am task %TASK% in family %FAMILY% responsible for archiving results from ${SIM_PATH} to %ECFS_PATH%"
 
 python -c "import time; import numpy; time.sleep(numpy.random.randint(1, 20))"
+
+#emkdir -p %ECFS_PATH%
+#
+## this file will be stored in ECFS
+#TARFILE="%TAR_PREFIX%_%YEAR%_T%THV%_S%SCOPS%_M%MPC%.%TAR_SUFFIX%"
+#
+## ERA_Interim_MM200807_cot-thv-0.30_scops-2_mpc-2.nc
+#TARGET="${SIM_PATH}/ERA_Interim_MM%YEAR%*_cot-thv-%THV%_scops-%SCOPS%_mpc-%MPC%.nc"
+#
+## make tarball
+#tar czvf ${TARFILE} ${TARGET}
+#
+## upload
+#ecp ${TARGET} %ECFS_PATH%
 
 %include <tail.h>

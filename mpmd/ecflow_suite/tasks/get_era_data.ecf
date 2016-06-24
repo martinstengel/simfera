@@ -8,7 +8,34 @@ echo "I am task %TASK% in family %FAMILY% responsible for dearchiving ERA-Interi
 
 #python -c "import time; import numpy; time.sleep(numpy.random.randint(1, 20))"
 
-mkdir -p ${ERA_PATH}
+# availability flag
+flag=-1
+
+# check if data already on scratch
+if [ -d ${ERA_PATH} ]; then
+
+    echo "YES: ${ERA_PATH} exists, now check if all input data exist"
+
+    ngribs=$((%NDAYS%*4))
+    nfiles=$(ls ${ERA_PATH}/ERA*grib | wc -l)
+
+    if [ ${nfiles} -eq ${ngribs} ]; then
+        echo "YES: ${ngribs} ERA-Interim grib-files available == complete"
+        flag=0
+    else
+        echo "NO: ${nfiles}/${ngribs}, thus MARS request for ${YYYYMM} required"
+    fi
+
+else
+
+    echo "NO: ${ERA_PATH} does not exist, thus create it and get data from MARS"
+    mkdir -p ${ERA_PATH}
+
+fi
+
+
+if [ ${flag} -ne 0 ]; then
+
 
 # -- upper air parameters on model and pressure level
 # 129: surface geopotential    [  m^2 s^-2 ]
@@ -16,7 +43,6 @@ mkdir -p ${ERA_PATH}
 # 246: liquid water content    [ kg/kg ]
 # 247: ice water content       [ kg/kg ]
 # 248: cloud cover             ( 0 - 1 )
-
 
 export MARS_MULTITARGET_STRICT_FORMAT=1
 
@@ -53,31 +79,7 @@ if [ ${rc} -ge 1 ]; then
 fi
 
 
-# convert grib-file to ncdf-file
-GRIB_FILES="${ERA_PATH}/*.grib"
-
-for gf in ${GRIB_FILES}
-do
-
-    echo " Convert grib-file ${gf} using cdo"
-
-    basen=$(basename "${gf}" | cut -d. -f1)
-    ncfil="${ERA_PATH}/${basen}.nc"
-
-    cdo -t ecmwf -f nc copy ${gf} ${ncfil}
-
-    rc=$?
-    
-    if [ ${rc} -eq 0 ]; then
-        echo "cdo for ${gf} was successfully at `date`: ${ncfil}!"
-    fi
-    
-    if [ ${rc} -ge 1 ]; then
-        echo " --- ERROR: cdo for ${gf} FAILED at `date`!"
-        exit 1
-    fi
-
-done
-
+# end of if-loop in case no/not all data are on scratch
+fi
 
 %include <tail.h>

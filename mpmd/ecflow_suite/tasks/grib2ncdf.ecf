@@ -1,0 +1,34 @@
+%include <head.h>
+%include <myexport.h>
+
+ERA_PATH=%INPUT%/%YYYYMM%
+
+echo "I am task %TASK% in family %FAMILY% responsible for converting ERA*grib to ERA*nc "
+
+#python -c "import time; import numpy; time.sleep(numpy.random.randint(1, 20))"
+
+GRIB_FILES="${ERA_PATH}/*.grib"
+
+for gf in ${GRIB_FILES}; do
+
+    basen=$(basename "${gf}" | cut -d. -f1)
+    ncfil="${ERA_PATH}/${basen}.nc"
+
+    if [ -f ${ncfil} ]; then
+        echo "${ncfil} already exists"
+    else 
+        echo " Convert grib-file ${gf} using cdo"
+        cdo -t ecmwf -f nc copy ${gf} ${ncfil}
+        rc=$?
+        
+        if [ ${rc} -eq 0 ]; then
+            echo "cdo for ${gf} was successfully at `date`: ${ncfil}!"
+        else
+            echo " --- ERROR: cdo for ${gf} FAILED at `date`!"
+            exit 1
+        fi
+    fi
+
+done
+
+%include <tail.h>

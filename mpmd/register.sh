@@ -12,6 +12,13 @@ mpmd_client.py --dbfile=$MPMD_DATABASE \
    --ecf_host=$ECF_NODE --ecf_port=$ECF_PORT \
    --ecf_home=$ECF_HOME --remote_home=$REMOTE_HOME
 
+# register convert grib-file to ncdf-file 
+mpmd_client.py --dbfile=$MPMD_DATABASE \
+               register_queue --name=grib2ncdf \
+               --length=$LENGTH --memory=1024 \
+               --threads_per_task=1 \
+               --walltime=04:00:00 --suite=$SUITE \
+               --pbs_queue=np
 
 # register cloud_simulator (fortran task)
 mpmd_client.py --dbfile=$MPMD_DATABASE \
