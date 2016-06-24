@@ -143,17 +143,19 @@ MODULE SIM_CORE
         TYPE(scops_matrix),                INTENT(INOUT) :: matrix
 
         ! local variables
-        INTEGER(KIND=sint)                  :: zi, lastcloud
+        INTEGER(KIND=sint)                  :: zi, lastcloud, lastnfb
         INTEGER(KIND=sint)                  :: nfb, nfb_liq, nfb_ice
         INTEGER(KIND=sint)                  :: von, bis
-        INTEGER(KIND=sint), DIMENSION(ncol) :: ci
         REAL(KIND=sreal)                    :: cwp_all, cot_all
         REAL(KIND=sreal),   DIMENSION(nlev) :: cfc_profile
+        INTEGER(KIND=sint), DIMENSION(:), ALLOCATABLE :: ci, ci2
 
 
         lastcloud = -2
+        lastnfb = -1
 
-        cfc_profile = icc(1:nlev+1-1)*0.5 + icc(2:nlev+1)*0.5
+        !cfc_profile = icc(1:nlev+1-1)*0.5 + icc(2:nlev+1)*0.5
+        cfc_profile = icc(2:nlev+1)
 
         DO, zi=1, nlev !loop over model levels 
 
@@ -169,8 +171,19 @@ MODULE SIM_CORE
                 cwp_all = lwp(zi)  + iwp(zi)
                 cot_all = lcot(zi) + icot(zi)
 
-                IF ( lastcloud .NE. (zi-1) .OR. overlap == over_rand ) &
+                IF ( lastcloud .NE. (zi-1) .OR. overlap == over_rand ) THEN
+                    IF ( ALLOCATED(ci) ) DEALLOCATE( ci )
+                    ALLOCATE( ci(ncol) )
                     CALL GET_RANDOMU( ncol, ci )
+                ENDIF
+
+                IF ( nfb .GT. lastnfb .AND. lastcloud .EQ. (zi-1) ) THEN
+                    IF ( ALLOCATED(ci2) ) DEALLOCATE( ci2 )
+                    ALLOCATE( ci2(ncol-lastnfb) )
+                    CALL GET_RANDOMU( (ncol-lastnfb), ci2 )
+                    CALL SWAP_INDICES(ncol, lastnfb, ci2, ci)
+                ENDIF
+
 
                 IF ( mpc == no_mixed_phase ) THEN
 
@@ -236,6 +249,7 @@ MODULE SIM_CORE
                 END IF !endif of mpc options
 
                 lastcloud = zi
+                lastnfb = nfb
 
             END IF !end of nfb > 0 if-loop
 
@@ -561,7 +575,7 @@ MODULE SIM_CORE
               n_bins = n_cer_bins
               n_axis = n_cer_bins + 1
            CASE DEFAULT
-              print*, " --- ERROR: This case is not defined: ", what
+              PRINT*, " --- ERROR: This case is not defined: ", what
               STOP
         END SELECT
 
@@ -775,4 +789,30 @@ MODULE SIM_CORE
 
     !==========================================================================
 
+    SUBROUTINE SWAP_INDICES(ncol, lastnfb, ci2, ci)
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+
+        INTEGER(KIND=sint), INTENT(IN) :: ncol
+        INTEGER(KIND=sint), INTENT(IN) :: lastnfb
+        INTEGER(KIND=sint), DIMENSION(ncol-lastnfb), INTENT(IN)    :: ci2
+        INTEGER(KIND=sint), DIMENSION(ncol),         INTENT(INOUT) :: ci
+
+        !local 
+        INTEGER(KIND=sint)                  :: i
+        INTEGER(KIND=sint), DIMENSION(ncol) :: tmpci
+
+        tmpci = ci
+        ci = 0
+        ci(1:lastnfb) = tmpci(1:lastnfb)
+
+        DO i=1, ncol-lastnfb
+            ci(i+lastnfb) = tmpci(ci2(i)+lastnfb)
+        END DO
+
+    END SUBROUTINE SWAP_INDICES
+
+    !==========================================================================
 END MODULE SIM_CORE
