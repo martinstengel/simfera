@@ -1,4 +1,5 @@
 # Ignore following files
+fortran/hello
 fortran/*.x
 fortran/obj
 fortran/log
