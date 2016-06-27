@@ -7,6 +7,47 @@ MODULE FUNCS
 
     !==========================================================================
 
+    FUNCTION CALC_COV2D( nlev, cfc_profile, verbose ) RESULT( cov2d )
+
+        USE COMMON_CONSTANTS
+
+        IMPLICIT NONE
+    
+        INTEGER(KIND=sint)                :: nlev, z
+        REAL(KIND=sreal), DIMENSION(nlev) :: cfc_profile
+        REAL(KIND=sreal)                  :: cov2d
+        INTEGER                           :: verbose
+    
+        cov2d = 1.0 ! clear sky
+    
+        DO, z=1, nlev !loop over model levels 
+
+            IF ( z .EQ. 1 ) THEN
+
+                cov2d = 1.0 - cfc_profile(z)
+
+                IF ( verbose .EQ. 1 ) &
+                    print '(I5, 2F8.4)', z, cov2d, cfc_profile(z)
+    
+            ELSE
+
+                cov2d = cov2d * ( 1. - MAX(cfc_profile(z-1), cfc_profile(z)) ) &
+                              / ( 1. - MIN(cfc_profile(z-1), 0.99) )
+
+                IF ( verbose .EQ. 1 ) & 
+                    print '(I5, 3F8.4)', z, cov2d, cfc_profile(z-1), cfc_profile(z)
+            ENDIF
+
+            cov2d = MIN( cov2d, 1. )
+
+        END DO
+    
+        cov2d = 1. - cov2d
+    
+    END FUNCTION CALC_COV2D
+
+    !==========================================================================
+
     FUNCTION GET_MEAN( n, vector, phase, flag ) RESULT( mean )
 
         USE COMMON_CONSTANTS
