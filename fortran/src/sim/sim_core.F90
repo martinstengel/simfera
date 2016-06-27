@@ -15,6 +15,7 @@ MODULE SIM_CORE
         USE INITIALIZE
         USE UNDEFINE
         USE STRUCTS
+        !USE FUNCS, only: CALC_COV2D
         USE mod_rng, ONLY: rng_state, init_rng
 
         IMPLICIT NONE
@@ -30,9 +31,14 @@ MODULE SIM_CORE
         TYPE(scops_matrix)  :: matrix
         TYPE(pseudo_arrays) :: array
         INTEGER(KIND=sint)  :: npoints_model
+
         ! random number generator
         INTEGER, DIMENSION(:), ALLOCATABLE         :: seed
         TYPE(rng_state), ALLOCATABLE, DIMENSION(:) :: rngs
+
+        !! if CALC_COV2D
+        !REAL(KIND=sreal)                            :: cov2d
+        !REAL(KIND=sreal), ALLOCATABLE, DIMENSION(:) :: cprof
 
 
         PRINT*, "** MAIN_PROC: includes "
@@ -111,6 +117,27 @@ MODULE SIM_CORE
                 CALL COMPUTE_SUMMARY_STATISTICS( xi, yi, ncol, flag, &
                                                  array, set, tmp, fin )
 
+
+                !! --- for testing purpose --- start
+                !IF (ALLOCATED(cprof)) DEALLOCATE(cprof)
+                !ALLOCATE(cprof(nlev))
+
+                !!cprof = inp % cc(xi, yi, 1:nlev+1-1)*0.5 + &
+                !!        inp % cc(xi, yi, 2:nlev+1)*0.5
+                !cprof = inp % cc(xi, yi, 2:nlev+1)
+
+                !!if (tmp % cfc(xi,yi) .le. 0.3 .and. tmp % cfc(xi,yi) .ge. 0.2) then
+                !!    cov2d = CALC_COV2D( nlev, cprof, 1 )    ! verbose ON
+                !!    print '(A20, 2F8.4)', "tmp%cfc | cov2d", tmp%cfc(xi,yi), cov2d
+                !!    print '(36F8.4)', cprof
+                !!    stop
+                !!else
+                !!    cov2d = CALC_COV2D( nlev, cprof, 0 )    ! verbose OFF
+                !!endif
+
+                !cov2d = CALC_COV2D( nlev, cprof, 0 )
+                !tmp % cfc(xi,yi) = cov2d
+                !! --- for testing purpose --- end
 
 
                 CALL UNDEFINE_MATRIX( matrix )
