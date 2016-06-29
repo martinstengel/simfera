@@ -37,12 +37,15 @@ fi
 if [ ${flag} -ne 0 ]; then
 
 
-# -- upper air parameters on model and pressure level
-# 129: surface geopotential    [  m^2 s^-2 ]
+# -- upper air parameters on model level
 # 130: temperature             [ K ]
+# 133: specific humidity       [ kg/kg ]
 # 246: liquid water content    [ kg/kg ]
 # 247: ice water content       [ kg/kg ]
 # 248: cloud cover             ( 0 - 1 )
+#
+# 129: surface geopotential    [ m^2 s^-2 ]
+# 152: log surface pressure    [ ]
 
 export MARS_MULTITARGET_STRICT_FORMAT=1
 
@@ -55,16 +58,15 @@ mars << EOF
         time     = 0000/0600/1200/1800,
         date     = ${DATE},
         stream   = oper,
-        levtype  = pl,
+        levtype  = ml,
         levelist = all,
         expver   = 1,
         type     = ${TYPE},
         step     = ${STEP},
         class    = ei,
-        param    = 130/129/246/247/248,
+        param    = 129/130/133/152/246/247/248,
         grid     = 0.5/0.5,
-        resol    = AV,
-        target   = "${ERA_PATH}/ERA_Interim_${TYPE}_[date]_[time]+${STEP}_plev.grib"
+        target   = "${ERA_PATH}/ERA_Interim_${TYPE}_[date]_[time]+${STEP}_mlev.grib"
 EOF
 
 rc=$?
