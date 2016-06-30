@@ -36,10 +36,6 @@ MODULE SIM_CORE
         INTEGER, DIMENSION(:), ALLOCATABLE         :: seed
         TYPE(rng_state), ALLOCATABLE, DIMENSION(:) :: rngs
 
-        !! if CALC_COV2D
-        !REAL(KIND=sreal)                            :: cov2d
-        !REAL(KIND=sreal), ALLOCATABLE, DIMENSION(:) :: cprof
-
 
         PRINT*, "** MAIN_PROC: includes "
         PRINT*, "   Downscaling (scops)"
@@ -49,7 +45,7 @@ MODULE SIM_CORE
 
         npoints_model = 1   !number of model points in the horizontal
         ncol = 20           !number of subcolumns (profiles)
-        nlev = inp % zdim-1 !number of layers, i.e. model levels
+        nlev = inp % zdim   !number of model levels
 
         DO xi=1, inp % xdim     !longitude
             DO yi=1, inp % ydim !latitude
@@ -63,15 +59,13 @@ MODULE SIM_CORE
                 CALL INITIALIZE_MATRIX( flag, ncol, nlev, matrix )
                 CALL INITIALIZE_ARRAYS( flag, ncol, array )
 
-
                 ! ------------------------
                 ! Random number generator
                 ! ------------------------
 
-                CALL GET_SEED( inp % temp(xi,yi,:), &
+                CALL GET_SEED( inp % temp_prof(xi,yi,:), &
                                nlev, npoints_model, seed, rngs )
                 CALL INIT_RNG( rngs, seed )
-
 
                 ! ------------------------------------------------------------
                 ! Generate subcolumns for clouds: return "matrix" structure
@@ -79,31 +73,31 @@ MODULE SIM_CORE
 
                 IF ( set % scops == cosp_scops ) THEN 
 
-                    CALL COSP_SUBCOLS( ncol, nlev, flag,         &
-                                       npoints_model,            &
-                                       seed, rngs,               &
-                                       set % overlap,            &
-                                       inp % cc(xi,yi,:),        &
-                                       tmp % lcot_lay(xi,yi,:),  &
-                                       tmp % icot_lay(xi,yi,:),  &
-                                       tmp % lcer_lay(xi,yi,:),  &
-                                       tmp % icer_lay(xi,yi,:),  &
-                                       tmp % lwp_lay(xi,yi,:),   &
-                                       tmp % iwp_lay(xi,yi,:),   &
+                    CALL COSP_SUBCOLS( ncol, nlev, flag,          &
+                                       npoints_model,             &
+                                       seed, rngs,                &
+                                       set % overlap,             &
+                                       inp % cc_prof(xi,yi,:),    &
+                                       tmp % lcot_prof(xi,yi,:),  &
+                                       tmp % icot_prof(xi,yi,:),  &
+                                       tmp % lcer_prof(xi,yi,:),  &
+                                       tmp % icer_prof(xi,yi,:),  &
+                                       tmp % lwp_prof(xi,yi,:),   &
+                                       tmp % iwp_prof(xi,yi,:),   &
                                        matrix )
 
                 ELSEIF ( set % scops == dwd_scops ) THEN 
 
-                    CALL DWD_SUBCOLS( ncol, nlev, flag,         &
-                                      set % overlap,            &
-                                      set % mpc,                &
-                                      inp % cc(xi,yi,:),        &
-                                      tmp % lcot_lay(xi,yi,:),  &
-                                      tmp % icot_lay(xi,yi,:),  &
-                                      tmp % lcer_lay(xi,yi,:),  &
-                                      tmp % icer_lay(xi,yi,:),  &
-                                      tmp % lwp_lay(xi,yi,:),   &
-                                      tmp % iwp_lay(xi,yi,:),   &
+                    CALL DWD_SUBCOLS( ncol, nlev, flag,          &
+                                      set % overlap,             &
+                                      set % mpc,                 &
+                                      inp % cc_prof(xi,yi,:),    &
+                                      tmp % lcot_prof(xi,yi,:),  &
+                                      tmp % icot_prof(xi,yi,:),  &
+                                      tmp % lcer_prof(xi,yi,:),  &
+                                      tmp % icer_prof(xi,yi,:),  &
+                                      tmp % lwp_prof(xi,yi,:),   &
+                                      tmp % iwp_prof(xi,yi,:),   &
                                       matrix )
                 ELSE 
                     PRINT*, "This scops type is not defined: 1=dwd, 2=cosp"
@@ -116,29 +110,6 @@ MODULE SIM_CORE
 
                 CALL COMPUTE_SUMMARY_STATISTICS( xi, yi, ncol, flag, &
                                                  array, set, tmp, fin )
-
-
-                !! --- for testing purpose --- start
-                !IF (ALLOCATED(cprof)) DEALLOCATE(cprof)
-                !ALLOCATE(cprof(nlev))
-
-                !!cprof = inp % cc(xi, yi, 1:nlev+1-1)*0.5 + &
-                !!        inp % cc(xi, yi, 2:nlev+1)*0.5
-                !cprof = inp % cc(xi, yi, 2:nlev+1)
-
-                !!if (tmp % cfc(xi,yi) .le. 0.3 .and. tmp % cfc(xi,yi) .ge. 0.2) then
-                !!    cov2d = CALC_COV2D( nlev, cprof, 1 )    ! verbose ON
-                !!    print '(A20, 2F8.4)', "tmp%cfc | cov2d", tmp%cfc(xi,yi), cov2d
-                !!    print '(36F8.4)', cprof
-                !!    stop
-                !!else
-                !!    cov2d = CALC_COV2D( nlev, cprof, 0 )    ! verbose OFF
-                !!endif
-
-                !cov2d = CALC_COV2D( nlev, cprof, 0 )
-                !tmp % cfc(xi,yi) = cov2d
-                !! --- for testing purpose --- end
-
 
                 CALL UNDEFINE_MATRIX( matrix )
                 CALL UNDEFINE_ARRAYS( array )
@@ -161,33 +132,29 @@ MODULE SIM_CORE
 
         IMPLICIT NONE
 
-        INTEGER(KIND=sint),                   INTENT(IN) :: overlap, mpc
-        INTEGER(KIND=sint),                   INTENT(IN) :: flag, nlev, ncol
-        REAL(KIND=sreal), DIMENSION(nlev),    INTENT(IN) :: lcot, icot
-        REAL(KIND=sreal), DIMENSION(nlev),    INTENT(IN) :: lcer, icer
-        REAL(KIND=sreal), DIMENSION(nlev),    INTENT(IN) :: lwp, iwp
-        REAL(KIND=sreal), DIMENSION(nlev+1),  INTENT(IN) :: icc
-        TYPE(scops_matrix),                INTENT(INOUT) :: matrix
+        INTEGER(KIND=sint),                INTENT(IN) :: overlap, mpc
+        INTEGER(KIND=sint),                INTENT(IN) :: flag, nlev, ncol
+        REAL(KIND=sreal), DIMENSION(nlev), INTENT(IN) :: lcot, icot
+        REAL(KIND=sreal), DIMENSION(nlev), INTENT(IN) :: lcer, icer
+        REAL(KIND=sreal), DIMENSION(nlev), INTENT(IN) :: lwp, iwp
+        REAL(KIND=sreal), DIMENSION(nlev), INTENT(IN) :: icc
+        TYPE(scops_matrix),             INTENT(INOUT) :: matrix
 
         ! local variables
         INTEGER(KIND=sint)                  :: zi, lastcloud, lastnfb
         INTEGER(KIND=sint)                  :: nfb, nfb_liq, nfb_ice
         INTEGER(KIND=sint)                  :: von, bis
         REAL(KIND=sreal)                    :: cwp_all, cot_all
-        REAL(KIND=sreal),   DIMENSION(nlev) :: cfc_profile
         INTEGER(KIND=sint), DIMENSION(:), ALLOCATABLE :: ci, ci2
 
 
         lastcloud = -2
         lastnfb = -1
 
-        !cfc_profile = icc(1:nlev+1-1)*0.5 + icc(2:nlev+1)*0.5
-        cfc_profile = icc(2:nlev+1)
-
         DO, zi=1, nlev !loop over model levels 
 
             ! number of filled boxes
-            nfb = NINT( ncol * cfc_profile(zi) )
+            nfb = NINT( ncol * icc(zi) )
 
             IF ( nfb > ncol ) nfb = ncol
 
@@ -407,9 +374,9 @@ MODULE SIM_CORE
 
                 IF ( matrix % cfc (icol, ilev) > 0.5 ) THEN
 
-                    array % ctp (icol) = inp % plevel (ilev) / 100.
-                    array % cth (icol) = inp % geop (x,y,ilev) / 9.81
-                    array % ctt (icol) = inp % temp (x,y,ilev)
+                    array % ctp (icol) = inp % pres_prof (x,y,ilev) / 100.
+                    array % cth (icol) = inp % geop_prof (x,y,ilev) / 9.81
+                    array % ctt (icol) = inp % temp_prof (x,y,ilev)
                     array % cph (icol) = NINT( matrix % cph (icol, ilev) ) 
                     array % cfc (icol) = 1.0
 
@@ -716,7 +683,7 @@ MODULE SIM_CORE
 
         INTEGER(KIND=sint),                         INTENT(IN)  :: nlev
         INTEGER(KIND=sint),                         INTENT(IN)  :: nps
-        REAL(KIND=sreal), DIMENSION(nlev+1),        INTENT(IN)  :: era_temp
+        REAL(KIND=sreal), DIMENSION(nlev),          INTENT(IN)  :: era_temp
         INTEGER, DIMENSION(:), ALLOCATABLE,         INTENT(OUT) :: seed
         TYPE(rng_state), ALLOCATABLE, DIMENSION(:), INTENT(OUT) :: rngs
 
@@ -727,7 +694,7 @@ MODULE SIM_CORE
         ALLOCATE( rngs(nps) )
 
         seed(:) = 0
-        temperature = era_temp(1:nlev+1-1)*0.5 + era_temp(2:nlev+1)*0.5
+        temperature = era_temp(1:nlev)
         seed = INT( temperature(1)*10.0 )
 
     END SUBROUTINE GET_SEED
@@ -754,7 +721,7 @@ MODULE SIM_CORE
         REAL(KIND=sreal), DIMENSION(nlev),     INTENT(IN) :: lcot, icot
         REAL(KIND=sreal), DIMENSION(nlev),     INTENT(IN) :: lcer, icer
         REAL(KIND=sreal), DIMENSION(nlev),     INTENT(IN) :: lwp, iwp
-        REAL(KIND=sreal), DIMENSION(nlev+1),   INTENT(IN) :: icc
+        REAL(KIND=sreal), DIMENSION(nlev),     INTENT(IN) :: icc
         TYPE(scops_matrix),                 INTENT(INOUT) :: matrix
 
         ! local variables
@@ -774,7 +741,7 @@ MODULE SIM_CORE
 
         cv(1:nlev) = 0.0 ! convective cloud cover is zero
         cc(1:nlev) = 0.0 ! cloud cover
-        cc(1:nlev) = icc(1:nlev+1-1) * 0.5 + icc(2:nlev+1) * 0.5
+        cc(1:nlev) = icc(1:nlev)
 
         CALL SCOPS( npoints_m, nlev, ncol, seed, rngs, &
                     cc, cv, overlap, frac_out, 0 )

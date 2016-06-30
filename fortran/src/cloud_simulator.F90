@@ -131,8 +131,8 @@ PROGRAM CLOUD_SIMULATOR
 
             CALL CPU_TIME( finish_month )
             PRINT*, ""
-            PRINT '(" ++ Elapsed time = ",F10.3," seconds for ",I4, "/", I2)',&
-                finish_month - start_month, year, month
+            PRINT '(" ++ Elapsed time = ",F8.3," minutes for ",I4, "/", I2)',&
+                (finish_month - start_month)/60., year, month
 
         END DO !end of month-loop
     END DO !end of year-loop

@@ -44,8 +44,8 @@ OBJ = obj/$(S1).o\
 	  obj/$(S3).o\
 	  obj/$(S4).o\
 	  obj/$(S5).o\
-	  obj/$(S6).o\
 	  obj/$(T3).o\
+	  obj/$(S6).o\
 	  obj/$(C1).o\
 	  obj/$(C2).o\
 	  obj/$(C3).o\

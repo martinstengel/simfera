@@ -58,11 +58,17 @@ MODULE STRUCTS
     ! era-i input
     TYPE era_input
         INTEGER(KIND=lint)                              :: xdim, ydim, zdim
-        REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: lat, lon
-        REAL(KIND=sreal), DIMENSION(:),     ALLOCATABLE :: plevel, dpres
-        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: cc, lwc, iwc
-        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: geop, temp
-        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: sza2d
+        REAL(KIND=sreal),   DIMENSION(:),   ALLOCATABLE :: lat, lon
+        INTEGER(KIND=sint), DIMENSION(:),   ALLOCATABLE :: lev
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: cc_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwc_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: iwc_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: temp_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: shum_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: geop_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: pres_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: dpres_prof
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: sza2d, lnsp2d, geop2d
         INTEGER(KIND=sint)         :: year, month, day, hour, doy
         CHARACTER(LEN=file_length) :: filename, dirname, basename
     END TYPE era_input
@@ -70,10 +76,11 @@ MODULE STRUCTS
 
     ! temp arrays for each time slot
     TYPE tmp_arrays
-        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwc_inc, iwc_inc
-        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwp_lay, iwp_lay
-        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcer_lay, icer_lay
-        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcot_lay, icot_lay
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwc_prof_inc
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: iwc_prof_inc
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lwp_prof, iwp_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcer_prof, icer_prof
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcot_prof, icot_prof
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cfc, cph, cph_day
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: ctt, cth, ctp
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cwp, lwp, iwp

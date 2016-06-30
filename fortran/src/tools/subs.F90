@@ -178,20 +178,22 @@ MODULE SUBS
 
         PRINT*, "** CALC_INCLOUD_CWC"
 
-        DO z=inp%zdim, 1, -1
+        ! z=60: lower most model level
+        ! z=1:  uppermost model level
+        DO z=inp % zdim, 1, -1
 
             ! incloud liquid water content
-            WHERE( inp%cc(:,:,z) .GT. 0. .AND. inp%lwc(:,:,z) .GT. 0 )
-                tmp%lwc_inc(:,:,z) = inp%lwc(:,:,z) / inp%cc(:,:,z)
+            WHERE( inp % cc_prof(:,:,z) .GT. 0. .AND. inp % lwc_prof(:,:,z) .GT. 0 )
+                tmp % lwc_prof_inc(:,:,z) = inp % lwc_prof(:,:,z) / inp % cc_prof(:,:,z)
             ELSEWHERE
-                tmp%lwc_inc(:,:,z) = 0.
+                tmp % lwc_prof_inc(:,:,z) = 0.
             END WHERE
 
             ! incloud ice water content
-            WHERE( inp%cc(:,:,z) .GT. 0. .AND. inp%iwc(:,:,z) .GT. 0 )
-                tmp%iwc_inc(:,:,z) = inp%iwc(:,:,z) / inp%cc(:,:,z)
+            WHERE( inp % cc_prof(:,:,z) .GT. 0. .AND. inp % iwc_prof(:,:,z) .GT. 0 )
+                tmp % iwc_prof_inc(:,:,z) = inp % iwc_prof(:,:,z) / inp % cc_prof(:,:,z)
             ELSEWHERE
-                tmp%iwc_inc(:,:,z) = 0.
+                tmp % iwc_prof_inc(:,:,z) = 0.
             END WHERE
 
         END DO
@@ -214,45 +216,52 @@ MODULE SUBS
 
         ! local variables
         INTEGER(KIND=sint)                             :: z
-        REAL(KIND=sreal)                               :: pressure
         REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: lwc_z, iwc_z
-        REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: temperature
+        REAL(KIND=sreal), DIMENSION(inp%xdim,inp%ydim) :: t_z, p_z
 
         PRINT*, "** CALC_CLD_VARS"
 
-        DO z=inp%zdim-1, 1, -1
+        ! z=60: lower most model level
+        ! z=1:  uppermost model level
+        DO z=inp % zdim, 2, -1
 
-            lwc_z = tmp % lwc_inc(:,:,z)*0.5 + tmp % lwc_inc(:,:,z+1)*0.5
-            iwc_z = tmp % iwc_inc(:,:,z)*0.5 + tmp % iwc_inc(:,:,z+1)*0.5
+            ! z_60 = (z_60 + z_59) * 0.5
+            ! z_59 = (z_59 + z_58) * 0.5
+            ! z_3  = (z_3  + z_2) * 0.5
+            ! z_2  = (z_2  + z_1) * 0.5
+            ! z_1  = 0.0
 
-            temperature = inp % temp(:,:,z)*0.5 + inp % temp(:,:,z+1)*0.5 ![K]
-            pressure = inp % plevel(z)*0.5 + inp % plevel(z+1)*0.5 ![Pa]
+            lwc_z = ( tmp % lwc_prof_inc(:,:,z) + tmp % lwc_prof_inc(:,:,z-1) ) * 0.5
+            iwc_z = ( tmp % iwc_prof_inc(:,:,z) + tmp % iwc_prof_inc(:,:,z-1) ) * 0.5
 
-            tmp % lwp_lay(:,:,z) = lwc_z * inp % dpres(z) / 9.81 ![kg/m2]
-            tmp % iwp_lay(:,:,z) = iwc_z * inp % dpres(z) / 9.81 ![kg/m2]
+            t_z = ( inp % temp_prof(:,:,z) + inp % temp_prof(:,:,z-1) ) * 0.5 ![K]
+            p_z = ( inp % pres_prof(:,:,z) + inp % pres_prof(:,:,z-1) ) * 0.5 ![Pa]
 
-            tmp % lcer_lay(:,:,z) = GET_LIQ_CER( temperature, lwc_z, pressure,&
-                                                 aux%lsm2d, inp%xdim, inp%ydim  )
-            tmp % icer_lay(:,:,z) = GET_ICE_CER( temperature, iwc_z, pressure, &
-                                                 inp%xdim, inp%ydim  )
+            tmp % lwp_prof(:,:,z) = lwc_z * inp % dpres_prof(:,:,z) / 9.81 ![kg/m2]
+            tmp % iwp_prof(:,:,z) = iwc_z * inp % dpres_prof(:,:,z) / 9.81 ![kg/m2]
+
+            tmp % lcer_prof(:,:,z) = GET_LIQ_CER( t_z, lwc_z, p_z, aux % lsm2d, &
+                                                  inp % xdim, inp % ydim  )
+            tmp % icer_prof(:,:,z) = GET_ICE_CER( t_z, iwc_z, p_z, & 
+                                                  inp % xdim, inp % ydim  )
 
             ! COT computation: method of Han et al. (1994)
             !   CWP = (4 * COT * R_eff * rho) / (3 * Q_ext)
             !   COT = (3 * CWP * Q_ext) / (4 * R_eff * rho)
 
-            tmp % lcot_lay(:,:,z) = (3.0*tmp % lwp_lay(:,:,z)*qext_water) / &
-                                    (4.0*tmp % lcer_lay(:,:,z)*1.0E-6*rho_water)
-            tmp % icot_lay(:,:,z) = (3.0*tmp % iwp_lay(:,:,z)*qext_ice) / &
-                                    (4.0*tmp % icer_lay(:,:,z)*1.0E-6*rho_ice)
+            tmp % lcot_prof(:,:,z) = (3.0*tmp % lwp_prof(:,:,z) * qext_water) / &
+                                     (4.0*tmp % lcer_prof(:,:,z) * 1.0E-6 * rho_water)
+            tmp % icot_prof(:,:,z) = (3.0*tmp % iwp_prof(:,:,z) * qext_ice) / &
+                                     (4.0*tmp % icer_prof(:,:,z) * 1.0E-6 * rho_ice)
 
-            WHERE ( tmp % lwp_lay(:,:,z) == 0.0 )
-                tmp % lcot_lay(:,:,z) = 0.0
-                tmp % lcer_lay(:,:,z) = 0.0
+            WHERE ( tmp % lwp_prof(:,:,z) == 0.0 )
+                tmp % lcot_prof(:,:,z) = 0.0
+                tmp % lcer_prof(:,:,z) = 0.0
             END WHERE
 
-            WHERE ( tmp % iwp_lay(:,:,z) == 0.0 )
-                tmp % icot_lay(:,:,z) = 0.0
-                tmp % icer_lay(:,:,z) = 0.0
+            WHERE ( tmp % iwp_prof(:,:,z) == 0.0 )
+                tmp % icot_prof(:,:,z) = 0.0
+                tmp % icer_prof(:,:,z) = 0.0
             END WHERE
 
         END DO
@@ -546,6 +555,76 @@ MODULE SUBS
         CALL AVG ( sf, x, y, fin % iwp_allsky, cnt % iwp_allsky )
 
     END SUBROUTINE MEAN_VARS
+
+    !==========================================================================
+
+    SUBROUTINE CALC_GEOP_PRES_PROFILES( inp )
+
+        USE COMMON_CONSTANTS
+        USE STRUCTS
+
+        IMPLICIT NONE
+
+        TYPE(era_input), INTENT(INOUT) :: inp
+
+        !local
+        INTEGER          :: x, y, z
+        REAL(KIND=sreal) :: sp, pp1, p, r_ratio
+        REAL(KIND=sreal) :: virt_temp, logpp, sum_term
+
+
+        PRINT*, "** CALC_GEOP_PRES_PROFILES"
+
+        r_ratio = r_water_vap / (r_dry_air - 1.0_sreal )
+
+        DO x=1, inp % xdim                 !longitude
+            DO y=1, inp % ydim             !latitude
+
+                ! surface pressure
+                sp = EXP( inp % lnsp2d(x,y) )
+
+                ! pressure at surface, i.e. 60 + 1
+                pp1 = avec(inp%zdim+1) + bvec(inp%zdim+1) * sp
+
+                DO z=inp % zdim, 1, -1     !model levels 
+
+                    ! pressure profile
+                    p = avec(z) + bvec(z) * sp
+                    inp % pres_prof(x,y,z) = p
+
+                    ! logpp is log. pressure difference, defined on cell centers
+                    IF ( p .GT. dither ) THEN 
+                        logpp = LOG( pp1 / p )
+                    ELSE 
+                        !TOA has zero pressure, therefore: 
+                        logpp = LOG( pp1 )
+                    END IF
+
+                    !virtual temperature
+                    virt_temp = inp % temp_prof(x,y,z) * ( 1.0_sreal + &
+                                r_ratio * inp % shum_prof(x,y,z) )
+                    sum_term = r_dry_air * virt_temp * logpp
+
+                    ! geopotential profile & pressure difference profile
+                    IF ( z .EQ. inp % zdim ) THEN ! lowest model level
+                        inp % geop_prof(x,y,z)  = inp % geop2d(x,y) &
+                                                + sum_term
+                    ELSE
+                        inp % geop_prof(x,y,z) = inp % geop_prof(x,y,z+1) &
+                                               + sum_term
+                        inp % dpres_prof(x,y,z+1) = inp % pres_prof(x,y,z+1) & 
+                                                  - inp % pres_prof(x,y,z)
+                        IF ( z .EQ. 1 ) inp % dpres_prof(x,y,z) = 0.0
+                    ENDIF
+
+                    pp1 = p
+
+                END DO
+
+            END DO
+        END DO
+
+    END SUBROUTINE CALC_GEOP_PRES_PROFILES
 
     !==========================================================================
 

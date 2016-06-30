@@ -116,7 +116,7 @@ MODULE FUNCS
         IMPLICIT NONE
 
         INTEGER(KIND=lint)               :: x, y   !nlon, nlat
-        REAL(KIND=sreal)                 :: pres   !absolute pressure (Pa)
+        REAL(KIND=sreal), DIMENSION(x,y) :: pres   !absolute pressure (Pa)
         REAL(KIND=sreal), DIMENSION(x,y) :: temp   !absolute temperature (K)
         REAL(KIND=sreal), DIMENSION(x,y) :: rho    !air density (kg/m^3)
 
@@ -135,7 +135,7 @@ MODULE FUNCS
         IMPLICIT NONE
 
         INTEGER(KIND=lint)               :: x, y   !nlon, nlat
-        REAL(KIND=sreal)                 :: pres   !air pressure
+        REAL(KIND=sreal), DIMENSION(x,y) :: pres   !air pressure
         REAL(KIND=sreal), DIMENSION(x,y) :: pt     !air temperature
         REAL(KIND=sreal), DIMENSION(x,y) :: rho    !air density
         REAL(KIND=sreal), DIMENSION(x,y) :: iwc    !ice water content [kg/kg]
@@ -175,9 +175,9 @@ MODULE FUNCS
         IMPLICIT NONE
 
         INTEGER(KIND=lint)                 :: x, y   !nlon, nlat
-        REAL(KIND=sreal)                   :: pres   !air pressure
         INTEGER(KIND=sint), DIMENSION(x,y) :: lsm    !land/sea mask
         REAL(KIND=sreal),   DIMENSION(x,y) :: temp   !air temperature
+        REAL(KIND=sreal),   DIMENSION(x,y) :: pres   !air pressure
         REAL(KIND=sreal),   DIMENSION(x,y) :: rho    !air density
         REAL(KIND=sreal),   DIMENSION(x,y) :: lwc    !liquid water content [kg/kg]
         REAL(KIND=sreal),   DIMENSION(x,y) :: zlwc   !liquid water content [g/m3]

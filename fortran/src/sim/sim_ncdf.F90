@@ -834,7 +834,8 @@ MODULE SIM_NCDF
 
         IMPLICIT NONE
 
-        INTEGER            :: ncid, DimID, VarID, VarDim, i 
+        INTEGER            :: ncid, DimID, VarID, i 
+        CHARACTER(LEN=50)  :: VarName
         REAL(KIND=sreal)   :: scale_factor, add_offset
         INTEGER(KIND=lint) :: fill_value, missing_value
         CHARACTER(LEN=file_length), INTENT(IN) :: sfile
@@ -848,13 +849,17 @@ MODULE SIM_NCDF
         CALL CHECK( nf90_open( sfile, nf90_nowrite, ncid) )
 
         ! longitude
-        CALL GET_VARDIM_VARID( ncid, 'longitude', VarID, sdata % nlon )
+        CALL CHECK( nf90_inq_dimid( ncid, 'longitude', DimID ) )
+        CALL CHECK( nf90_inquire_dimension( ncid, DimID, VarName, sdata % nlon ) )
         ALLOCATE( sdata % lon( sdata % nlon ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'longitude', VarID ) )
         CALL CHECK( nf90_get_var( ncid, VarID, sdata % lon ) )
 
         ! latitude
-        CALL GET_VARDIM_VARID( ncid, 'latitude', VarID, sdata % nlat )
+        CALL CHECK( nf90_inq_dimid( ncid, 'latitude', DimID ) )
+        CALL CHECK( nf90_inquire_dimension( ncid, DimID, VarName, sdata % nlat ) )
         ALLOCATE( sdata % lat( sdata % nlat ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'latitude', VarID ) )
         CALL CHECK( nf90_get_var( ncid, VarID, sdata % lat ) )
 
         ! sea surface temperature
@@ -905,11 +910,14 @@ MODULE SIM_NCDF
 
     SUBROUTINE READ_ERA_NCFILE( ifile, idata )
 
+        USE SUBS
+
         IMPLICIT NONE
 
         INTEGER(KIND=sint), PARAMETER :: fb=15
         CHARACTER(LEN=fb),  PARAMETER :: filbase="ERA_Interim_an_"
-        INTEGER                       :: ncid, DimID, VarID, VarDim, idx
+        INTEGER                       :: ncid, DimID, VarID, idx
+        CHARACTER(LEN=50)             :: VarName
         CHARACTER(LEN=20)             :: string
         CHARACTER(LEN=file_length), INTENT(IN) :: ifile
         TYPE(era_input), INTENT(INOUT)         :: idata
@@ -919,68 +927,87 @@ MODULE SIM_NCDF
         ! open ncdf file
         CALL CHECK( nf90_open( ifile, nf90_nowrite, ncid) )
 
-        ! longitude
-        CALL GET_VARDIM_VARID( ncid, 'lon', VarID, idata % xdim )
+        ! 1D longitude
+        CALL CHECK( nf90_inq_dimid( ncid, 'lon', DimID ) )
+        CALL CHECK( nf90_inquire_dimension( ncid, DimID, VarName, idata % xdim ) )
         ALLOCATE( idata % lon( idata % xdim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'lon', VarID ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata % lon ) )
 
-        ! latitude
-        CALL GET_VARDIM_VARID( ncid, 'lat', VarID, idata % ydim )
+        ! 1D latitude
+        CALL CHECK( nf90_inq_dimid( ncid, 'lat', DimID ) )
+        CALL CHECK( nf90_inquire_dimension( ncid, DimID, VarName, idata % ydim ) )
         ALLOCATE( idata % lat( idata % ydim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'lat', VarID ) )
         CALL CHECK( nf90_get_var( ncid, VarID, idata % lat ) )
 
-        ! pressure levels
-        CALL GET_VARDIM_VARID( ncid, 'lev', VarID, idata % zdim )
-        ALLOCATE( idata % plevel( idata % zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata % plevel ) )
+        ! 1D model levels
+        CALL CHECK( nf90_inq_dimid( ncid, 'lev_2', DimID ) )
+        CALL CHECK( nf90_inquire_dimension( ncid, DimID, VarName, idata % zdim ) )
+        ALLOCATE( idata % lev( idata % zdim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'lev_2', VarID ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % lev ) )
 
-        ! cloud cover
-        CALL CHECK( nf90_inq_varid( ncid, 'CC', VarID ) )
-        ALLOCATE( idata % cc( idata % xdim, idata % ydim, idata % zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata % cc ) )
-
-        ! liquid cloud water content [kg kg**-1] 
-        ! i.e., [mass of condensate / mass of moist air]
-        CALL CHECK( nf90_inq_varid( ncid, 'CLWC', VarID ) )
-        ALLOCATE( idata % lwc( idata % xdim, idata % ydim, idata % zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata % lwc ) )
-
-        ! ice cloud water content [kg kg**-1] 
-        ! i.e., [mass of condensate / mass of moist air]
-        CALL CHECK( nf90_inq_varid( ncid, 'CIWC', VarID ) )
-        ALLOCATE( idata % iwc( idata % xdim, idata % ydim, idata % zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata % iwc ) )
-
-        ! geopotential height [m^2/s^2]
+        ! 2D geopotential [m^2/s^2]
+        ALLOCATE( idata % geop2d( idata % xdim, idata % ydim ) )
         CALL CHECK( nf90_inq_varid( ncid, 'Z', VarID ) )
-        ALLOCATE( idata % geop( idata % xdim, idata % ydim, idata % zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata % geop ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % geop2d ) )
 
-        ! temperature [K]
+        ! 2D logarithm of surface pressure [ ]
+        ALLOCATE( idata % lnsp2d( idata % xdim, idata % ydim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'LNSP', VarID ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % lnsp2d ) )
+
+        ! 3D cloud cover
+        ALLOCATE( idata % cc_prof( idata % xdim, idata % ydim, idata % zdim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'CC', VarID ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % cc_prof ) )
+
+        ! 3D liquid cloud water content [kg kg**-1] 
+        ! i.e., [mass of condensate / mass of moist air]
+        ALLOCATE( idata % lwc_prof( idata % xdim, idata % ydim, idata % zdim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'CLWC', VarID ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % lwc_prof ) )
+
+        ! 3D ice cloud water content [kg kg**-1] 
+        ! i.e., [mass of condensate / mass of moist air]
+        ALLOCATE( idata % iwc_prof( idata % xdim, idata % ydim, idata % zdim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'CIWC', VarID ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % iwc_prof ) )
+
+        ! 3D temperature [K]
+        ALLOCATE( idata % temp_prof( idata % xdim, idata % ydim, idata % zdim ) )
         CALL CHECK( nf90_inq_varid( ncid, 'T', VarID ) )
-        ALLOCATE( idata % temp( idata % xdim, idata % ydim, idata % zdim ) )
-        CALL CHECK( nf90_get_var( ncid, VarID, idata % temp ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % temp_prof ) )
+
+        ! 3D specific humidity [kg kg**-1]
+        ALLOCATE( idata % shum_prof( idata % xdim, idata % ydim, idata % zdim ) )
+        CALL CHECK( nf90_inq_varid( ncid, 'Q', VarID ) )
+        CALL CHECK( nf90_get_var( ncid, VarID, idata % shum_prof ) )
 
         ! close ncdf file
         CALL CHECK( nf90_close( ncid ) )
 
-
-        ! allocate SZA2d array
+        ! allocate SZA2d array, which will be filled later
         ALLOCATE( idata % sza2d( idata % xdim, idata % ydim ) )
 
-
         ! negative values set to zero
-        WHERE ( idata % cc  .LT. 0.0 ) idata % cc  = 0.0
-        WHERE ( idata % lwc .LT. 0.0 ) idata % lwc = 0.0
-        WHERE ( idata % iwc .LT. 0.0 ) idata % iwc = 0.0
+        WHERE ( idata % cc_prof  .LT. 0.0 ) idata % cc_prof  = 0.0
+        WHERE ( idata % lwc_prof .LT. 0.0 ) idata % lwc_prof = 0.0
+        WHERE ( idata % iwc_prof .LT. 0.0 ) idata % iwc_prof = 0.0
 
+        ! compute now: z=1, 60
+        ! * geopotential profile = idata % geop_prof
+        ! * pressure at levels   = idata % pres_prof
+        ! * pressure difference  = idata % dpres_prof, e.g.
+        !   z=60: p@60-p@59
+        !   z=1 : p@1 (or zero)?
+        ALLOCATE( idata % geop_prof ( idata%xdim, idata%ydim, idata%zdim ) )
+        ALLOCATE( idata % pres_prof ( idata%xdim, idata%ydim, idata%zdim ) )
+        ALLOCATE( idata % dpres_prof( idata%xdim, idata%ydim, idata%zdim ) )
+        CALL CALC_GEOP_PRES_PROFILES( idata )
 
-        ! pressure difference
-        idata % dpres = idata % plevel(2:SIZE(idata % plevel)) - &
-                        idata % plevel(1:SIZE(idata % plevel)-1)
-        
-
-        ! split filename ERA_Interim_an_20080701_0000+00_plev.nc
+        ! split filename ERA_Interim_an_20080701_0000+00_mlev.nc
         idx = INDEX( TRIM(ifile), filbase )
 
         idata % filename = TRIM( ifile(idx:LEN_TRIM(ifile)) )
@@ -1015,22 +1042,6 @@ MODULE SIM_NCDF
         END IF
 
     END SUBROUTINE CHECK
-
-    !==========================================================================
-
-    SUBROUTINE GET_VARDIM_VARID( fileid, varname, vardim, varid )
-
-        IMPLICIT NONE
-
-        CHARACTER(LEN=64)       :: varname
-        INTEGER, INTENT(INOUT)  :: fileid
-        INTEGER, INTENT(OUT)    :: vardim, varid
-
-        CALL CHECK( nf90_inq_dimid( fileid, varname, vardim ) )
-        CALL CHECK( nf90_inq_varid( fileid, varname, varid ) )
-        CALL CHECK( nf90_inquire_dimension( fileid, vardim, varname, varid ) )
-
-    END SUBROUTINE GET_VARDIM_VARID
 
     !==========================================================================
 

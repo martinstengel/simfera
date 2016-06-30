@@ -143,14 +143,14 @@ MODULE INITIALIZE
         TYPE(era_input),  INTENT(IN)    :: inp
         TYPE(tmp_arrays), INTENT(INOUT) :: tmp
 
-        ALLOCATE( tmp % lwc_inc (inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % iwc_inc (inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % lwp_lay (inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % iwp_lay (inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % lcot_lay (inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % icot_lay (inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % lcer_lay (inp % xdim, inp % ydim, inp % zdim) )
-        ALLOCATE( tmp % icer_lay (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % lwc_prof_inc (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % iwc_prof_inc (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % lwp_prof (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % iwp_prof (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % lcot_prof (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % icot_prof (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % lcer_prof (inp % xdim, inp % ydim, inp % zdim) )
+        ALLOCATE( tmp % icer_prof (inp % xdim, inp % ydim, inp % zdim) )
 
         ALLOCATE( tmp % cfc (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % ctp (inp % xdim, inp % ydim) )
@@ -171,14 +171,14 @@ MODULE INITIALIZE
         ALLOCATE( tmp % cer_liq (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % cer_ice (inp % xdim, inp % ydim) )
 
-        tmp % lwc_inc  = 0.0 
-        tmp % iwc_inc  = 0.0
-        tmp % lwp_lay  = 0.0
-        tmp % iwp_lay  = 0.0
-        tmp % lcot_lay = 0.0
-        tmp % icot_lay = 0.0
-        tmp % lcer_lay = 0.0
-        tmp % icer_lay = 0.0
+        tmp % lwc_prof_inc  = 0.0 
+        tmp % iwc_prof_inc  = 0.0
+        tmp % lwp_prof  = 0.0
+        tmp % iwp_prof  = 0.0
+        tmp % lcot_prof = 0.0
+        tmp % icot_prof = 0.0
+        tmp % lcer_prof = 0.0
+        tmp % icer_prof = 0.0
 
         tmp % cfc = 0.0
         tmp % ctp = 0.0
