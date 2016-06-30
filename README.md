@@ -3,11 +3,11 @@
 
   * **git clone** https://github.com/cschlund/cloud_simulator.git
   
-  * cd cloud_simulator/
+  * cd cloud_simulator/fortran
   
-  * cp config_simulator.pro.template **config_simulator.pro**
+  * ./compile.sh 
   
-  * open config_simulator.pro and **modify the settings**
+  * configure **job_pbs.cmd** and **qsub job_pbs.cmd**
   
-  * start IDL and run **cloud_simulator.pro**
+  * or use ECflow on ecgate, see **cloud_simulator/mpmd**
 
