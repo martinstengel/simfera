@@ -356,9 +356,11 @@ MODULE SIM_NCDF
 
 
         ! create output nc-filename
+        !nc_file = TRIM( pwd ) // "/ERA_Interim_MM" // TRIM(sdate) // &
+        !          '_thv-' // TRIM(thv_int) // TRIM(scops_str) // &
+        !          TRIM(overlap_str) // TRIM(mpc_str)// '.nc' 
         nc_file = TRIM( pwd ) // "/ERA_Interim_MM" // TRIM(sdate) // &
-                  '_thv-' // TRIM(thv_int) // TRIM(scops_str) // &
-                  TRIM(overlap_str) // TRIM(mpc_str)// '.nc' 
+                  '_cot-thv-' // TRIM(thv_int) // '.nc' 
 
     END SUBROUTINE CREATE_NC_FILENAME
 
