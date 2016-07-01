@@ -846,7 +846,7 @@ END
 PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
                    CHARSIZE=cs, XTITLE=xtitle, YMAX=ymax, $
                    LEGEND_POSITION=lp, RATIO=ratio, BIN_BORDERS=xtickname,$
-                   COMPARE=compare
+                   COMPARE=compare, FILE=file
 ;-----------------------------------------------------------------------------
     IF NOT KEYWORD_SET(ymax) THEN ymax = 40
     IF NOT KEYWORD_SET(lp) THEN lp='tl'
@@ -905,26 +905,26 @@ PRO CREATE_1DHIST, RESULT=res, VARNAME=vn, VARSTRING=vs, $
     bild = get_1d_rel_hist_from_1d_hist( bild_all, 'hist1d_'+dname, $
                 algo='era-i', land=land, sea=sea, arctic=arctic, $
                 antarctic=antarctic, ytitle = ytitle, hist_name=data_name, $
-                found=found1)
+                found=found1, file=file)
 
     bild1 = get_1d_rel_hist_from_1d_hist( bild_liq, $
                 'hist1d_'+dname+'_liq', algo='era-i', $
                 land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                 ytitle = ytitle, hist_name=data_name, $
-                found=found1)
+                found=found1, file=file)
 
     bild2 = get_1d_rel_hist_from_1d_hist( bild_ice, $
                 'hist1d_'+dname+'_ice', algo='era-i', $
                 land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                 ytitle = ytitle, hist_name=data_name, $
-                found=found1)
+                found=found1, file=file)
 
     IF KEYWORD_SET(ratio) THEN BEGIN
         bild3 = get_1d_rel_hist_from_1d_hist( res, $
                 'hist1d_'+dname+'_ratio', algo='era-i', $
                 land=land, sea=sea, arctic=arctic, antarctic=antarctic,$ 
                 ytitle = ytitle, hist_name=data_name, $
-                found=found1)
+                found=found1, file=file)
     ENDIF
 
     IF ~KEYWORD_SET(xtitle) THEN xtit = data_name ELSE xtit = xtitle
@@ -995,8 +995,10 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
     outfile = save_dir + base + '_' + opt + varname 
     IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
     
-    READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+varname
+    ;READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+varname
     READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+varname+'_bin_border'
+    READ_NCDF, file, opt+varname, verbose = verbose, found = found, algoname = 'era-i', set_fillvalue = set_fillvalue , $	;input 
+	h1d, fillvalue, minvalue, maxvalue, longname, unit, raw=raw, attribute = attribute, var_dim_names = var_dim_names	;output
     
     save_as = outfile + '.eps'
     start_save, save_as, size=[35,20]
@@ -1006,7 +1008,7 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
     CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
         VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
         YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
-        BIN_BORDERS=bin
+        BIN_BORDERS=bin, FILE=file
     
     end_save, save_as
     
@@ -1045,7 +1047,7 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
             CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
                 VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
                 YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
-                BIN_BORDERS=bin, COMPARE=compare
+                BIN_BORDERS=bin, COMPARE=compare, FILE=file
     
             end_save, save_as
         ENDFOR
