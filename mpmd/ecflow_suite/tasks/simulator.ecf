@@ -17,8 +17,8 @@ echo "Call Fortran executable: %PROG%"
     %OUTPUT%/%CRUN%/%SY% \
     %SY% %EY% %SM% %EM% %SD% %ED%
 
-#ERA_PATH=%INPUT%/%YYYYMM%
-#echo "Remove all nc-files in ${ERA_PATH}"
-#rm -f ${ERA_PATH}/*.nc
+ERA_PATH=%INPUT%/%YYYYMM%
+echo "Remove all nc-files in ${ERA_PATH}"
+rm -f ${ERA_PATH}/*.nc
 
 %include <tail.h>
