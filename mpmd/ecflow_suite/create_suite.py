@@ -69,7 +69,6 @@ def set_vars(suite):
     suite.add_variable("INPUT", input)
     suite.add_variable("OUTPUT", output)
     suite.add_variable("PROG", prog)
-    suite.add_variable("CALL_STOREDATA", storedata)
 
 
 def add_trigger(node, trigger):
@@ -217,13 +216,17 @@ def build_suite():
         start_date = yearstr + monthstr + first_day 
         end_date   = yearstr + monthstr + str(last_day)
 
+        if args.ignore_months:
+            if int(monthstr) in args.ignore_months:
+                continue
+
         try:
             # dearchiving family
             fam_year_dearch = add_fam( fam_dearch, yearstr )
 
             # processing family
             fam_year_proc = add_fam( fam_proc, yearstr )
-            add_trigger( fam_year_proc, fam_year_dearch )
+            #add_trigger( fam_year_proc, fam_year_dearch )
 
             # archiving family
             fam_year_arch = add_fam( fam_arch, yearstr )
@@ -252,6 +255,7 @@ def build_suite():
         fam_month_proc.add_variable( "SD", first_day )
         fam_month_proc.add_variable( "ED", last_day )
         add_mpmd_tasks( fam_month_proc )
+        add_trigger( fam_month_proc, fam_month_dearch )
 
 
     # ============================
@@ -306,6 +310,8 @@ if __name__ == '__main__':
                         help='start date, e.g. 20090101')
     parser.add_argument('--edate', type=str2date, required=True, 
                         help='end date, e.g. 20091231')
+    parser.add_argument('--ignore_months', type=int, nargs='*', 
+                        help='e.g. 1 2 5 7 11 12')
 
     args = parser.parse_args()
 
@@ -313,6 +319,7 @@ if __name__ == '__main__':
     logger.info("Script     : %s" % sys.argv[0])
     logger.info("start date : %s" % args.sdate)
     logger.info("end date   : %s" % args.edate)
+    logger.info("ign. months: %s" % args.ignore_months)
     logger.info("Creating suite definition %s" % mysuite)
     logger.info("\n")
 
