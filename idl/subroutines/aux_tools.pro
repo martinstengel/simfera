@@ -1328,3 +1328,192 @@ PRO PLOT_SIM_COMPARE_JCH, file, vname, time, save_dir, base, $
 END
 
 
+;-----------------------------------------------------------------------------
+PRO PLOT_PROFILES, file, varname, save_dir
+;-----------------------------------------------------------------------------
+
+    fbase = FSC_Base_Filename(file)
+    save_as = save_dir  + fbase + '_' + varname + '.eps'
+
+    READ_SIM_NCDF, p, FILE=file, VAR_NAME='pressure_profile', GLOB_ATTR=globs
+    READ_SIM_NCDF, v, FILE=file, VAR_NAME = varname
+
+    pressure = REVERSE(p)
+    data = REVERSE(v)
+
+    ;** Structure <402ee08>, 11 tags, length=176, data length=176, refs=1:
+    ;LON             STRING    '      71.5000'
+    ;LAT             STRING    '      26.0000'
+    ;SZA             STRING    '      17.9144'
+    ;COT_THV         STRING    '     0.150000'
+    ;SCOPS           STRING    'dwd_scops'
+    ;OVERLAP         STRING    'overlap_maxrand'
+    ;MPC             STRING    'mixed_phase'
+    ;START_DATE      STRING    '20080701'
+    ;END_DATE        STRING    '20080701'
+    ;HOUR            STRING    '       6'
+    ;FILENAME        STRING    'ERA_Interim_an_20080701_0600+00_mlev.nc'
+
+    lonstr = STRTRIM(STRING(globs.lon, FORMAT='(F6.2)'),2)
+    latstr = STRTRIM(STRING(globs.lat, FORMAT='(F6.2)'),2)
+    szastr = STRTRIM(STRING(globs.sza, FORMAT='(F6.2)'),2)
+    pixel = 'Grid Box: Longitude = '+lonstr+$
+            '  Latitude = '+latstr+$
+            '  Solar Zenith Angle = '+szastr
+
+    !P.MULTI=[0,1,1]
+
+    position = [0.13, 0.13, 0.95, 0.9]
+    chars = 2.7
+    syms = 2.0
+    yrange = [1000., 100.]
+    ytickv = [1000., 800., 600., 400., 200., 100.]
+    yticks = N_ELEMENTS(ytickv) - 1
+    yminor = 2
+
+    start_save, save_as, size='A4', /LANDSCAPE
+
+    ; plot profile
+    CASE varname OF
+        'cfc_profile': xtitle = 'Cloud Fraction'
+        'cot_profile': xtitle = 'Cloud Optical Thickness'
+        'cwp_profile': xtitle = 'Cloud Water Path [kg/m!U2!N]'
+        'cer_profile': xtitle = 'Cloud Effective Radius [micron]'
+        ELSE: BEGIN
+            print, " --- ", varname, " is not defined! "
+            stop
+            END
+    ENDCASE
+
+    PLOT, [0,0], [1,1], YRANGE=yrange, /YLOG, POSITION=position, $
+        YTICKV=ytickv, YTICKS=yticks, YMINOR=yminor, $
+        XRANGE=[MIN(data), MAX(data)], $
+        YTITLE='Pressure Level [hPa]', CHARS=chars, $
+        COLOR=cgcolor('black'), XTITLE=xtitle
+
+    OPLOT, data, pressure, psym=-1, symsize=syms, $
+        COLOR=cgcolor('Blue'), THICK=5
+
+    IF ( varname EQ 'cfc_profile' ) THEN BEGIN 
+        cgText, 0.55, 0.94, pixel, ALIGNMENT=0.52, /NORMAL, $ 
+            COLOR=cgcolor('RED6'), CHARSIZE=chars
+    ENDIF
+
+    end_save, save_as
+
+    !P.MULTI = 0
+
+END
+
+;-----------------------------------------------------------------------------
+PRO PLOT_MATRICES, file, varname, save_dir
+;-----------------------------------------------------------------------------
+
+    fbase = FSC_Base_Filename(file)
+    save_as = save_dir  + fbase + '_' + varname + '.eps'
+
+    READ_SIM_NCDF, pressure, FILE=file, VAR_NAME='pressure_profile', GLOB_ATTR=globs
+    READ_SIM_NCDF, var, FILE=file, VAR_NAME = varname 
+
+    data = ROTATE(var,7)
+    dims = SIZE(var)
+    cols = dims[1]
+    levs = dims[2]
+
+    ;** Structure <402ee08>, 11 tags, length=176, data length=176, refs=1:
+    ;LON             STRING    '      71.5000'
+    ;LAT             STRING    '      26.0000'
+    ;SZA             STRING    '      17.9144'
+    ;COT_THV         STRING    '     0.150000'
+    ;SCOPS           STRING    'dwd_scops'
+    ;OVERLAP         STRING    'overlap_maxrand'
+    ;MPC             STRING    'mixed_phase'
+    ;START_DATE      STRING    '20080701'
+    ;END_DATE        STRING    '20080701'
+    ;HOUR            STRING    '       6'
+    ;FILENAME        STRING    'ERA_Interim_an_20080701_0600+00_mlev.nc'
+
+    lonstr = STRTRIM(STRING(globs.lon, FORMAT='(F6.2)'),2)
+    latstr = STRTRIM(STRING(globs.lat, FORMAT='(F6.2)'),2)
+    szastr = STRTRIM(STRING(globs.sza, FORMAT='(F6.2)'),2)
+    pixel = 'Grid Box: Longitude = '+lonstr+$
+            '  Latitude = '+latstr+$
+            '  Solar Zenith Angle = '+szastr
+
+    !P.MULTI=[0,1,1]
+
+    chars = 2.5
+    syms = 2.0
+
+    start_save, save_as, size='A4', /LANDSCAPE
+
+    bar_nlev = 6
+    col_table = 2
+    void = WHERE(data LE 0.)
+    bar_format = '(f5.1)'
+    flag = 0
+
+    CASE varname OF
+        'cfc_matrix': BEGIN
+            title = pixel
+            col_table = -10 
+            bar_title = 'Cloud Fraction'
+            void = WHERE(data LT 0.)
+            flag = 1
+            END
+        'cph_matrix': BEGIN
+            bar_title = 'Cloud Phase'
+            void = WHERE(data LT 0.)
+            END
+        'cot_matrix': BEGIN
+            bar_title = 'Cloud Optical Thickness'
+            END
+        'cwp_matrix': BEGIN
+            bar_title = 'Cloud Water Path [kg/m!U2!N]'
+            bar_format = '(f5.2)'
+            END
+        'cer_matrix': bar_title = 'Cloud Effective Radius [microns]'
+        ELSE: BEGIN
+            print, " --- ", varname, " is not defined! "
+            stop
+            END
+    ENDCASE
+
+    inter = 5
+    ytick = REVERSE(pressure)
+    ytstr = FLTARR(levs/inter +1)
+    j = 0
+    FOR i=0, N_ELEMENTS(ytick)-1 DO BEGIN
+        ;IF ((i MOD 10) EQ 0) THEN BEGIN
+        IF ((i MOD inter) EQ 0) THEN BEGIN
+            ytstr[j] = ytick[i] & j++
+        ENDIF ELSE BEGIN 
+            CONTINUE
+        ENDELSE
+    ENDFOR
+
+    yminor = 2
+    ytickname = STRCOMPRESS(STRING(ytstr,FORMAT='(F8.1)'),/rem)
+
+    view2d, data, POSITION=[0., 0., 0.93, 0.95], $
+        YMINOR=yminor, $
+        ytickname=ytickname, yticks=N_ELEMENTS(ytickname)-1, $
+        COL_TABLE=col_table, /COLOR, CHARS=chars, $
+        BAR_TITLE=bar_title, XTITLE='Subcolumn', $
+        YTITLE='Pressure Level [hPa]', NO_DATA_IDX=cfc_void, $
+        BAR_NLEV=bar_nlev, BAR_FORMAT=bar_format, YSTYLE=8
+
+    AXIS, YAXIS=1, YRANGE=[levs,0], $
+        YMINOR=10, YTICKS=levs/10, $
+        YTITLE='Model Level', CHARS=chars
+
+    IF ( flag EQ 1 ) THEN BEGIN 
+        cgText, 0.55, 0.95, pixel, ALIGNMENT=0.5, /NORMAL, $ 
+            COLOR=cgcolor('RED6'), CHARSIZE=chars
+    ENDIF
+
+    end_save, save_as
+
+    !P.MULTI = 0
+
+END
