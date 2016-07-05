@@ -226,7 +226,7 @@ def build_suite():
 
             # processing family
             fam_year_proc = add_fam( fam_proc, yearstr )
-            #add_trigger( fam_year_proc, fam_year_dearch )
+            add_trigger( fam_year_proc, fam_year_dearch )
 
             # archiving family
             fam_year_arch = add_fam( fam_arch, yearstr )
@@ -255,7 +255,7 @@ def build_suite():
         fam_month_proc.add_variable( "SD", first_day )
         fam_month_proc.add_variable( "ED", last_day )
         add_mpmd_tasks( fam_month_proc )
-        add_trigger( fam_month_proc, fam_month_dearch )
+        #add_trigger( fam_month_proc, fam_month_dearch )
 
 
     # ============================
