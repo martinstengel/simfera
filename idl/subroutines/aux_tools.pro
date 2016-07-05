@@ -1517,3 +1517,55 @@ PRO PLOT_MATRICES, file, varname, save_dir
     !P.MULTI = 0
 
 END
+
+;-----------------------------------------------------------------------------
+PRO PLOT_ARRAYS, file, save_dir
+;-----------------------------------------------------------------------------
+
+    fbase = FSC_Base_Filename(file)
+    save_as = save_dir  + fbase + '_retrieved.eps'
+
+    READ_SIM_NCDF, pressure, FILE=file, VAR_NAME='pressure_profile', GLOB_ATTR=globs
+    READ_SIM_NCDF, cfc, FILE=file, VAR_NAME='cfc_array'
+    READ_SIM_NCDF, cph, FILE=file, VAR_NAME='cph_array'
+    READ_SIM_NCDF, cth, FILE=file, VAR_NAME='cth_array'
+    READ_SIM_NCDF, ctp, FILE=file, VAR_NAME='ctp_array'
+    READ_SIM_NCDF, ctt, FILE=file, VAR_NAME='ctt_array'
+    READ_SIM_NCDF, cer, FILE=file, VAR_NAME='cer_array'
+    READ_SIM_NCDF, cot, FILE=file, VAR_NAME='cot_array'
+    READ_SIM_NCDF, cwp, FILE=file, VAR_NAME='cwp_array'
+
+    lonstr = STRTRIM(STRING(globs.lon, FORMAT='(F6.2)'),2)
+    latstr = STRTRIM(STRING(globs.lat, FORMAT='(F6.2)'),2)
+    szastr = STRTRIM(STRING(globs.sza, FORMAT='(F6.2)'),2)
+    pixel = 'Grid Box: Longitude = '+lonstr+$
+            '  Latitude = '+latstr+$
+            '  Solar Zenith Angle = '+szastr
+
+    dims = SIZE(cfc)
+    cols = dims[1]
+
+    !P.MULTI=[0,4,2]
+
+    start_save, save_as, size=[45,30]
+
+    xaxis = FINDGEN(cols)
+    xt = 'Subcolumn'
+
+    ADD_SUBPLOT, xaxis, cfc, -0.5, 1.5, ytitle='CFC', xtitle=xt
+    ADD_SUBPLOT, xaxis, ctp, 1000, -100, ytitle='CTP [hPa]', xtitle=xt
+    ADD_SUBPLOT, xaxis, ctt, -15, 350, ytitle='CTT [K]', xtitle=xt
+    ADD_SUBPLOT, xaxis, cth, -2.0, 15, ytitle='CTH [km]', xtitle=xt
+    ADD_SUBPLOT, xaxis, cph, -1.2, 1.2, ytitle='CPH', xtitle=xt
+    ADD_SUBPLOT, xaxis, cer, -10, 100., ytitle='CER [microns]', xtitle=xt
+    ADD_SUBPLOT, xaxis, cot, -10, 110, ytitle='COT', xtitle=xt
+    ADD_SUBPLOT, xaxis, cwp, -1.2, 1.2, ytitle='CWP [kg/m!U2!N]', xtitle=xt
+
+    cgText, 0.5, 0.485, pixel, ALIGNMENT=0.5, /NORMAL, $
+        COLOR=cgcolor('RED6'), CHARSIZE=2.8
+
+    end_save, save_as
+
+    !P.MULTI = 0
+
+END

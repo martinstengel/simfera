@@ -90,20 +90,16 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
 
         IF KEYWORD_SET(snapshot) THEN BEGIN
 
+            PLOT_ARRAYS, file, !SAVE_DIR
             PLOT_PROFILES, file, 'cfc_profile', !SAVE_DIR
             PLOT_MATRICES, file, 'cfc_matrix', !SAVE_DIR
-
             PLOT_PROFILES, file, 'cot_profile', !SAVE_DIR
             PLOT_MATRICES, file, 'cot_matrix', !SAVE_DIR
-
             PLOT_PROFILES, file, 'cwp_profile', !SAVE_DIR
             PLOT_MATRICES, file, 'cwp_matrix', !SAVE_DIR
-
             PLOT_PROFILES, file, 'cer_profile', !SAVE_DIR
             PLOT_MATRICES, file, 'cer_matrix', !SAVE_DIR
-
             PLOT_MATRICES, file, 'cph_matrix', !SAVE_DIR
-            ;PLOT_ARRAYS
 
         ENDIF ELSE BEGIN
 

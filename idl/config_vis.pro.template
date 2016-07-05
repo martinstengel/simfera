@@ -4,7 +4,11 @@ PRO CONFIG_VIS, settings, FILE=file, VARS=vars, REFS=refs, $
 ;------------------------------------------------------------------------------
 
     ; subfolder of file location
-    run = 'v5.7_fortran/'
+    ;run = '2_results_basedon_mlev/time_series/v1.1_DWDscops_MaxRand_MixedPase/2008/'
+    ;run = '2_results_basedon_mlev/snapshots/case0.0/'
+    run = '2_results_basedon_mlev/snapshots/case0.1/'
+    ;run = '2_results_basedon_mlev/snapshots/case1.0/'
+
     ; input
     inp = '/cmsaf/cmsaf-cld7/cschlund/output/simulator/' + run
     ; figure output
@@ -13,6 +17,7 @@ PRO CONFIG_VIS, settings, FILE=file, VARS=vars, REFS=refs, $
     rep = '/home/cschlund/Programme/idl/cloud_simulator/idl/subtools/'
     ; eps2png bash script
     eps = rep + 'eps2png.sh '
+
     ; latest CC4CL outputs
     IF ~KEYWORD_SET(cciold) THEN $
         cci = '/cmsaf/cmsaf-cld7/cschlund/input/vali_gui/' ELSE cci = ''
