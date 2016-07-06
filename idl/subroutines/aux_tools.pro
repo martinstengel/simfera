@@ -1500,7 +1500,7 @@ PRO PLOT_MATRICES, file, varname, save_dir
         ytickname=ytickname, yticks=N_ELEMENTS(ytickname)-1, $
         COL_TABLE=col_table, /COLOR, CHARS=chars, $
         BAR_TITLE=bar_title, XTITLE='Subcolumn', $
-        YTITLE='Pressure Level [hPa]', NO_DATA_IDX=cfc_void, $
+        YTITLE='Pressure Level [hPa]', NO_DATA_IDX=void, $
         BAR_NLEV=bar_nlev, BAR_FORMAT=bar_format, YSTYLE=8
 
     AXIS, YAXIS=1, YRANGE=[levs,0], $
