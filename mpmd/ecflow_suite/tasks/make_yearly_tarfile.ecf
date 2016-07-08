@@ -1,0 +1,34 @@
+%include <pbs_make_tarfile_serial.h>
+%include <head.h>
+%include <myexport.h>
+
+SIM_PATH=%OUTPUT%/%CRUN%/%YEAR%
+
+echo "I am task %TASK% in family %FAMILY% responsible for creating yearly tarballs considering the simulator results in ${SIM_PATH}"
+
+# ERA_Interim_MM198212_cot-thv-0.00.nc <- THV=0.001
+# ERA_Interim_MM198212_cot-thv-0.15.nc <- THV=0.15
+thv_cut=`exec echo %THV% | cut -c 1-4`
+
+# tarfilename and target path
+TARFILE="%TAR_PREFIX%_MM%YEAR%_T%THV%_S%SCOPS%_O%OVERLAP%_M%MPC%.%TAR_SUFFIX%"
+SOURCE="%OUTPUT%/%CRUN%/%YEAR%/ERA_Interim_MM%YEAR%*_cot-thv-${thv_cut}.nc"
+
+# for downloading via ectrans or uploading to ECFS
+BAS_FOLDER="/scratch/ms/de/sf7/cschlund/tmp/simulator_tarfiles"
+TMP_FOLDER="${BAS_FOLDER}/tmp_%YEAR%_%THV%"
+FIN_FOLDER="${BAS_FOLDER}/%CRUN%"
+mkdir -p ${FIN_FOLDER}
+mkdir -p ${TMP_FOLDER}
+
+# copy files to tmp folder for creating final tarfile
+cp -f ${SOURCE} ${TMP_FOLDER}
+cd ${TMP_FOLDER}
+tar czvf ${TARFILE} *.nc
+
+# move to final location and remove nc-files
+mv ${TARFILE} ${FIN_FOLDER}
+cd ${BAS_FOLDER}
+rm -r ${TMP_FOLDER}
+
+%include <tail.h>

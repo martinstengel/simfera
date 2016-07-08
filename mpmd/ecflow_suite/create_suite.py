@@ -102,8 +102,12 @@ def add_dearchiving_task(family):
     family.add_task('get_era_data')
 
 
+def add_make_tarfile_task(family):
+    family.add_task('make_yearly_tarfile')
+
+
 def add_archiving_task(family):
-    family.add_task('put_sim_data')
+    family.add_task('store_sim_data')
 
 
 def add_mpmd_tasks(family):
@@ -189,16 +193,19 @@ def build_suite():
 
     fam_dearch = suite.add_family( 'dearchiving' )
     fam_proc = suite.add_family( 'processing' )
+    fam_make = suite.add_family( 'make_tarfile' )
     fam_arch = suite.add_family( 'archiving' )
 
     # Activate thread limits
     fam_dearch.add_inlimit( 'serial_threads' )
     fam_proc.add_inlimit( 'mpmd_threads' )
+    fam_make.add_inlimit( 'serial_threads' )
     fam_arch.add_inlimit( 'serial_threads' )
 
     # Define job commands
     fam_dearch.add_variable( 'ECF_JOB_CMD', serial_job_cmd )
     fam_proc.add_variable( 'ECF_JOB_CMD', mpmd_job_cmd )
+    fam_make.add_variable( 'ECF_JOB_CMD', serial_job_cmd )
     fam_arch.add_variable( 'ECF_JOB_CMD', serial_job_cmd )
 
     # ===============================
@@ -228,11 +235,11 @@ def build_suite():
             fam_year_proc = add_fam( fam_proc, yearstr )
             add_trigger( fam_year_proc, fam_year_dearch )
 
-            # archiving family
-            fam_year_arch = add_fam( fam_arch, yearstr )
-            fam_year_arch.add_variable( "YEAR", yearstr )
-            add_archiving_task( fam_year_arch )
-            add_trigger( fam_year_arch, fam_year_proc )
+            # make yearly tarfile family
+            fam_year_make = add_fam( fam_make, yearstr )
+            fam_year_make.add_variable( "YEAR", yearstr )
+            add_make_tarfile_task( fam_year_make )
+            add_trigger( fam_year_make, fam_year_proc )
 
         except RuntimeError:
             pass
@@ -255,7 +262,11 @@ def build_suite():
         fam_month_proc.add_variable( "SD", first_day )
         fam_month_proc.add_variable( "ED", last_day )
         add_mpmd_tasks( fam_month_proc )
-        #add_trigger( fam_month_proc, fam_month_dearch )
+
+
+    # create 1 tarball containing time series tarfiles
+    add_archiving_task( fam_arch )
+    add_trigger( fam_arch, fam_make )
 
 
     # ============================
