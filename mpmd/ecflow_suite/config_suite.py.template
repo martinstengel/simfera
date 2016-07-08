@@ -22,24 +22,32 @@ itype = "SIMULATOR"
 mysuite = "CLOUD_SIMULATOR"
 
 # mpmd_threads_number must be >= $LENGTH defined in config.sh
-mpmd_threads_number = 2
-serial_threads_number = 1
+mpmd_threads_number = 12
+# get_era_data from MARS archive
+serial_threads_number = 2
 
 # cloud optical thickness threshold for upper-most cloud detection
-thv = "0.3"
+#thv = "0.15"
+thv = "0.001"
 
+# only in combination with dwd_scops!
 # 1=no mixed phase clouds, only separate liquid & ice clouds
 # 2=all clouds are mixed phase clouds if both water/ice contents exists
 mpc = "2"
 
-# 1=random, 2=max/random
-scops = "2"
+# 1=max, 2=random, 3=max/random
+overlap = "3"
+
+# 1=dwd_scops, 2=cosp_scops
+scops = "1"
 
 # final output directory for netCDF files under "output"
-crun = "v6.0_ecflow"
+crun = "v1.1_DWDscops_MaxRand_MixedPase"
 
 # store final output in ECFS archive
 ecfs_path = "ec:/sf7/cloud_simulator"
+tar_prefix = "ERA_Interim"
+tar_suffix = "tgz"
 
 # -------------------------------------------------------
 # -- modify below if you know what you are doing!
@@ -53,7 +61,7 @@ scratch_base = os.path.join(scratch, itype, repository)
 # -- cca:
 input = os.path.join(scratch_base, "input")
 output = os.path.join(scratch_base, "output")
-prog = os.path.join(perm_base, "fortran", "cloud_simulator")
+prog = os.path.join(perm_base, "fortran", "cloud_simulator.x")
 sstfile = os.path.join(perm_base, "aux", "sst_era_interim_0.5_0.5.nc")
 
 # -- pycmsaf software
