@@ -28,7 +28,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
                    ALL=all, ZONAL=zonal, COMPARE=compare, JCH=jch, $
                    HIST1D=hist1d, MAP=map, REFS=refs, SAT=sat, $
                    CCIOLD=cciold, VARS=vars, RATIO=ratio, NOPNG=nopng, $
-                   HELP=help
+                   SNAPSHOT=snapshot, HELP=help
 ;******************************************************************************
     STT = SYSTIME(1)
 
@@ -49,6 +49,7 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
         PRINT, " USAGE: "
         PRINT, " VIS_SIMULATOR, /all, pattern='*200807_*nc', ",$
                                "ref='cci,gac2,mod2,myd2,pmx', /nopng "
+        PRINT, " VIS_SIMULATOR, /snapshot, pattern='*thv-0.15*snapshot*' "
         PRINT, " VIS_SIMULATOR, /map"
         PRINT, " VIS_SIMULATOR, /jch, refs='cci', sat='NOAA18' "
         PRINT, " VIS_SIMULATOR, /map, file='/path/to/file.nc'"
@@ -87,66 +88,82 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, FILE=file, PATTERN=pattern, $
         file = cfg.FILES[f]
         PRINT, "** Working on: ", file
 
-        FOR i=0, N_ELEMENTS(vars)-1 DO BEGIN ; loop over variables
+        IF KEYWORD_SET(snapshot) THEN BEGIN
 
-            ; read simulator output file
-            READ_SIM_NCDF, data, FILE=file, VAR_NAME=vars[i], $ 
-                GLOB_ATTR=gatt, VAR_ATTR=vatt
+            PLOT_ARRAYS, file, !SAVE_DIR
+            PLOT_PROFILES, file, 'cfc_profile', !SAVE_DIR
+            PLOT_MATRICES, file, 'cfc_matrix', !SAVE_DIR
+            PLOT_PROFILES, file, 'cot_profile', !SAVE_DIR
+            PLOT_MATRICES, file, 'cot_matrix', !SAVE_DIR
+            PLOT_PROFILES, file, 'cwp_profile', !SAVE_DIR
+            PLOT_MATRICES, file, 'cwp_matrix', !SAVE_DIR
+            PLOT_PROFILES, file, 'cer_profile', !SAVE_DIR
+            PLOT_MATRICES, file, 'cer_matrix', !SAVE_DIR
+            PLOT_MATRICES, file, 'cph_matrix', !SAVE_DIR
 
-            source    = STRTRIM(STRING(gatt.SOURCE),2)
-            time      = STRTRIM(STRING(gatt.TIME_COVERAGE_START),2)
-            cot_thv   = STRTRIM(STRING(gatt.COT_THV,FORMAT='(F4.2)'),2)
-            nfiles    = STRTRIM(STRING(gatt.NUMBER_OF_FILES),2)
-            ;scops     = STRTRIM(STRING(gatt.SCOPS_TYPE),2)
-            scops     = STRTRIM(STRING(gatt.SCOPS),2)
-            long_name = STRTRIM(STRING(vatt.LONG_NAME),2)
-            units     = ' ['+STRTRIM(STRING(vatt.UNITS),2)+']'
-            fillvalue = vatt._FILLVALUE
+        ENDIF ELSE BEGIN
 
-            base = FSC_Base_Filename(file)
-            xtitle = long_name + units
-            figure_title = source + ' (source) for ' + time
+            FOR i=0, N_ELEMENTS(vars)-1 DO BEGIN ; loop over variables
 
-            mini = cfg.MINI_MAXI[0,i]
-            maxi = cfg.MINI_MAXI[1,i]
+                ; read simulator output file
+                READ_SIM_NCDF, data, FILE=file, VAR_NAME=vars[i], $ 
+                    GLOB_ATTR=gatt, VAR_ATTR=vatt
 
-            IF KEYWORD_SET(verbose) THEN BEGIN
-                PRINT, '** Loaded variable: ', xtitle
-                HELP, gatt
-                HELP, vatt
-            ENDIF
+                source    = STRTRIM(STRING(gatt.SOURCE),2)
+                time      = STRTRIM(STRING(gatt.TIME_COVERAGE_START),2)
+                cot_thv   = STRTRIM(STRING(gatt.COT_THV,FORMAT='(F4.2)'),2)
+                nfiles    = STRTRIM(STRING(gatt.NUMBER_OF_FILES),2)
+                ;scops     = STRTRIM(STRING(gatt.SCOPS_TYPE),2)
+                scops     = STRTRIM(STRING(gatt.SCOPS),2)
+                long_name = STRTRIM(STRING(vatt.LONG_NAME),2)
+                units     = ' ['+STRTRIM(STRING(vatt.UNITS),2)+']'
+                fillvalue = vatt._FILLVALUE
 
+                base = FSC_Base_Filename(file)
+                xtitle = long_name + units
+                figure_title = source + ' (source) for ' + time
 
-            IF KEYWORD_SET(hist1d) OR KEYWORD_SET(all) THEN $
-                PLOT_SIM_HIST, file, vars[i], !SAVE_DIR, base, xtitle, $
-                               units, time, cfg.CCI_PWD, $
-                               SAT=sat, REFS=refs, RATIO=ratio
+                mini = cfg.MINI_MAXI[0,i]
+                maxi = cfg.MINI_MAXI[1,i]
 
-
-            IF KEYWORD_SET(map) OR KEYWORD_SET(all) THEN $ 
-                PLOT_SIM_MAPS, file, vars[i], !SAVE_DIR, data, fillvalue, $
-                               mini, maxi, base, figure_title, xtitle
-
-
-            IF KEYWORD_SET(compare) OR KEYWORD_SET(all) THEN $
-                PLOT_SIM_COMPARE_WITH, file, refs, vars[i], !SAVE_DIR, $
-                                       time, mini, maxi, cfg.CCI_PWD, $
-                                       SAT=sat
+                IF KEYWORD_SET(verbose) THEN BEGIN
+                    PRINT, '** Loaded variable: ', xtitle
+                    HELP, gatt
+                    HELP, vatt
+                ENDIF
 
 
-            IF KEYWORD_SET(zonal) OR KEYWORD_SET(all) THEN BEGIN
-                PLOT_SIM_COMPARE_ZONAL, file, vars[i], time, !SAVE_DIR, base,$
-                                        mini, maxi, cfg.CCI_PWD, $
-                                        REFS=refs, SAT=sat
-            ENDIF
-
-            IF KEYWORD_SET(jch) OR KEYWORD_SET(all) THEN $
-                PLOT_SIM_COMPARE_JCH, file, vars[i], time, !SAVE_DIR, base, $
-                                      mini, maxi, fillvalue, cfg.CCI_PWD, $
-                                      REFS=refs, SAT=sat
+                IF KEYWORD_SET(hist1d) OR KEYWORD_SET(all) THEN $
+                    PLOT_SIM_HIST, file, vars[i], !SAVE_DIR, base, xtitle, $
+                                   units, time, cfg.CCI_PWD, $
+                                   SAT=sat, REFS=refs, RATIO=ratio
 
 
-        ENDFOR ; loop over variables
+                IF KEYWORD_SET(map) OR KEYWORD_SET(all) THEN $ 
+                    PLOT_SIM_MAPS, file, vars[i], !SAVE_DIR, data, fillvalue, $
+                                   mini, maxi, base, figure_title, xtitle
+
+
+                IF KEYWORD_SET(compare) OR KEYWORD_SET(all) THEN $
+                    PLOT_SIM_COMPARE_WITH, file, refs, vars[i], !SAVE_DIR, $
+                                           time, mini, maxi, cfg.CCI_PWD, $
+                                           SAT=sat
+
+
+                IF KEYWORD_SET(zonal) OR KEYWORD_SET(all) THEN BEGIN
+                    PLOT_SIM_COMPARE_ZONAL, file, vars[i], time, !SAVE_DIR, base,$
+                                            mini, maxi, cfg.CCI_PWD, $
+                                            REFS=refs, SAT=sat
+                ENDIF
+
+                IF KEYWORD_SET(jch) OR KEYWORD_SET(all) THEN $
+                    PLOT_SIM_COMPARE_JCH, file, vars[i], time, !SAVE_DIR, base, $
+                                          mini, maxi, fillvalue, cfg.CCI_PWD, $
+                                          REFS=refs, SAT=sat
+
+
+            ENDFOR ; loop over variables
+        ENDELSE ; if snapshot or simulator results
     ENDFOR ;loop over files
 
     IF ~KEYWORD_SET(nopng) THEN SPAWN, cfg.EPS2PNG + !SAVE_DIR
