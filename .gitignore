@@ -7,6 +7,8 @@ fortran/scratch
 idl/config_simulator.pro
 idl/config_vis.pro
 latex/config_doc.tex
+latex/*.bbl
+latex/*.blg
 mpmd/config.sh
 mpmd/ecflow_suite/config_suite.py
 mpmd/ecflow_suite/*.def
