@@ -376,11 +376,13 @@ END
 
 
 ;-----------------------------------------------------------------------------
-PRO ADD_SUBPLOT, xaxis, yaxis, ymin, ymax, xtitle=xtitle, ytitle=ytitle
+PRO ADD_SUBPLOT, xaxis, yaxis, ymin, ymax, xtitle=xtitle, ytitle=ytitle, $
+    title=title, position=position
 ;-----------------------------------------------------------------------------
-    PLOT, xaxis, yaxis, YRANGE=[ymin,ymax], CHARSIZE=4.8, $
+    PLOT, xaxis, yaxis, YRANGE=[ymin,ymax], CHARSIZE=4.5, $
         XRANGE=[xaxis[0]-1, xaxis[N_ELEMENTS(xaxis)-1]+1],$
         COLOR=cgcolor('black'), YTITLE=ytitle, XTITLE=xtitle, $
+        TITLE=title, POSITION=position, $
         /NODATA, /XSTYLE, /YSTYLE;, XTICKINTERVAL=3, XMINOR=3
     OPLOT, yaxis, COLOR=cgcolor('Blue'), SYMSIZE=2.3, PSYM=cgsymcat(46)
 END
@@ -1535,6 +1537,32 @@ PRO PLOT_ARRAYS, file, save_dir
     READ_SIM_NCDF, cot, FILE=file, VAR_NAME='cot_array'
     READ_SIM_NCDF, cwp, FILE=file, VAR_NAME='cwp_array'
 
+    cph_tmp = cph
+    cth_tmp = cth
+    ctp_tmp = ctp
+    ctt_tmp = ctt
+    cer_tmp = cer
+    cot_tmp = cot
+    cwp_tmp = cwp
+
+    cfc_avg = MEAN(cfc)
+    ctp_tmp[WHERE(ctp EQ -1.0)] = !VALUES.F_NAN & ctp_avg = MEAN(ctp_tmp, /NAN)
+    ctt_tmp[WHERE(ctt EQ -1.0)] = !VALUES.F_NAN & ctt_avg = MEAN(ctt_tmp, /NAN)
+    cth_tmp[WHERE(cth EQ -1.0)] = !VALUES.F_NAN & cth_avg = MEAN(cth_tmp, /NAN)
+    cph_tmp[WHERE(cph EQ -1.0)] = !VALUES.F_NAN & cph_avg = MEAN(cph_tmp, /NAN)
+    cer_tmp[WHERE(cer EQ -1.0)] = !VALUES.F_NAN & cer_avg = MEAN(cer_tmp, /NAN)
+    cot_tmp[WHERE(cot EQ -1.0)] = !VALUES.F_NAN & cot_avg = MEAN(cot_tmp, /NAN)
+    cwp_tmp[WHERE(cwp EQ -1.0)] = !VALUES.F_NAN & cwp_avg = MEAN(cwp_tmp, /NAN)
+
+    cfc_str = ' AVG = '+strcompress(string(cfc_avg,f='(f10.2)'),/rem)
+    ctp_str = ' AVG = '+strcompress(string(ctp_avg,f='(f10.2)'),/rem)
+    ctt_str = ' AVG = '+strcompress(string(ctt_avg,f='(f10.2)'),/rem)
+    cth_str = ' AVG = '+strcompress(string(cth_avg,f='(f10.2)'),/rem)
+    cph_str = ' AVG = '+strcompress(string(cph_avg,f='(f10.2)'),/rem)
+    cer_str = ' AVG = '+strcompress(string(cer_avg,f='(f10.2)'),/rem)
+    cot_str = ' AVG = '+strcompress(string(cot_avg,f='(f10.2)'),/rem)
+    cwp_str = ' AVG = '+strcompress(string(cwp_avg,f='(f10.2)'),/rem)
+
     lonstr = STRTRIM(STRING(globs.lon, FORMAT='(F6.2)'),2)
     latstr = STRTRIM(STRING(globs.lat, FORMAT='(F6.2)'),2)
     szastr = STRTRIM(STRING(globs.sza, FORMAT='(F6.2)'),2)
@@ -1552,17 +1580,24 @@ PRO PLOT_ARRAYS, file, save_dir
     xaxis = FINDGEN(cols)
     xt = 'Subcolumn'
 
-    ADD_SUBPLOT, xaxis, cfc, -0.5, 1.5, ytitle='CFC', xtitle=xt
-    ADD_SUBPLOT, xaxis, ctp, 1000, -100, ytitle='CTP [hPa]', xtitle=xt
-    ADD_SUBPLOT, xaxis, ctt, -15, 350, ytitle='CTT [K]', xtitle=xt
-    ADD_SUBPLOT, xaxis, cth, -2.0, 15, ytitle='CTH [km]', xtitle=xt
-    ADD_SUBPLOT, xaxis, cph, -1.2, 1.2, ytitle='CPH', xtitle=xt
-    ADD_SUBPLOT, xaxis, cer, -10, 100., ytitle='CER [microns]', xtitle=xt
-    ADD_SUBPLOT, xaxis, cot, -10, 110, ytitle='COT', xtitle=xt
-    ADD_SUBPLOT, xaxis, cwp, -1.2, 1.2, ytitle='CWP [kg/m!U2!N]', xtitle=xt
+    xl = 0.08 & xu = 0.08
+    yl = 0.08 & yu = 0.60
+    w = 0.16 & h = 0.35 & s = 0.08
 
-    cgText, 0.5, 0.485, pixel, ALIGNMENT=0.5, /NORMAL, $
-        COLOR=cgcolor('RED6'), CHARSIZE=2.8
+    ; upper row
+    ADD_SUBPLOT, xaxis, cfc, -0.5, 1.5, position = [xu,yu,xu+w,yu+h], ytitle='CFC', xtitle=xt, title=cfc_str
+    ADD_SUBPLOT, xaxis, ctp, 1000, -100, position = [xu+w+s,yu,xu+2*w+s,yu+h], ytitle='CTP [hPa]', xtitle=xt, title=ctp_str
+    ADD_SUBPLOT, xaxis, ctt, -15, 350, position = [xu+2*w+2*s,yu,xu+3*w+2*s,yu+h], ytitle='CTT [K]', xtitle=xt, title=ctt_str
+    ADD_SUBPLOT, xaxis, cth, -2.0, 15, position = [xu+3*w+3*s,yu,xu+4*w+3*s,yu+h], ytitle='CTH [km]', xtitle=xt, title=cth_str
+
+    ; lower row
+    ADD_SUBPLOT, xaxis, cph, -1.2, 1.2, position = [xl,yl,xl+w,yl+h], ytitle='CPH', xtitle=xt, title=cph_str
+    ADD_SUBPLOT, xaxis, cer, -10, 100., position = [xl+w+s,yl,xl+2*w+s,yl+h], ytitle='CER [microns]', xtitle=xt, title=cer_str
+    ADD_SUBPLOT, xaxis, cot, -10, 110, ytitle='COT', position = [xl+2*w+2*s,yl,xl+3*w+2*s,yl+h], xtitle=xt, title=cot_str
+    ADD_SUBPLOT, xaxis, cwp, -1.2, 1.2, ytitle='CWP [kg/m!U2!N]', position = [xl+3*w+3*s,yl,xl+4*w+3*s,yl+h], xtitle=xt, title=cwp_str
+
+    cgText, 0.5, 0.49, pixel, ALIGNMENT=0.5, /NORMAL, $
+        COLOR=cgcolor('RED6'), CHARSIZE=3
 
     end_save, save_as
 
