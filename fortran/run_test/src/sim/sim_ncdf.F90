@@ -315,29 +315,23 @@ MODULE SIM_NCDF
 
     !==========================================================================
 
-    SUBROUTINE DEFINE_ATTRIBUTES( fid, phase_id, h2ids, h1ids, vids )
+    SUBROUTINE DEFINE_ATTRIBUTES_PHASE( fid, phase_id )
 
         IMPLICIT NONE
-
-        INTEGER,          INTENT(IN) :: fid, phase_id
-        TYPE(hist2d_ids), INTENT(IN) :: h2ids
-        TYPE(hist1d_ids), INTENT(IN) :: h1ids
-        TYPE(mm_ids),     INTENT(IN) :: vids
+        INTEGER, INTENT(IN) :: fid, phase_id
 
         CALL CHECK ( nf90_put_att( fid, phase_id, long, phase_bins_str ) )
         CALL CHECK ( nf90_put_att( fid, phase_id, units, unit_one ) )
 
-        CALL CHECK ( nf90_put_att( fid, h2ids % cot_axis, long, "cot"//axis_str ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % cot_axis, units, unit_one ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % cot_bins, long, "cot"//bins_str ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % cot_bins, units, unit_one ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_axis, long, "ctp"//axis_str ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_axis, units, unit_ctp ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_bins, long, "ctp"//bins_str ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_bins, units, unit_ctp ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % hist, long, jointstr ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % hist, units, unit_one ) )
-        CALL CHECK ( nf90_put_att( fid, h2ids % hist, fill, lint_fill_value ) )
+    END SUBROUTINE DEFINE_ATTRIBUTES_PHASE
+
+    !==========================================================================
+
+    SUBROUTINE DEFINE_ATTRIBUTES_H1D( fid, h1ids )
+
+        IMPLICIT NONE
+        INTEGER,          INTENT(IN) :: fid
+        TYPE(hist1d_ids), INTENT(IN) :: h1ids
 
         CALL CHECK ( nf90_put_att( fid, h1ids % cot_axis, long, "cot"//axis_str ) )
         CALL CHECK ( nf90_put_att( fid, h1ids % cot_axis, units, unit_one ) )
@@ -378,6 +372,39 @@ MODULE SIM_NCDF
         CALL CHECK ( nf90_put_att( fid, h1ids % cwp_hist, long, cwp_hist_str ) )
         CALL CHECK ( nf90_put_att( fid, h1ids % cwp_hist, units, unit_one ) )
         CALL CHECK ( nf90_put_att( fid, h1ids % cwp_hist, fill, lint_fill_value ) )
+
+    END SUBROUTINE DEFINE_ATTRIBUTES_H1D
+
+    !==========================================================================
+
+    SUBROUTINE DEFINE_ATTRIBUTES_H2D( fid, h2ids )
+
+        IMPLICIT NONE
+        INTEGER,          INTENT(IN) :: fid
+        TYPE(hist2d_ids), INTENT(IN) :: h2ids
+
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_axis, long, "cot"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_axis, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_bins, long, "cot"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % cot_bins, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_axis, long, "ctp"//axis_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_axis, units, unit_ctp ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_bins, long, "ctp"//bins_str ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % ctp_bins, units, unit_ctp ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % hist, long, jointstr ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % hist, units, unit_one ) )
+        CALL CHECK ( nf90_put_att( fid, h2ids % hist, fill, lint_fill_value ) )
+
+    END SUBROUTINE DEFINE_ATTRIBUTES_H2D
+
+    !==========================================================================
+
+    SUBROUTINE DEFINE_ATTRIBUTES_VAR( fid, vids )
+
+        IMPLICIT NONE
+
+        INTEGER,          INTENT(IN) :: fid
+        TYPE(mm_ids),     INTENT(IN) :: vids
 
         CALL CHECK ( nf90_put_att( fid, vids % nobs, long, nobs_ctp_str ) )
         CALL CHECK ( nf90_put_att( fid, vids % nobs, units, unit_one ) )
@@ -560,7 +587,7 @@ MODULE SIM_NCDF
         CALL CHECK ( nf90_put_att( fid, vids % iwp_allsky, vmin, 0.0 ) )
         CALL CHECK ( nf90_put_att( fid, vids % iwp_allsky, vmax, 32000.0 ) )
 
-    END SUBROUTINE DEFINE_ATTRIBUTES
+    END SUBROUTINE DEFINE_ATTRIBUTES_VAR
 
     !==========================================================================
 
@@ -676,22 +703,20 @@ MODULE SIM_NCDF
     !==========================================================================
 
     SUBROUTINE DEFINE_COORD_VARS( fid, dim_lon, dim_lat, lon_id, lat_id, &
-                                  phase_id, time_id , lon_dimid, lat_dimid, &
-                                  phase_dimid, time_dimid )
+                                  time_id , lon_dimid, lat_dimid, time_dimid )
 
         IMPLICIT NONE
 
         INTEGER(KIND=lint), INTENT(IN)  :: fid
         INTEGER(KIND=lint), INTENT(IN)  :: dim_lon, dim_lat
         INTEGER(KIND=lint), INTENT(OUT) :: lat_id, lon_id
-        INTEGER(KIND=lint), INTENT(OUT) :: time_id, phase_id
+        INTEGER(KIND=lint), INTENT(OUT) :: time_id
         INTEGER(KIND=lint), INTENT(OUT) :: lat_dimid, lon_dimid
-        INTEGER(KIND=lint), INTENT(OUT) :: time_dimid, phase_dimid
+        INTEGER(KIND=lint), INTENT(OUT) :: time_dimid
         ! local
-        INTEGER(KIND=lint) :: dim_time, dim_phase
+        INTEGER(KIND=lint) :: dim_time
 
         dim_time = 1
-        dim_phase = n_hist_phase
 
         ! define dimensions
         CALL CHECK ( nf90_def_dim( fid, "time", dim_time, time_dimid ) )
@@ -710,8 +735,6 @@ MODULE SIM_NCDF
         ! long_names
         CALL CHECK ( nf90_put_att( fid, lon_id, long, "longitude" ) )
         CALL CHECK ( nf90_put_att( fid, lat_id, long, "latitude" ) )
-
-        CALL DEFINE_VAR( fid, 4, "hist_phase", dim_phase, phase_dimid, phase_id )
 
     END SUBROUTINE DEFINE_COORD_VARS
 
@@ -963,6 +986,7 @@ MODULE SIM_NCDF
         INTEGER(KIND=lint) :: lon_id, lon_dimid
         INTEGER(KIND=lint) :: lat_id, lat_dimid
         INTEGER(KIND=lint) :: phase_id, phase_dimid
+        INTEGER(KIND=lint) :: dim_phase
 
         PRINT*, "** WRITE_MONTHLY_MEAN"
 
@@ -986,10 +1010,13 @@ MODULE SIM_NCDF
         ! global attributes
         CALL DEFINE_GLOBALS( ncid, set, aux, cnt % file_counter )
 
-        ! define phase, time, lon, lat
+        ! define phase
+        dim_phase = n_hist_phase
+        CALL DEFINE_VAR( ncid, 4, "hist_phase", dim_phase, phase_dimid, phase_id )
+        ! define time, lon, lat
         CALL DEFINE_COORD_VARS( ncid, DIM_LON, DIM_LAT, &
-                                lon_id, lat_id, phase_id, time_id, &
-                                lon_dimid, lat_dimid, phase_dimid, time_dimid )
+                                lon_id, lat_id, time_id, &
+                                lon_dimid, lat_dimid, time_dimid )
 
         ! 2d histogram definitions
         CALL DEFINE_HIST2D ( ncid, lon_dimid, lat_dimid, &
@@ -1003,7 +1030,10 @@ MODULE SIM_NCDF
         CALL DEFINE_MM ( ncid, lon_dimid, lat_dimid, time_id, var_ids )
 
         ! define attributes
-        CALL DEFINE_ATTRIBUTES( ncid, phase_id, h2d_ids, h1d_ids, var_ids )
+        CALL DEFINE_ATTRIBUTES_PHASE( ncid, phase_id )
+        CALL DEFINE_ATTRIBUTES_H1D( ncid, h1d_ids )
+        CALL DEFINE_ATTRIBUTES_H2D( ncid, h2d_ids )
+        CALL DEFINE_ATTRIBUTES_VAR( ncid, var_ids )
 
         ! end define mode
         CALL CHECK ( nf90_enddef(ncid) )
@@ -1082,6 +1112,162 @@ MODULE SIM_NCDF
         PRINT*, "   nc-file: ", TRIM(nc_file), " done "
 
     END SUBROUTINE WRITE_MONTHLY_MEAN
+
+    !==========================================================================
+
+    SUBROUTINE WRITE_TEMPS( aux, set, inp, tmp )
+
+        USE CALENDER
+
+        IMPLICIT NONE
+
+        TYPE(era_aux),    INTENT(IN) :: aux
+        TYPE(config),     INTENT(IN) :: set
+        TYPE(era_input),  INTENT(IN) :: inp
+        TYPE(tmp_arrays), INTENT(IN) :: tmp
+
+        ! local variables
+        INTEGER(KIND=lint)         :: ncid
+        CHARACTER(LEN=path_length) :: nc_file
+        DOUBLE PRECISION           :: julday, ref_julday, itime
+        TYPE(mm_ids)               :: var_ids
+
+        ! dimensions
+        INTEGER(KIND=lint)            :: DIM_LAT, DIM_LON
+        INTEGER(KIND=sint), PARAMETER :: ref_year = 1970
+        INTEGER(KIND=sint), PARAMETER :: ref_month = 1
+        INTEGER(KIND=sint), PARAMETER :: ref_day = 1
+
+        ! id's
+        INTEGER(KIND=lint) :: time_id, time_dimid
+        INTEGER(KIND=lint) :: lon_id, lon_dimid
+        INTEGER(KIND=lint) :: lat_id, lat_dimid
+        CHARACTER(LEN=20)  :: thv_int
+        INTEGER(KIND=sint) :: file_counter
+
+        ! required for unit conversion
+        REAL(KIND=sreal), DIMENSION(aux % nlon, aux % nlat) :: tmp_cth
+        REAL(KIND=sreal), DIMENSION(aux % nlon, aux % nlat) :: tmp_cwp
+        REAL(KIND=sreal), DIMENSION(aux % nlon, aux % nlat) :: tmp_lwp
+        REAL(KIND=sreal), DIMENSION(aux % nlon, aux % nlat) :: tmp_iwp
+        REAL(KIND=sreal), DIMENSION(aux % nlon, aux % nlat) :: tmp_cwp_allsky
+        REAL(KIND=sreal), DIMENSION(aux % nlon, aux % nlat) :: tmp_lwp_allsky
+        REAL(KIND=sreal), DIMENSION(aux % nlon, aux % nlat) :: tmp_iwp_allsky
+
+        PRINT*, "** WRITE_TEMPS"
+
+        file_counter = 1
+
+        ! convert from integer to string
+        WRITE(thv_int, '(F4.2)') set % thv
+
+        ! convert from meter to kilometer
+        WHERE ( tmp % cth .NE. sreal_fill_value ) 
+            tmp_cth = tmp % cth / 1000.
+        ELSEWHERE
+            tmp_cth = sreal_fill_value
+        END WHERE
+
+        ! convert from kg/m^2 to g/m^2
+        WHERE ( tmp % cwp .NE. sreal_fill_value ) 
+            tmp_cwp = tmp % cwp * 1000.
+        ELSEWHERE
+            tmp_cwp = sreal_fill_value
+        END WHERE
+        WHERE ( tmp % lwp .NE. sreal_fill_value ) 
+            tmp_lwp = tmp % lwp * 1000.
+        ELSEWHERE
+            tmp_lwp = sreal_fill_value
+        END WHERE
+        WHERE ( tmp % iwp .NE. sreal_fill_value ) 
+            tmp_iwp = tmp % iwp * 1000.
+        ELSEWHERE
+            tmp_iwp = sreal_fill_value
+        END WHERE
+        WHERE ( tmp % cwp_allsky .NE. sreal_fill_value ) 
+            tmp_cwp_allsky = tmp % cwp_allsky * 1000.
+        ELSEWHERE
+            tmp_cwp_allsky = sreal_fill_value
+        END WHERE
+        WHERE ( tmp % lwp_allsky .NE. sreal_fill_value ) 
+            tmp_lwp_allsky = tmp % lwp_allsky * 1000.
+        ELSEWHERE
+            tmp_lwp_allsky = sreal_fill_value
+        END WHERE
+        WHERE ( tmp % iwp_allsky .NE. sreal_fill_value ) 
+            tmp_iwp_allsky = tmp % iwp_allsky * 1000.
+        ELSEWHERE
+            tmp_iwp_allsky = sreal_fill_value
+        END WHERE
+
+
+        ! dimensions
+        DIM_LON = aux % nlon
+        DIM_LAT = aux % nlat
+
+        ! time dimension
+        CALL GREG2JD ( ref_year, ref_month, ref_day, ref_julday )
+        CALL GREG2JD ( set % sy, set % sm, set % sd, julday )
+        itime = julday - ref_julday
+
+        ! create output nc-filename
+        nc_file = TRIM( set % out_path ) // "/" // TRIM ( inp % basename ) // &
+                  '_cot-thv-' // TRIM(thv_int) // '.nc' 
+
+        ! create ncdf file
+        CALL CHECK ( nf90_create( TRIM(nc_file), nf90_clobber, ncid ) )
+
+        ! global attributes
+        CALL DEFINE_GLOBALS( ncid, set, aux, file_counter )
+
+        ! define time, lon, lat
+        CALL DEFINE_COORD_VARS( ncid, DIM_LON, DIM_LAT, &
+                                lon_id, lat_id, time_id, &
+                                lon_dimid, lat_dimid, time_dimid )
+
+        ! define monthly mean variables
+        CALL DEFINE_MM ( ncid, lon_dimid, lat_dimid, time_id, var_ids )
+
+        ! define attributes
+        CALL DEFINE_ATTRIBUTES_VAR( ncid, var_ids )
+
+        ! end define mode
+        CALL CHECK ( nf90_enddef(ncid) )
+
+        ! write coordinate variables
+        CALL CHECK ( nf90_put_var(ncid, time_id, itime) )
+        CALL CHECK ( nf90_put_var(ncid, lon_id, aux % lon) )
+        CALL CHECK ( nf90_put_var(ncid, lat_id, aux % lat) )
+
+        ! write netcdf monthly mean variables
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cfc, tmp % cfc) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cph, tmp % cph) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cph_day, tmp % cph_day) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % ctp, tmp % ctp) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % ctt, tmp % ctt) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cth, tmp_cth) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cot, tmp % cot) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cot_liq, tmp % cot_liq) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cot_ice, tmp % cot_ice) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cer, tmp % cer) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cer_liq, tmp % cer_liq) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cer_ice, tmp % cer_ice) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cwp, tmp_cwp) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % lwp, tmp_lwp) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % iwp, tmp_iwp) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % cwp_allsky, tmp_cwp_allsky) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % lwp_allsky, tmp_lwp_allsky) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % iwp_allsky, tmp_iwp_allsky) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % nobs, 1) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % nobs_lwp, 1) )
+        CALL CHECK ( nf90_put_var(ncid, var_ids % nobs_iwp, 1) )
+
+        ! close ncdf file
+        CALL CHECK( nf90_close(  ncid ) )
+
+        PRINT*, "   nc-file: ", TRIM(nc_file), " done "
+
+    END SUBROUTINE WRITE_TEMPS
 
     !==========================================================================
 

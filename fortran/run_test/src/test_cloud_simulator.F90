@@ -111,6 +111,9 @@ PROGRAM CLOUD_SIMULATOR
                 PRINT '("    Elapsed Time = ",f6.3," seconds.")',& 
                     finish-start
 
+                ! write temporary output
+                CALL WRITE_TEMPS( aux, cfg, input, temps )
+
                 CALL SUMUP_VARS( temps, final, counts )
                 counts % file_counter = counts % file_counter + 1
 
