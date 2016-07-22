@@ -2,4 +2,99 @@
 
 \subsection{ERA-Interim reanalysis}\label{sec:era}
 
+The ERA-Interim global atmospheric reanalysis \cite{Dee2011} provided by ECMWF 
+(European Centre for Medium-Range Weather Forecasts) 
+is the follow-up of ERA-40 reanalysis \cite{Uppala2005}, which was completed in 2002.
+It covers the period from 1979 onwards and is continuously extended in near-real time.
+One of the main objectives was to solve various difficulties regarding data assimiliation
+(e.g. use of satellite data), which were found during the production of ERA-40. 
+Evaluations of the new dataset have demonstrated that the hydrological cycle, the stratospheric circulation, and
+the consistency in time of the reanalysis fields have been improved.
+Data assimilation methodology, forecast model, and input observations
+are essential components for the generation of high quality reanalysis data,
+and consequently, will lead to more confident results in climate change applications. 
+
+The reanalysis is produced by the Integrated Forecast System (IFS), which includes
+the forecast model consisting of three fully coupled components for the atmosphere, land surface, and ocean waves.
+ERA-Interim clouds are represented by a fully prognostic cloud scheme where cloud-related processes
+are treated in a unified way, i.e. they are physically realistic and consistent with the rest of the model.
+The scheme for stratiform and convective clouds has been developed by Tiedtke \cite{Tiedtke1993}, 
+implemented in the global forecast model operationally in 1995 and since then, continuously improved.
+An important and indispensable limitation of large-scale models is the fact that only bulk
+properties of clouds can be taken into account. Hence, clouds are defined by
+the horizontal coverage of the grid box by cloud, and the mass mixing ratio of total cloud condensate,
+along with the constraint that cloud air is saturated with regard to water and ice, respectively.
+The thermodynamic phase is determined on the basis of the temperature.
+In other words, cloud cover and cloud water/ice content are derived from prognostic equations,
+which follow the mass balance equation for cloud water/ice content and cloud air.
+As time evolves in the simulation the cloud variables are changing due to source and
+sink terms that are related to cloud formation (e.g., condensation/sublimation, cumulus convection)
+and destruction (e.g., evaporation, precipitation) processes, respectively.
+
+% % % A new prognostic bulk microphysics scheme for the ECMWF forecast model
+% % % R. M. Forbes (1), A. M. Tompkins (2), and A. Untch (1)
+% % % (1) ECMWF, shinfield Park, Reading U.K, (2) ICTP, Earth System Physics, Trieste, Italy (tompkins@ictp.it)
+% A major upgrade to the parametrization of stratiform cloud and precipitation was implemented in the Integrated
+% Forecast System (IFS) cycle 36r4, operational at ECMWF from 9 November 2010. Three additional prognostic
+% variables  have  been  introduced  to  enable  a  more  physically  based  representation  of  mixed-phase  (liquid/ice)
+% cloud and precipitating rain and snow. A fully implicit method is employed to solve the network of microphysics
+% pathways stably for long timesteps. It is the most significant change to the structure of the cloud parametrization
+% since the Tiedtke scheme was introduced operationally in 1995. Many aspects of the model are systematically
+% improved including the skill of precipitation forecasts, the spatial distribution of ice and snow in the troposphere,
+% the physical processes in mixed-phase cloud and the impact of cloud and precipitation on radiation.
+
+As already metioned above the original Tiedtke scheme has been continuously further developed
+aiming at a more physically realistic representation of cloud and precipitation microphysics
+that cannot be achieved by using just two prognostic cloud variables.
+A revised Tiedtke cloud parameterization of stratiform cloud and precipitation became available by 2010
+increasing the number of prognostic variables from two (cloud fraction, cloud condensate) to five
+(cloud fraction, cloud liquid water, cloud ice, rain, and snow).
+The updated approach treats now water and ice clouds independent leading to more realistic
+modelling of supercooled liquid water clouds as well as snow and rain precipitation processes.
+
+% % % taken from Dee et al. 2011 % % %
+% Improvements of the model physics have caused a positive impact on the 
+% representation of clouds in the ERA-Interim dataset \cite{Dee2011}. By comparing the ERA-Interim and ERA-40 
+% reanalysis with ISCCP observations several improvements regarding cloud cover have been identified. 
+% For instance, the marine stratocumulus cloud cover has been increased by 15 -- 25~\%
+% because a new moist boundary-layer scheme was implemented \cite{Koehler2011}.
+% The tropical ocean total cloud cover has been decreased by 5 -- 15~\% 
+% due to an overall improved hydrological cycle and the incorporation of ice supersaturation 
+% delaying the formation of ice clouds \cite{Tompkins2007}.
+% The cloud cover over land in the tropics has been increased by 20 -- 30~\% caused by an
+% increase in high cloud resulting from improved deep convective triggering \cite{Bechtold2004} along
+% with low cloud produced by a new boundary-layer scheme.
+% The midlatitude ocean (low- and medium-height) cloud cover has been increased by about 5~\% due to
+% improved numerics of the cloud scheme.
+
+Models and observations are incomplete having uncertainties. Data assimiliation is the process,
+which incorporates observations into the model regime generating the optimum atmospheric 
+state at a particular time, which is better than that from model or observation on their own.
+As a consequence, random errors can be minimized. However, there are also many systematic 
+differences between models and observations, which require a careful treatment \cite{Forbes2015}.
+
+\cite{IPCC2013}
+In the last two decades significant progress have been made in improving the parameterization 
+of clouds in large-scale models. But still assumptions and simplifications are necessary 
+limiting the
+% In any large-scale model basic assumptions and simplifications are necessary for representing clouds.
+% Clouds and also aerosol are still the largest uncertainties in GCMs and thus,
+% it is important to further understand the processes and improve their representation in models.
+% altough in den last 10 years major progress has been made
+% models needs to be evaluated by other models and observations
+% retrievals needs to be verified by models
+% neither model nor retrievals are perfect due to the complexity of the real world.
+% assumptions and limitations are required in both
+% make bridge to CC4CL here
+
+
 \subsection{Cloud\_cci dataset}\label{sec:cloudcci}
+
+The ESA Cloud\_cci project presents new long-term coherent AVHRR and MODIS cloud property datasets 
+(1982 – 2014) along with associated uncertainties obtained by optimal estimation theory. 
+The algorithm fits a physically consistent cloud/atmosphere/surface model to satellite observations 
+simultaneously from the visible to the mid-infrared, thereby ensuring spectral consistency for 
+all retrieved and derived parameters. This retrieval scheme, referred to as Community Optimal 
+Estimation Cloud Retrieval for Climate (CC4CL), provides cloud fraction, cloud top level estimates, 
+cloud thermodynamic phase, cloud optical thickness, cloud effective radius and post processed products, 
+such as cloud liquid and ice water path.

@@ -2,8 +2,10 @@
 
 This section describes the main steps of retrieving monthly mean pseudo-satellite 
 observations derived from global atmospheric reanalysis produced by ECMWF.
-The clouds simulator reads the 6-hourly (00, 06, 12, 18 UTC) 
-ERA-Interim files per month containing the following upper air parameters on model levels:
+The clouds simulator reads the ERA-Interim 6-hourly (00, 06, 12, 18 UTC) 
+gridded estimates of three-dimensional (3D) meteorological upper upper air parameters on 60 model levels
+with the top of the atmosphere located at 0.1 hPa:
+% ERA-Interim files per month containing the following upper air parameters on model levels:
 \begin{itemize}
     \setlength\itemsep{0.2em}
     \item liquid water content ``LWC'' 
@@ -22,8 +24,7 @@ coefficients on model levels along with the temperature and specific humidity pr
 The following steps address the things needed to simulate the observational process.
 In other words, what would a satellite (e.g., MODIS, AVHRR) 
 see if the atmosphere had the clouds of a climate model? 
-What would CC4CL retrieve in such cases?
-
+% What would CC4CL retrieve in such cases?
 
 
 % ==================================================================================
@@ -133,24 +134,25 @@ while groups of clouds separated by one or more clear layers are randomly overla
   \centering
   \begin{minipage}{0.5\textwidth}
     \subfloat[CFC matrix.]
-    {\includegraphics[scale=0.25]{{\snapcase_cfc_matrix}.png}\label{fig:cfc_matrix}}
+    {\includegraphics[scale=0.26]{{\snapcase_cfc_matrix}.png}\label{fig:cfc_matrix}}
   \end{minipage}\hfill
   \begin{minipage}{0.5\textwidth}
     \subfloat[COT matrix.]
-    {\includegraphics[scale=0.25]{{\snapcase_cot_matrix}.png}\label{fig:cot_matrix}}
+    {\includegraphics[scale=0.26]{{\snapcase_cot_matrix}.png}\label{fig:cot_matrix}}
   \end{minipage}\hfill
     \begin{minipage}{0.5\textwidth}
     \subfloat[CER matrix.]
-    {\includegraphics[scale=0.25]{{\snapcase_cer_matrix}.png}\label{fig:cer_matrix}}
+    {\includegraphics[scale=0.26]{{\snapcase_cer_matrix}.png}\label{fig:cer_matrix}}
   \end{minipage}\hfill
   \begin{minipage}{0.5\textwidth}
     \subfloat[CWP matrix.]
-    {\includegraphics[scale=0.25]{{\snapcase_cwp_matrix}.png}\label{fig:cwp_matrix}}
+    {\includegraphics[scale=0.26]{{\snapcase_cwp_matrix}.png}\label{fig:cwp_matrix}}
   \end{minipage}\hfill
   \begin{minipage}{0.5\textwidth}
     \subfloat[CPH matrix.]
-    {\includegraphics[scale=0.25]{{\snapcase_cph_matrix}.png}\label{fig:cph_matrix}}
-  \end{minipage}
+    {\includegraphics[scale=0.26]{{\snapcase_cph_matrix}.png}\label{fig:cph_matrix}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.45\textwidth}
   \caption[Down-scaled cloud parameter profiles.]{Subcolumn distribution 
   of cloud fraction (a), optical thickness (b), effective radius (c), water path (d), and 
   phase (e) derived from grid box mean profiles shown in Figure~\ref{fig:profiles}. 
@@ -158,6 +160,7 @@ while groups of clouds separated by one or more clear layers are randomly overla
   i.e. the ratio of liquid water path and total cloud water path.
   The grid cell is located at {\longitude} and {\latitude} on {\gcdate} at {\gchour}.}
   \label{fig:matrices}
+  \end{minipage}
 \end{figure}
 
 Figure~\ref{fig:profiles} and Figure~\ref{fig:matrices} 
@@ -233,8 +236,8 @@ The grid box average is given on top of each panel.}
 
 Figure~\ref{fig:retrieved} shows the derived cloud top parameters for each subcolumn, 
 where the total cloud optical thickness is larger than 0.15. 
-In the left first upper panel one can see that if a cloud is detected, 
-the cloud fraction is set to 1 (cloudy) otherwise to 0 (cloud-free).
+In the first upper left panel one can see that for each subcolumn a binary cloud mask 
+is returned, i.e. the cloud fraction is set to 1 (cloudy) or to 0 (cloud-free).
 The cloud top pressure, temperature, and height (remaining upper panels from left to right) 
 are derived from the pressure, temperature, and geopotential model profiles.
 The lower panels from left to right show the cloud phase, effective radius, optical thickness, 
@@ -242,19 +245,24 @@ and water path. These subcolumn values are obtained from the corresponding matri
 For the thermodynamic phase the selected matrix element is rounded 
 providing either 1 (liquid) or 0 (ice).
 The particle size is derived from the cloud effective radius matrix.
-The cloud optical thickness and cloud water path of each cloudy subcolumn 
-is obtained by vertical integration of all positive matrix elements between
-the model level of the uppermost cloud and the lowermost level.
+The cloud optical thickness and cloud water path of each subcolumn 
+is derived by integrating the sum of positive matrix elements between
+the model level of the uppermost cloud layer detected and the lowermost level.
 
+
+% % \begin{minipage}[ÄUSSERE POSITION][HÖHE][INNERE POSITION]{BREITE}
+% % 	Beispieltext
+% % \end{minipage}
 % CER, CWP, COT only daytime
 \begin{figure}[!ht]
- \begin{minipage}[c]{0.5\textwidth}
-   \includegraphics[scale=0.25]{./figures/{\szamidnight}.png}
-   \includegraphics[scale=0.25]{./figures/{\szamidday}.png}
- \end{minipage}\hfill
- \begin{minipage}[c]{0.5\textwidth}
-   \includegraphics[scale=0.25]{./figures/{\szamorning}.png}
-   \includegraphics[scale=0.25]{./figures/{\szaevening}.png}
+\centering
+ \begin{minipage}{0.45\textwidth}
+   \includegraphics[scale=0.22]{./figures/{\szamidnight}.png}
+   \includegraphics[scale=0.22]{./figures/{\szamidday}.png}
+ \end{minipage}
+ \begin{minipage}{0.45\textwidth}
+   \includegraphics[scale=0.22]{./figures/{\szamorning}.png}
+   \includegraphics[scale=0.22]{./figures/{\szaevening}.png}
  \end{minipage}
  \caption[Solar zenith angle for 00, 06, 12, 18 UTC.]
  {Global distribution of the solar zenith angle (SZA) 
@@ -263,10 +271,10 @@ the model level of the uppermost cloud and the lowermost level.
   which in turn is required to mimic satellite-based retrieval characteristics, 
   i.e. cloud optical thickness is derived from visible wavelengths. 
   Consequently, cloud effective radius and cloud water path
-  are also only available for daytime conditions.
-  } 
+  are also only available for daytime conditions (i.e. SZA less than 90).} 
  \label{fig:sza}
 \end{figure}
+
 
 CC4CL simultaneously retrieves the coud optical thickness and cloud effective radius 
 by applying the Nakajima and King approach \cite{Nakajima1990}.
@@ -278,8 +286,9 @@ mostly from light absorption in a near infrared channel (1.6 or 3.7 micron).
 As already mentioned in Section~\ref{sec:preproc}, 
 CC4CL computes the cloud water path using Equation~\ref{eq:han},
 where the cloud optical thickness and cloud effective radius are input parameters.
-Consequently, CC4CL provides cloud optical thickness, cloud effective radius, and 
-cloud water path only for daytime conditions. 
+Consequently, CC4CL retrieves cloud optical thickness, cloud effective radius, and 
+cloud water path based on observations made during daytime.
+% only for daytime conditions. 
 The purpose of the cloud simulator is to imitate the satellite observations and hence, 
 these three cloud parameters are not simulated during nighttime, 
 which corresponds to grid boxes having a solar zenith angle larger than 90 degree.
@@ -287,28 +296,28 @@ Figure~\ref{fig:sza} gives an example of the solar zenith angle distribution
 for the ERA-Interim time slots at UTC 00, 06, 12, and 18 on {\gcdate}.
 
 
-
 % ==================================================================================
 %3. collect statistics, i.e. means over subcolumns and 1D, 2D histograms
 \subsection{Compute summary statistics}
 % ==================================================================================
 
-% The subcolumn cloud parameters provided by the pseudo-retrieval are used to compute 
-% monthly grid cell averages as well as one-dimensional (1D) and two-dimensional (2D) histograms. 
-% These diagnostic outputs can be compared to similar statistics from satellite observations,
-% because the downscaled cloud simulator results mimic the spatial resolution of a satellite pixel. 
-
 % grid box averages (temp) => monthly grid box averages (final)
-Averaging over the subcolumns of each cloud parameter leads to temporary grid box means 
-(see top of each panel in Fig.~\ref{fig:retrieved}) 
-assciated with the ERA-Interim input file for a given date and time.
+Averaging over the subcolumns leads to grid box means 
+(see top of each panel in Fig.~\ref{fig:retrieved}) at a given diagnostic time step.
+Figure~\ref{fig:clouds_12utc} represents grid mean values based on the 
+reanalysis file on {\gcdate} at 12 UTC.
+As already explained in the previous section, the cloud optical thickness, 
+cloud water path, cloud effective radius, and the daytime fraction of liquid water cloud 
+are only available for daytime observations (upper four maps). 
+All other pseudo-satellite cloud parameters are also retrieved at nighttime 
+(lower four maps).
+% Aggregation over time
 By considering all reanalysis files for a given month allows then to calculate
 monthly grid cell averages.
 One-dimensional (1D) and two-dimensional (2D) histograms are generated using
 the individual subcolumn results rather than the temporary grid box averages 
 because the downscaled results mimic the spatial resolution of a satellite pixel, 
-which are used for statistical aggregation of monthly cloud products.
-
+which are used for statistical aggregation of monthly cloud products.\\
 1D histograms are created for the following cloud parameters: 
 CTP [hPa], CTT [K], CWP [g/m$^{2}$], COT, and CER [$\mu$m]. 
 Each histogram covers the solution space of its variable with the cloud phase as 
@@ -320,18 +329,8 @@ additional dimension. The used bins are:
  \item COT: $\{$ 0, 0.3, 0.6, 1.3, 2.2, 3.6, 5.8, 9.4, 15, 23, 41, 60, 80, 99.99, 1000 $\}$
  \item CER: $\{$ 0, 3, 6, 9, 12, 15, 20, 25, 30, 40, 60, 80 $\}$ 
 \end{itemize}
-      
 
-\begin{figure}[!ht]
-  \begin{minipage}[c]{0.5\textwidth}
-    \includegraphics[scale=0.55]{./figures/isccp_uebersicht.png} 
-  \end{minipage}\hfill
-  \begin{minipage}[c]{0.5\textwidth}
-    \caption[ISCCP COT-CTP classification.]{\isccp}\label{fig:isccp}
-  \end{minipage}
-\end{figure}
-
-
+\noindent
 The 2D joint cloud property histograms are produced for each grid box following 
 the ISCCP classification, which correlates the retrieved height and optical thickness of the cloud. 
 Figure~\ref{fig:isccp} illustrates the CTP-COT partitioning that was proposed 
@@ -340,9 +339,9 @@ International Satellite Cloud Climatology Project (ISCCP).
 Based on this scheme nine different cloud types can be categorized and hence,
 analysed and inter-compared with other datasets regarding their occurrence:
 \begin{itemize}\setlength\itemsep{0.2em}
- \item High clouds: Cirrus, Cirrostratus, Deep Convection
- \item Middle clouds: Altocumulus, Altostratus, Nimbostratus
- \item Low clouds: Cumulus, Stratocumulus, Stratus.
+ \item High clouds: Cirrus (Ci), Cirrostratus (Cs), Deep Convection (Cb)
+ \item Middle clouds: Altocumulus (Ac), Altostratus (As), Nimbostratus (Ns)
+ \item Low clouds: Cumulus (Cu), Stratocumulus (Sc), Stratus (St).
 \end{itemize}
 The widths of the CTP [hPa] and COT bins used are as follows:
 \begin{itemize}\setlength\itemsep{0.2em}
@@ -350,8 +349,43 @@ The widths of the CTP [hPa] and COT bins used are as follows:
  \item CTP: $\{$ 1, 90, 180, 245, 310, 375, 440, 500, 560, 620, 680, 740, 800, 875, 950, 1100 $\}$
 \end{itemize}
 
-The diagnostic simulator outputs described above can be compared to similar statistics 
-from satellite  observations, which is shown in the next section.
+
+Finally, the diagnostic simulator outputs can be compared to similar statistics from satellite 
+observations, which will be shown in Section~\ref{sec:sim_vs_obs}.
+
+
+\begin{figure}[!ht]
+  \begin{minipage}{0.4\textwidth}
+    \includegraphics[width=5cm,height=6cm]{./figures/isccp_uebersicht.png} 
+  \end{minipage}
+  \begin{minipage}{0.6\textwidth}
+    \caption[ISCCP COT-CTP classification.]{\isccp}\label{fig:isccp}
+  \end{minipage}
+\end{figure}
+
+% Pseudo-retrieved grid box averages for 1 ERA-I file, 20080701, 12 UTC
+\begin{figure}[!ht]
+ \begin{minipage}[c]{0.5\textwidth}
+   {\includegraphics[scale=0.17]{./figures/{\cotmidday}.png}\label{fig:cot_12utc}}
+   {\includegraphics[scale=0.17]{./figures/{\cwpmidday}.png}\label{fig:cwp_12utc}}
+   {\includegraphics[scale=0.17]{./figures/{\cfcnormal}.png}\label{fig:cfc_12utc}}
+   {\includegraphics[scale=0.17]{./figures/{\cthnormal}.png}\label{fig:cth_12utc}}
+ \end{minipage}\hfill
+ \begin{minipage}[c]{0.5\textwidth}
+   {\includegraphics[scale=0.17]{./figures/{\cermidday}.png}\label{fig:cer_12utc}}
+   {\includegraphics[scale=0.17]{./figures/{\cphmidday}.png}\label{fig:cph_12utc}}
+   {\includegraphics[scale=0.17]{./figures/{\cphnormal}.png}\label{fig:cphnormal_12utc}}
+   {\includegraphics[scale=0.17]{./figures/{\cttnormal}.png}\label{fig:ctt_12utc}}
+ \end{minipage}
+  \caption[Simulated grid box averages for {\gcdate} and 12 UTC.]
+{Grid box mean cloud parameters based on one ERA-Interim reanalysis file ({\gcdate} at 12 UTC).
+Left column shows top down: cloud optical thickness, cloud water path, cloud fraction and cloud top height.
+Right column shows top down: cloud effective radius, daytime fraction of liquid water cloud,
+fraction of liquid water clouds, and cloud top temperature.
+The upper four maps represent only daytime pseudo-retrieved products, while the lower
+maps show the results for day- and nighttime.}
+\label{fig:clouds_12utc}
+\end{figure}
 
 
 
