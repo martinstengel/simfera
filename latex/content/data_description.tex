@@ -31,26 +31,15 @@ As time evolves in the simulation the cloud variables are changing due to source
 sink terms that are related to cloud formation (e.g., condensation/sublimation, cumulus convection)
 and destruction (e.g., evaporation, precipitation) processes, respectively.
 
-% % % A new prognostic bulk microphysics scheme for the ECMWF forecast model
-% % % R. M. Forbes (1), A. M. Tompkins (2), and A. Untch (1)
-% % % (1) ECMWF, shinfield Park, Reading U.K, (2) ICTP, Earth System Physics, Trieste, Italy (tompkins@ictp.it)
-% A major upgrade to the parametrization of stratiform cloud and precipitation was implemented in the Integrated
-% Forecast System (IFS) cycle 36r4, operational at ECMWF from 9 November 2010. Three additional prognostic
-% variables  have  been  introduced  to  enable  a  more  physically  based  representation  of  mixed-phase  (liquid/ice)
-% cloud and precipitating rain and snow. A fully implicit method is employed to solve the network of microphysics
-% pathways stably for long timesteps. It is the most significant change to the structure of the cloud parametrization
-% since the Tiedtke scheme was introduced operationally in 1995. Many aspects of the model are systematically
-% improved including the skill of precipitation forecasts, the spatial distribution of ice and snow in the troposphere,
-% the physical processes in mixed-phase cloud and the impact of cloud and precipitation on radiation.
-
 As already metioned above the original Tiedtke scheme has been continuously further developed
 aiming at a more physically realistic representation of cloud and precipitation microphysics
 that cannot be achieved by using just two prognostic cloud variables.
 A revised Tiedtke cloud parameterization of stratiform cloud and precipitation became available by 2010
 increasing the number of prognostic variables from two (cloud fraction, cloud condensate) to five
 (cloud fraction, cloud liquid water, cloud ice, rain, and snow).
-The updated approach treats now water and ice clouds independent leading to more realistic
+The updated approach used in ERA-Interim treats now water and ice clouds independent leading to more realistic
 modelling of supercooled liquid water clouds as well as snow and rain precipitation processes.
+
 
 % % % taken from Dee et al. 2011 % % %
 % Improvements of the model physics have caused a positive impact on the 
@@ -67,34 +56,45 @@ modelling of supercooled liquid water clouds as well as snow and rain precipitat
 % The midlatitude ocean (low- and medium-height) cloud cover has been increased by about 5~\% due to
 % improved numerics of the cloud scheme.
 
-Models and observations are incomplete having uncertainties. Data assimiliation is the process,
-which incorporates observations into the model regime generating the optimum atmospheric 
-state at a particular time, which is better than that from model or observation on their own.
-As a consequence, random errors can be minimized. However, there are also many systematic 
-differences between models and observations, which require a careful treatment \cite{Forbes2015}.
-
-\cite{IPCC2013}
-In the last two decades significant progress have been made in improving the parameterization 
-of clouds in large-scale models. But still assumptions and simplifications are necessary 
-limiting the
-% In any large-scale model basic assumptions and simplifications are necessary for representing clouds.
-% Clouds and also aerosol are still the largest uncertainties in GCMs and thus,
-% it is important to further understand the processes and improve their representation in models.
-% altough in den last 10 years major progress has been made
-% models needs to be evaluated by other models and observations
-% retrievals needs to be verified by models
-% neither model nor retrievals are perfect due to the complexity of the real world.
-% assumptions and limitations are required in both
-% make bridge to CC4CL here
 
 
-\subsection{Cloud\_cci dataset}\label{sec:cloudcci}
+\subsection{ESA's Cloud\_cci climatology}\label{sec:cloudcci}
+In 2010 the European Space Agency (ESA) has launched the Climate Change Initiative (CCI) project 
+composed of several sub-projects providing essential climate variables (ECVs) from the
+atmosphere, ocean, and land, respectively \cite{Hollmann2013}.
+The principle purpose of CCI is the generation of satellite-based climate data records that
+meet the challenging requirements of the Global Climate Observing System (GCOS) \cite{GCOS2011}.
 
-The ESA Cloud\_cci project presents new long-term coherent AVHRR and MODIS cloud property datasets 
-(1982 – 2014) along with associated uncertainties obtained by optimal estimation theory. 
-The algorithm fits a physically consistent cloud/atmosphere/surface model to satellite observations 
+The ESA Cloud\_cci sub-project is dedicated to the generation of long-term coherent A(A)TSR, AVHRR and MODIS 
+cloud property datasets (1982 - 2014) along with associated uncertainties obtained by optimal estimation (OE) theory.
+Emphasis is placed on the usage of synergetic capabilities of past, exising, and upcoming
+European and US satellite missions (see Fig.~\ref{fig:cloudcci}) 
+in order to improve accuracies as well as temporal and spatial sampling 
+of the newly created climatology compared to others that are based on single sources \cite{Stengel2015} .
+The OE based algorithm fits a physically consistent cloud/atmosphere/surface model to satellite observations 
 simultaneously from the visible to the mid-infrared, thereby ensuring spectral consistency for 
 all retrieved and derived parameters. This retrieval scheme, referred to as Community Optimal 
-Estimation Cloud Retrieval for Climate (CC4CL), provides cloud fraction, cloud top level estimates, 
-cloud thermodynamic phase, cloud optical thickness, cloud effective radius and post processed products, 
-such as cloud liquid and ice water path.
+Estimation Cloud Retrieval for Climate (CC4CL), provides cloud fraction, 
+cloud top level estimates (pressure, height, and temperature), cloud thermodynamic phase, 
+cloud optical thickness, cloud effective radius and post processed products, such as cloud liquid and ice water path.
+These cloud parameters are compared with the pseudo-satellite results derived from the cloud
+simulator using ERA-Interim reanalysis as input (see Section~\ref{sec:sim_vs_obs}).
+
+\begin{figure}[!htp]
+  \begin{minipage}[t]{0.5\textwidth}
+%     \subfloat[ESA Cloud\_cci datasets along with equatorial crossing time (ECT).]
+    {\includegraphics[scale=0.35]{./figures/{CC4CL_datasets}.png}\label{fig:cc4cl_input}}
+  \end{minipage}
+  \begin{minipage}[t]{0.5\textwidth}
+%     \subfloat[ECT of AVHRR's on-board NOAA and MetOp platforms.]
+    {\includegraphics[scale=0.21]{./figures/{Plot_AVHRR_equat_cross_time_19780101_20170101}.png}\label{fig:ahvrr_ect}}
+  \end{minipage}
+  \caption[ESA Cloud\_cci datasets along with equatorial crossing times.]
+{The ESA Cloud\_cci project provides long-term coherent cloud property datasets using A(A)TSR-MODIS-AVHRR 
+measurements from 1982 to 2014. The equatorial crossing time (ECT) of the satellites is shown in the left sketch 
+(see table), while the ECTs of AVHRR bearing platforms are shown in the right figure.
+The ECT of NOAA satellites changes in value over time due to orbit degradation, while the ECT of MetOp
+platforms remain nearly constant throughout the year because they are in controlled orbits.}
+\label{fig:cloudcci}
+\end{figure}
+
