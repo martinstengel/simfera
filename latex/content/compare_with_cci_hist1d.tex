@@ -1,42 +1,77 @@
 
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=\hiswidth]{{\hisout_ctp_\vscci}.png}
-  \caption[Cloud top pressure histogram.]
-  {Cloud top pressure histogram {\hiscaption}} 
-  \label{fig:hist1d_ctp}
-\end{figure}
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=\hiswidth]{{\hisout_ctt_\vscci}.png}
-  \caption[Cloud top temperature histogram.]
-  {Cloud top temperature histogram {\hiscaption}} 
-  \label{fig:hist1d_ctt}
+  \begin{minipage}{0.5\textwidth}
+    \subfloat[Normalized histogram of CTP.]
+    {\includegraphics[width=\halffigwidth]{{\hisout_ctp_\vscci}.png}\label{fig:hist1d_ctp}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.5\textwidth}
+    \subfloat[Normalized histogram of CTT.]
+    {\includegraphics[width=\halffigwidth]{{\hisout_ctt_\vscci}.png}\label{fig:hist1d_ctt}}
+  \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+    \subfloat[Normalized histogram of COT.]
+    {\includegraphics[width=\halffigwidth]{{\hisout_cot_\vscci}.png}\label{fig:hist1d_cot}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.5\textwidth}
+    \subfloat[Normalized histogram of CWP.]
+    {\includegraphics[width=\halffigwidth]{{\hisout_cwp_\vscci}.png}\label{fig:hist1d_cwp}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.5\textwidth}
+    \subfloat[Normalized histogram of CER.]
+    {\includegraphics[width=\halffigwidth]{{\hisout_cer_\vscci}.png}\label{fig:hist1d_cer}}
+  \end{minipage}\hfill
+  \begin{minipage}{0.45\textwidth}
+  \caption[One-dimensional normalized histograms.]{Normalized one-dimensional (1D) histograms of
+  cloud top pressure (a), cloud top temperature (b), cloud optical thickness (c),
+  cloud water path (d), and cloud effective radius (e) 
+  derived from {\simversion} and {\cciversion} for {\MonthYear}.
+  Each bin is normalized to the total number of retrievals and hence,
+  displaying relative frequencies.}\label{fig:hist1d}
+  \end{minipage}
 \end{figure}
 
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=\hiswidth]{{\hisout_cot_\vscci}.png}
-  \caption[Cloud optical thickness histogram.]
-  {Cloud optical thickness histogram {\hiscaption}} 
-  \label{fig:hist1d_cot}
-\end{figure}
-
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=\hiswidth]{{\hisout_cwp_\vscci}.png}
-  \caption[Cloud water path histogram.]
-  {Cloud water path histogram {\hiscaption}} 
-  \label{fig:hist1d_cwp}
-\end{figure}
 
 
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[width=\hiswidth]{{\hisout_cer_\vscci}.png}
-  \caption[Cloud effective radius histogram.]
-  {Cloud effective radius histogram {\hiscaption}} 
-  \label{fig:hist1d_cer}
-\end{figure}
+% \begin{figure}[!ht]
+%   \centering
+%   \includegraphics[width=\hiswidth]{{\hisout_ctp_\vscci}.png}
+%   \caption[Cloud top pressure histogram.]
+%   {Cloud top pressure histogram {\hiscaption}} 
+%   \label{fig:hist1d_ctp}
+% \end{figure}
+% 
+% \begin{figure}[!ht]
+%   \centering
+%   \includegraphics[width=\hiswidth]{{\hisout_ctt_\vscci}.png}
+%   \caption[Cloud top temperature histogram.]
+%   {Cloud top temperature histogram {\hiscaption}} 
+%   \label{fig:hist1d_ctt}
+% \end{figure}
+% 
+% \begin{figure}[!ht]
+%   \centering
+%   \includegraphics[width=\hiswidth]{{\hisout_cot_\vscci}.png}
+%   \caption[Cloud optical thickness histogram.]
+%   {Cloud optical thickness histogram {\hiscaption}} 
+%   \label{fig:hist1d_cot}
+% \end{figure}
+% 
+% \begin{figure}[!ht]
+%   \centering
+%   \includegraphics[width=\hiswidth]{{\hisout_cwp_\vscci}.png}
+%   \caption[Cloud water path histogram.]
+%   {Cloud water path histogram {\hiscaption}} 
+%   \label{fig:hist1d_cwp}
+% \end{figure}
+% 
+% 
+% \begin{figure}[!ht]
+%   \centering
+%   \includegraphics[width=\hiswidth]{{\hisout_cer_\vscci}.png}
+%   \caption[Cloud effective radius histogram.]
+%   {Cloud effective radius histogram {\hiscaption}} 
+%   \label{fig:hist1d_cer}
+% \end{figure}
 

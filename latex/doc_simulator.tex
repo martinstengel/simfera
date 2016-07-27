@@ -14,33 +14,35 @@
 %\listoftables
 
 
-% \newpage
+\newpage
 \section{Introduction}\label{sec:intro}
 \input{./content/intro}
 
-% \newpage
 \section{Description of datasets}\label{sec:datasets}
 \input{./content/data_description}
 
-% \newpage
 \section{Cloud simulator description}\label{sec:sim}
-% \input{./content/cloud_simulator}
+\input{./content/cloud_simulator}
 
 
-%\FloatBarrier
 \section{Comparison of simulated and observed cloud parameters}\label{sec:sim_vs_obs}
-% \section{Comparison of {\era} vs. {\cci}-{\fv}}\label{sec:sim_vs_obs}
-%\subsection{Histograms}
-%\input{./content/compare_with_cci_hist2d}
-%\input{./content/compare_with_cci_hist1d}
-%
-%\FloatBarrier
-%\subsection{L3C}
-%\input{./content/compare_with_cci}
-%
-%\FloatBarrier
-%\subsection{Zonal mean inter-comparison for \MonthYear}
-%\input{./content/compare_zonal_mean}
+\FloatBarrier
+\subsection{Monthly Histograms}
+\input{./content/compare_with_cci_hist1d}
+\input{./content/compare_with_cci_hist2d}
+\FloatBarrier
+\subsection{Monthly averages}
+\input{./content/compare_with_cci}
+\FloatBarrier
+\subsection{Monthly Zonal means}
+\input{./content/compare_zonal_mean}
+\FloatBarrier
+\subsection{Time series analysis}
+% \subsection{Taylor diagram of cloud fraction}
+
+
+\section{Summary and conclusions}\label{sec:sum_and_con}
+
 
 \newpage
 \addcontentsline{toc}{section}{References}

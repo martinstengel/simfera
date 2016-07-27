@@ -11,42 +11,67 @@
 \usepackage{enumitem}
 \usepackage{pdflscape}
 \usepackage[justification=centering]{subfig}
-\usepackage{natbib}
-\bibliographystyle{agsm}
+% \usepackage[numbers,round]{natbib}
+\usepackage[numbers]{natbib}
+\bibliographystyle{plainnat}
 
-\geometry{a4paper,left=2.5cm,right=2.5cm, top=2.0cm, bottom=2.0cm}
+\geometry{a4paper,left=2.3cm,right=2.3cm, top=2.3cm, bottom=2.3cm}
 
 \newcommand{\docauthor}{cornelia.schlundt@dwd.de}
-\newcommand{\doctitle}{Evaluation of ERA-Interim reanalysis data 
-using a cloud simulator adapted to CC4CL}
+% \newcommand{\doctitle}{Evaluation of ERA-Interim reanalysis data 
+% using a cloud simulator adapted to CC4CL}
+\newcommand{\doctitle}{
+Evaluation of clouds in ERA-Interim reanalysis data using Cloud\_cci
+}
 
 % CC4CL VERSION
 \newcommand{\fv}{fv2.0}
 \newcommand{\cerstring}{CER}
-%\newcommand{\fv}{fv1.4}
-%\newcommand{\cerstring}{REF}
+\newcommand{\basepath}{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/2_results_basedon_mlev}
 
 % GRAPHIC PATH
-\graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.4_bugfix_histos_daysided_only/}}
+% \graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.4_bugfix_histos_daysided_only/}}
+\graphicspath{ 
+{\basepath/snapshots/case0.0/},
+{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/200807/},
+{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/hovmoeller/},
+{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/taylor/},
+{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/timeseries/} 
+}
 
 % SIMULATOR RUN SETTINGS
+% filename = ERA_Interim_MM200807_thv-0.15.nc
 \newcommand{\filebase}{ERA_Interim_MM}
-\newcommand{\valcot}{0.30}
-\newcommand{\scops}{scops2}
-\newcommand{\mpc}{mpc1}
 \newcommand{\yyyymm}{200807}
 \newcommand{\MonthYear}{July 2008}
-\newcommand{\cotthv}{cot_thv_\valcot}
-\newcommand{\obase}{\filebase\yyyymm_\cotthv_\scops_\mpc}
+\newcommand{\valcot}{0.15}
+\newcommand{\cotthv}{cot-thv-\valcot}
+\newcommand{\obase}{\filebase\yyyymm_\cotthv}
 \newcommand{\pseudo}{pseudo-satellite}
 
+% one specific grid cell
+% lat=23, lon=71.5, sza=17.88
+\newcommand{\snapcase}{ERA_Interim_an_20080701_0600+00_mlev_cot-thv-0.15_snapshot-08}
+\newcommand{\latitude}{N$43^{\circ}38^{\prime}$}
+\newcommand{\longitude}{W$116^{\circ}14^{\prime}$}
+\newcommand{\gccity}{Ahmedabad}
+\newcommand{\gcland}{India}
+\newcommand{\gchour}{UTC 06}
+\newcommand{\gcdate}{1$^{st}$~of {\MonthYear}}
+
 % SZA figures
-\newcommand{\szamidnight}{ERA_Interim_an_\yyyymm01_00+00_plev_sza}
-\newcommand{\szamorning}{ERA_Interim_an_\yyyymm01_06+00_plev_sza}
-\newcommand{\szamidday}{ERA_Interim_an_\yyyymm01_12+00_plev_sza}
-\newcommand{\szaevening}{ERA_Interim_an_\yyyymm01_18+00_plev_sza}
-% SCOPS snapshots
-\newcommand{\snapscops}{ERA_Interim_an_\yyyymm01_00+00_plev_thv0.30_\scops_\mpc}
+\newcommand{\szamidnight}{ERA_Interim_an_20080701_00+00_plev_sza}
+\newcommand{\szamorning}{ERA_Interim_an_20080701_06+00_plev_sza}
+\newcommand{\szamidday}{ERA_Interim_an_20080701_12+00_plev_sza}
+\newcommand{\szaevening}{ERA_Interim_an_20080701_18+00_plev_sza}
+\newcommand{\cotmidday}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_COT}
+\newcommand{\cwpmidday}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_CWP}
+\newcommand{\cermidday}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_CER}
+\newcommand{\cphmidday}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_CPH_DAY}
+\newcommand{\cphnormal}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_CPH}
+\newcommand{\cfcnormal}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_CFC}
+\newcommand{\cthnormal}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_CTH}
+\newcommand{\cttnormal}{ERA_Interim_an_20080701_1200+00_mlev_cot-thv-0.15_CTT}
 
 % COMPARE WITH REFERENCE DATA PLOTS
 \newcommand{\sat}{NOAA-18}
@@ -70,8 +95,7 @@ and the zonal means are given in the lower right figure.}
 % HIST1D PLOTS COMPARED WITH CCI
 \newcommand{\simversion}{the cloud simulator (solid lines)}
 \newcommand{\cciversion}{{\cci} (dashed lines)}
-\newcommand{\hiscaption}{for {\MonthYear} displaying the results 
-derived from {\simversion} and {\cciversion}.}
+\newcommand{\hiscaption}{for {\MonthYear} displaying the results derived from {\simversion} and {\cciversion}.}
 
 % HIST2D PLOTS COMPARED WITH CCI
 \newcommand{\jchera}{\obase_hist2d.png}
@@ -80,26 +104,9 @@ derived from {\simversion} and {\cciversion}.}
 \newcommand{\jchcciliq}{\obase_hist2d_liq_cci.png}
 \newcommand{\jcheraice}{\obase_hist2d_ice.png}
 \newcommand{\jchcciice}{\obase_hist2d_ice_cci.png}
-\newcommand{\jchcaption}{Joint cloud property histograms for {\MonthYear}
-derived from the cloud simulator (left column) and the {\cci} retrieval (right column).
-The figures show the relative occurrences of cloud types w.r.t. ISCCP COT-CTP classification: 
-for all clouds (upper row), for water clouds only (middle row), 
-and for ice clouds only (lower row).}
-
 \newcommand{\jchdiff}{\obase_diff_sim-cci_hist2d.png}
 \newcommand{\jchdiffliq}{\obase_diff_sim-cci_liq_hist2d.png}
 \newcommand{\jchdiffice}{\obase_diff_sim-cci_ice_hist2d.png}
-\newcommand{\jchdiffcaption}{Joint cloud property histograms for {\MonthYear}
-derived from the cloud simulator and the {\cci} retrieval.
-The figures show the difference between the {\pseudo} and observed
-relative occurrences of cloud types w.r.t. ISCCP cloud classification scheme: 
-for all clouds, for water clouds only, and for ice clouds only.}
-
-\newcommand{\isccp}{Cloud classification scheme proposed by ISCCP-D2 dataset
-as a function of cloud optical thickness and cloud top pressure.
-High clouds: Cirrus (Ci), Cirrostratus (Cs) and Deep Convection (Cb).
-Middle clouds: Altocumulus (Ac), Altostratus (As) and Nimbostratus (Ns).
-Low clouds: Cumulus (Cu), Stratocumulus (Sc) and Stratus (St).}
 
 % ZONAL MEAN INTER-COMPARISON
 \newcommand{\zonout}{\obase_zonal}
@@ -110,6 +117,6 @@ Low clouds: Cumulus (Cu), Stratocumulus (Sc) and Stratus (St).}
 
 % FIGURE SIZES
 \newcommand{\figwidth}{13cm}
-\newcommand{\halffigwidth}{7.5cm}
+\newcommand{\halffigwidth}{8cm}
 \newcommand{\mapwidth}{16cm}
 \newcommand{\hiswidth}{15cm}

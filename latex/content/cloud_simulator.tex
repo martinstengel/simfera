@@ -20,10 +20,9 @@ the logarithm of surface pressure ``LNSP'' [Pa] for each grid box.
 These are not strictly upper air parameters, however, they are needed to compute
 the vertical pressure and geopotential profiles by using the provided ``A'' and ``B'' 
 coefficients on model levels along with the temperature and specific humidity profiles.
-
 The following steps address the things needed to simulate the observational process.
-In other words, what would a satellite (e.g., MODIS, AVHRR) 
-see if the atmosphere had the clouds of a climate model? 
+% In other words, what would a satellite (e.g., MODIS, AVHRR) 
+% see if the atmosphere had the clouds of a climate model? 
 % What would CC4CL retrieve in such cases?
 
 
@@ -62,7 +61,7 @@ The ice crystal effective radius is parameterized as a function of
 temperature and ice water content based on \citet{Sun1999}, 
 which has been revised by \citet{Sun2001}.
 
-\begin{figure}[!htp]
+\begin{figure}[t]
   \begin{minipage}[t]{0.5\textwidth}
     \subfloat[ERA-Interim land-sea mask (LSM).]
     {\includegraphics[scale=0.26]{./figures/{lsm_era_interim_0.5_0.5}.png}\label{fig:lsm}}
@@ -185,20 +184,17 @@ the fraction of liquid water clouds (0=ice, 1=liquid).
 % 1 liquid, 0 ice, in between mixed
 
 The used approach for deriving subgrid profiles is very similar to
-SCOPS (Subgrid Cloud Overlap Profile Sampler, \citet{Webb2001}),
-which is implemented, for instance, in COSP (CFMIP Observation Simulator
-Package, \cite{Bodas2011}).
-COSP is an integrated satellite simulator, which has been developed by 
-the Cloud Feedback Model Intercomparison Project (CFMIP) community.
-It is capable to simulate observations of multiple active and passive
-satellite instruments (e.g., CloudSat, Calipso, ISCCP, MISR, MODIS, RTTOV) 
-and therefore, allows the quantitative evaluation of clouds, humidity,
-and precipitation processes in diverse numerical models.
+SCOPS (Subgrid Cloud Overlap Profile Sampler, \citet{Webb2001}), which is implemented, 
+for instance, in COSP (CFMIP Observation Simulator Package, \cite{Bodas2011}).
+% COSP is an integrated satellite simulator, which has been developed by 
+% the Cloud Feedback Model Intercomparison Project (CFMIP) community.
+% It is capable to simulate observations of multiple active and passive
+% satellite instruments (e.g., CloudSat, Calipso, ISCCP, MISR, MODIS, RTTOV) 
+% and therefore, allows the quantitative evaluation of clouds, humidity,
+% and precipitation processes in diverse numerical models.
 For testing and verifcation purposes SCOPS has been implemented in the cloud simulator. 
 The comparison of two runs, one based on the downscaler and the other one using SCOPS,
 led to similar monthly mean results.
-
-
 
 
 
@@ -217,23 +213,6 @@ exceeds a certain threshold for the first time.
 From this model level all subcolumn parameters are collected 
 either from grid box mean profiles or matrices, as explained below by means of an example.
 
-
-% cloud top parameters 
-\begin{figure}[!ht]
-  \begin{minipage}{\textwidth}
-    {\includegraphics[width=\textwidth]{{\snapcase_retrieved}.png}}
-  \end{minipage}
-  \caption[Retrieved subcolumn cloud top parameters.]
-{Retrieved subcolumn cloud fraction (CFC), cloud top pressure (CTP),
-cloud top temperature (CTT), cloud top height (CTH),
-cloud phase (CPH), cloud effective radius (CER),
-cloud optical thickness (COT), and cloud water path (CWP) 
-for one grid box. The grid cell is located at
-{\longitude} and {\latitude} on {\gcdate} at {\gchour}.
-The grid box average is given on top of each panel.}
-\label{fig:retrieved}
-\end{figure}
-
 Figure~\ref{fig:retrieved} shows the derived cloud top parameters for each subcolumn, 
 where the total cloud optical thickness is larger than 0.15. 
 In the first upper left panel one can see that for each subcolumn a binary cloud mask 
@@ -249,12 +228,46 @@ The cloud optical thickness and cloud water path of each subcolumn
 is derived by integrating the sum of positive matrix elements between
 the model level of the uppermost cloud layer detected and the lowermost level.
 
+CC4CL simultaneously retrieves the coud optical thickness and cloud effective radius 
+by applying the Nakajima and King approach \cite{Nakajima1990}.
+This method utilizes the fact that the cloud optical thickness is strongly related 
+to the reflectance of clouds at a non-absorbing wavelength 
+in the visible region (0.6 or 0.8 micron), while the particle size is determined 
+mostly from light absorption in a near infrared channel (1.6 or 3.7 micron).
+% Furthermore ice clouds absorb more and reflect less radiation at near infrared wavelengths.
+As already mentioned in Section~\ref{sec:preproc}, 
+CC4CL computes the cloud water path using Equation~\ref{eq:han},
+where the cloud optical thickness and cloud effective radius are input parameters.
+Consequently, CC4CL retrieves cloud optical thickness, cloud effective radius, and 
+cloud water path based on observations made during daytime.
+% only for daytime conditions. 
+The purpose of the cloud simulator is to imitate the satellite observations and hence, 
+these three cloud parameters are not simulated during nighttime, 
+which corresponds to grid boxes having a solar zenith angle larger than 90 degree.
+Figure~\ref{fig:sza} gives an example of the solar zenith angle distribution 
+for the ERA-Interim time slots at UTC 00, 06, 12, and 18 on {\gcdate}.
+
+% cloud top parameters 
+\begin{figure}[!t]
+  \begin{minipage}{\textwidth}
+    {\includegraphics[width=\textwidth]{{\snapcase_retrieved}.png}}
+  \end{minipage}
+  \caption[Retrieved subcolumn cloud top parameters.]
+{Retrieved subcolumn cloud fraction (CFC), cloud top pressure (CTP),
+cloud top temperature (CTT), cloud top height (CTH),
+cloud phase (CPH), cloud effective radius (CER),
+cloud optical thickness (COT), and cloud water path (CWP) 
+for one grid box. The grid cell is located at
+{\longitude} and {\latitude} on {\gcdate} at {\gchour}.
+The grid box average is given on top of each panel.}
+\label{fig:retrieved}
+\end{figure}
 
 % % \begin{minipage}[ÄUSSERE POSITION][HÖHE][INNERE POSITION]{BREITE}
 % % 	Beispieltext
 % % \end{minipage}
 % CER, CWP, COT only daytime
-\begin{figure}[!ht]
+\begin{figure}[!t]
 \centering
  \begin{minipage}{0.45\textwidth}
    \includegraphics[scale=0.22]{./figures/{\szamidnight}.png}
@@ -275,25 +288,6 @@ the model level of the uppermost cloud layer detected and the lowermost level.
  \label{fig:sza}
 \end{figure}
 
-
-CC4CL simultaneously retrieves the coud optical thickness and cloud effective radius 
-by applying the Nakajima and King approach \cite{Nakajima1990}.
-This method utilizes the fact that the cloud optical thickness is strongly related 
-to the reflectance of clouds at a non-absorbing wavelength 
-in the visible region (0.6 or 0.8 micron), while the particle size is determined 
-mostly from light absorption in a near infrared channel (1.6 or 3.7 micron).
-% Furthermore ice clouds absorb more and reflect less radiation at near infrared wavelengths.
-As already mentioned in Section~\ref{sec:preproc}, 
-CC4CL computes the cloud water path using Equation~\ref{eq:han},
-where the cloud optical thickness and cloud effective radius are input parameters.
-Consequently, CC4CL retrieves cloud optical thickness, cloud effective radius, and 
-cloud water path based on observations made during daytime.
-% only for daytime conditions. 
-The purpose of the cloud simulator is to imitate the satellite observations and hence, 
-these three cloud parameters are not simulated during nighttime, 
-which corresponds to grid boxes having a solar zenith angle larger than 90 degree.
-Figure~\ref{fig:sza} gives an example of the solar zenith angle distribution 
-for the ERA-Interim time slots at UTC 00, 06, 12, and 18 on {\gcdate}.
 
 
 % ==================================================================================
@@ -330,7 +324,23 @@ additional dimension. The used bins are:
  \item CER: $\{$ 0, 3, 6, 9, 12, 15, 20, 25, 30, 40, 60, 80 $\}$ 
 \end{itemize}
 
-\noindent
+\begin{figure}[!ht]
+  \begin{minipage}{0.4\textwidth}
+    \includegraphics[width=5cm,height=6cm]{./figures/isccp_uebersicht.png} 
+  \end{minipage}
+  \begin{minipage}{0.6\textwidth}
+    \caption[ISCCP COT-CTP classification.]
+    {Cloud classification scheme proposed by ISCCP-D2 dataset
+    as a function of cloud optical thickness and cloud top pressure [hPa].
+    High clouds: Cirrus (Ci), Cirrostratus (Cs) and Deep Convection (Cb).
+    Middle clouds: Altocumulus (Ac), Altostratus (As) and Nimbostratus (Ns).
+    Low clouds: Cumulus (Cu), Stratocumulus (Sc) and Stratus (St).
+    All cloud types are separated into liquid and ice types.}
+    \label{fig:isccp}
+  \end{minipage}
+\end{figure}
+
+
 The 2D joint cloud property histograms are produced for each grid box following 
 the ISCCP classification, which correlates the retrieved height and optical thickness of the cloud. 
 Figure~\ref{fig:isccp} illustrates the CTP-COT partitioning that was proposed 
@@ -349,19 +359,8 @@ The widths of the CTP [hPa] and COT bins used are as follows:
  \item CTP: $\{$ 1, 90, 180, 245, 310, 375, 440, 500, 560, 620, 680, 740, 800, 875, 950, 1100 $\}$
 \end{itemize}
 
-
 Finally, the diagnostic simulator outputs can be compared to similar statistics from satellite 
 observations, which will be shown in Section~\ref{sec:sim_vs_obs}.
-
-
-\begin{figure}[!ht]
-  \begin{minipage}{0.4\textwidth}
-    \includegraphics[width=5cm,height=6cm]{./figures/isccp_uebersicht.png} 
-  \end{minipage}
-  \begin{minipage}{0.6\textwidth}
-    \caption[ISCCP COT-CTP classification.]{\isccp}\label{fig:isccp}
-  \end{minipage}
-\end{figure}
 
 % Pseudo-retrieved grid box averages for 1 ERA-I file, 20080701, 12 UTC
 \begin{figure}[!ht]
