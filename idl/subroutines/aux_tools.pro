@@ -981,8 +981,8 @@ END
 
 
 ;-----------------------------------------------------------------------------
-PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
-                   cci_pwd, SAT=sat, REFS=refs, RATIO=ratio
+PRO PLOT_SIM_COMPARE_HIST, file, varname, save_dir, base, xtitle, $
+                           units, time, SAT=sat, REFS=refs, RATIO=ratio
 ;-----------------------------------------------------------------------------
     CASE varname OF
         'cer': ymax=50.
@@ -993,26 +993,13 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
         ELSE: RETURN
     ENDCASE
     
+    fig_size = [40,20]
     opt = 'hist1d_'
-    outfile = save_dir + base + '_' + opt + varname 
-    IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
-    
-    ;READ_SIM_NCDF, h1d, FILE=file, VAR_NAME=opt+varname
+    cs = 2.7
+
     READ_SIM_NCDF, bin, FILE=file, VAR_NAME=opt+varname+'_bin_border'
     READ_NCDF, file, opt+varname, verbose = verbose, found = found, algoname = 'era-i', set_fillvalue = set_fillvalue , $	;input 
 	h1d, fillvalue, minvalue, maxvalue, longname, unit, raw=raw, attribute = attribute, var_dim_names = var_dim_names	;output
-    
-    save_as = outfile + '.eps'
-    start_save, save_as, size=[35,20]
-    cs = 2.3
-    varn = varname
-
-    CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
-        VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
-        YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
-        BIN_BORDERS=bin, FILE=file
-    
-    end_save, save_as
     
     IF KEYWORD_SET(refs) THEN BEGIN
         FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
@@ -1020,34 +1007,21 @@ PRO PLOT_SIM_HIST, file, varname, save_dir, base, xtitle, units, time, $
             is = GET_AVAILABILITY(opt+varname, refs[r])
             IF (is EQ -1) THEN CONTINUE
 
-            CASE varname of
-                'cer' : BEGIN
-                    IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
-                        varn='cer' ELSE varn='ref'
-                    END
-                ELSE: varn = varname 
-            ENDCASE
-
-            CASE refs[r] OF
-                'cci': dirn = cci_pwd
-                ELSE: dirn = ''
-            ENDCASE
-
             opt = 'hist1d_'
             outfile = save_dir + base + '_' + opt + varname
             IF KEYWORD_SET(ratio) THEN outfile = outfile + '_ratio'
             outfile = outfile + '_compare_with_'+refs[r]
     
             save_as = outfile + '.eps'
-            start_save, save_as, size=[35,20]
-            cs = 2.3
+            start_save, save_as, size=fig_size
+            cs = cs
     
-            compare = {ref:refs[r], sat:sat, var:varn, dirname:dirn, $
+            compare = {ref:refs[r], sat:sat, var:varname, dirname:'', $
                        year:STRMID(time, 0, 4), $
                        month:STRMID(time, 4, 2), dat:''}
     
-            CREATE_1DHIST, RESULT=h1d, VARNAME=varn, $
-                VARSTRING=opt+varn, CHARSIZE=cs, XTITLE=xtitle, $
+            CREATE_1DHIST, RESULT=h1d, VARNAME=varname, $
+                VARSTRING=opt+varname, CHARSIZE=cs, XTITLE=xtitle, $
                 YMAX=ymax, LEGEND_POSITION=legend_position, RATIO=ratio, $
                 BIN_BORDERS=bin, COMPARE=compare, FILE=file
     
@@ -1089,10 +1063,89 @@ PRO PLOT_SIM_MAPS, file, varname, save_dir, data, fillvalue, mini, maxi, $
     end_save, save_as
 END
 
+;-----------------------------------------------------------------------------
+PRO PLOT_PCMULTI, varname, refs, sat, mini=mini, maxi=maxi, outpwd=outpwd
+;-----------------------------------------------------------------------------
+    IF (varname EQ 'hist2d_cot_ctp') THEN RETURN
+
+    DEFSYSV, '!SAVE_DIR', outpwd
+
+    FOR r=0, N_ELEMENTS(refs)-1 DO BEGIN
+
+        IF ( refs[r] NE 'cci' ) THEN BEGIN
+            PRINT, " ! Only for CCI as reference - SAV files!"
+            CONTINUE
+        ENDIF
+    
+        is = GET_AVAILABILITY(varname, refs[r])
+        IF (is EQ -1) THEN CONTINUE
+
+        PRINT,'** Simple Time Series'
+        CASE varname OF
+            'cfc': BEGIN     & m0 = 0.2   & m1 = 0.8   & rq = 3.0 & END
+            'cph': BEGIN     & m0 = 0.2   & m1 = 0.7   & rq = 1.5 & END
+            'ctp': BEGIN     & m0 = 400.0 & m1 = 650.0 & rq = 5.5 & END
+            'cth': BEGIN     & m0 = 3.5   & m1 = 6.5   & rq = 3.0 & END
+            'ctt': BEGIN     & m0 = 254.0 & m1 = 264.0 & rq = 0.0 & END
+            'cot': BEGIN     & m0 = 0.0   & m1 = 30.0  & rq = 0.5 & END
+            'cot_liq': BEGIN & m0 = 0.0   & m1 = 30.0  & rq = 0.5 & END
+            'cot_ice': BEGIN & m0 = 0.0   & m1 = 30.0  & rq = 0.5 & END
+            'cer': BEGIN     & m0 = 10.0  & m1 = 30.0  & rq = 1.5 & END
+            'cer_liq': BEGIN & m0 = 0.0   & m1 = 25.0  & rq = 1.0 & END
+            'cer_ice': BEGIN & m0 = 10.0  & m1 = 50.0  & rq = 2.0 & END
+            'cwp': BEGIN     & m0 = 0.0   & m1 = 450.0 & rq = 0.5 & END
+            'lwp': BEGIN     & m0 = 30.0  & m1 = 180.0 & rq = 0.5 & END
+            'iwp': BEGIN     & m0 = 50.0  & m1 = 750.0 & rq = 0.5 & END
+            'cwp_allsky': BEGIN & m0 = 20.0 & m1 = 270.0 & rq = 0.5 & END
+            'lwp_allsky': BEGIN & m0 = 10.0 & m1 = 80.0  & rq = 0.5 & END
+            'iwp_allsky': BEGIN & m0 = 20.0 & m1 = 250.0 & rq = 0.5 & END
+            ELSE: BEGIN      & m0 = mini  & m1 = maxi  & rq = 0.0 & END
+        ENDCASE
+
+        plot_simple_timeseries, varname, sat, 'era-i', cov, reference=refs[r], $
+            mini=m0, maxi=m1, verbose=verbose, oplots=oplots, found=found, $
+	    addtext=addtext, error=error, /save_as, $
+	    logarithmic=logarithmic, version=version, correct=correct, $
+            zonal_only=zonal_only, datum=datum, /show_values, $
+            mean_2d=mean_2d, rot=rq, trend=trend
+
+        PRINT,'** Hovmoeller Time Series'
+        minv = strcompress(string(-(maxi*20./100.),f='(f10.2)'), /rem)+',1980'
+        maxv = strcompress(string((maxi*20./100.),f='(f10.2)'), /rem)+',2016'
+        plot_hovmoeller, varname, 'era-i', sat, /save_as,$
+            mini=minv, maxi=maxv, nobar=nobar, $
+            antarctic=ant, arctic=arc, ctable='', other='bwr',$
+            reference=refs[r], out=out, land=land, sea=sea, $
+            oplots=opl, found=found, limit=limit, coverage=cov
+
+        PRINT,'** Taylor Diagram' 
+        ;plot_taylor_diagram, year, month, day, $
+        plot_taylor_diagram, 1982, 1, 1, $
+            file1=file, sat=sat, /save_as, $
+            reference=refs[r], verbose=verbose, varname=varname,$
+            mini=mini, maxi=maxi, limit=limit, unit=unit, $
+            other='rainbow', antarctic=ant, arctic=arc, algo='era-i', $
+            level=level, /time_series
+
+        PRINT,'** Map2d Multi Time Step'
+        plot_cci_gac_time_series, algo='era-i', sat=sat, /save_as, $
+            cov=cov, reference=refs[r], /mean_2d, verbose=verbose, $
+            single_var=varname, mini=mini, maxi=maxi, limit=limit, $
+            other='rainbow', ctable='', globe=globe, $
+            p0lon=p0lon, p0lat=p0lat, antarctic=ant, arctic=arc, $
+            mollweide=mollweide, hammer=hammer, goode=goode, magnify=-1, $ 
+            aitoff=aitoff, sinusoidal=sinusoidal, robinson=robinson, $
+            nobar=nobar, stereographic=stereographic, $
+            msg=msg, log=log, /show_values
+
+    ENDFOR
+END
+
+
 
 ;-----------------------------------------------------------------------------
-PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, $
-                           mini, maxi, cci_pwd, SAT=sat
+PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, $
+                           time, mini, maxi, SAT=sat
 ;-----------------------------------------------------------------------------
     IF (varname EQ 'hist2d_cot_ctp') THEN RETURN
 
@@ -1103,30 +1156,10 @@ PRO PLOT_SIM_COMPARE_WITH, file, refs, varname, save_dir, time, $
 
         year = STRMID(time, 0, 4)
         month = STRMID(time, 4, 2) 
-
-        CASE varname of
-            'cer' : BEGIN
-                IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
-                    cci_varn=varname ELSE cci_varn='ref'
-                END
-            'cer_liq' : BEGIN
-                IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
-                    cci_varn=varname ELSE cci_varn='ref_liq'
-                END
-            'cer_ice' : BEGIN
-                IF ((STRLEN(cci_pwd) GT 0) AND (refs[r] EQ 'cci')) THEN $
-                    cci_varn=varname ELSE cci_varn='ref_ice'
-                END
-            ELSE: cci_varn = varname 
-        ENDCASE
-
-        CASE refs[r] OF
-            'cci': dirn = cci_pwd
-            ELSE: dirn = ''
-        ENDCASE
+        dirn=''
 
         compare_cci_with_clara, year, month, '', ALGO1='era-i',$
-            DATA=cci_varn, CCIFILE=file, REFERENCE=refs[r], $
+            DATA=varname, CCIFILE=file, REFERENCE=refs[r], $
             SAT=sat, MINI=mini, MAXI=maxi , LIMIT=limit, $
             SAVE_DIR=save_dir, LAND=land, SEA=sea, COV=cov, $
             OTHER='rainbow', CTABLE='', LEVEL='l3c', DIRNAME2=dirn
@@ -1137,14 +1170,14 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
-                            mini, maxi, cci_pwd, REFS=refs, SAT=sat
+                            mini, maxi, refs, sat
 ;-----------------------------------------------------------------------------
     IF (vname EQ 'hist2d_cot_ctp') THEN RETURN
 
     opt = 'zonal_'
     outfile = save_dir + base + '_' + opt + vname
     save_as = outfile + '.eps'
-    start_save, save_as, size=[32,20]
+    start_save, save_as, size=[40,20]
 
     year = STRMID(time, 0, 4)
     month = STRMID(time, 4, 2) 
@@ -1169,21 +1202,8 @@ PRO PLOT_SIM_COMPARE_ZONAL, file, vname, time, save_dir, base, $
             is = GET_AVAILABILITY(vname, refs[r])
             IF (is EQ -1) THEN CONTINUE
 
-            IF ((STRLEN(cci_pwd) EQ 0) OR (refs[r] NE 'cci')) THEN BEGIN
-                CASE vname OF
-                    'cer':      varname = 'ref'
-                    'cer_liq':  varname = 'ref_liq'
-                    'cer_ice':  varname = 'ref_ice'
-                    ELSE: varname = vname
-                ENDCASE
-            ENDIF ELSE BEGIN
-                varname = vname
-            ENDELSE
-
-            CASE refs[r] OF
-                'cci': dirn = cci_pwd 
-                ELSE: dirn = ''
-            ENDCASE
+            dirn = ''
+            varname = vname
 
             plot_zonal_average, year, month, '', $
                 '', varname, algo=refs[r], sea=sea, land=land, $
@@ -1202,16 +1222,14 @@ END
 
 ;-----------------------------------------------------------------------------
 PRO PLOT_SIM_COMPARE_JCH, file, vname, time, save_dir, base, $
-                          mini, maxi, fillvalue, cci_pwd, $
-                          REFS=refs, SAT=sat
+                          mini, maxi, fillvalue, REFS=refs, SAT=sat
 ;-----------------------------------------------------------------------------
     CASE vname OF
         'hist2d_cot_ctp': opt = '_hist2d' 
         ELSE: RETURN
     ENDCASE
 
-    set_colors, other='rainbow', ctable=ctable, $
-                brewer=brewer, col_tab=col_tab
+    set_colors, other='rainbow', ctable=ctable, brewer=brewer, col_tab=col_tab
 
     year = STRMID(time, 0, 4)
     month = STRMID(time, 4, 2)
@@ -1263,10 +1281,7 @@ PRO PLOT_SIM_COMPARE_JCH, file, vname, time, save_dir, base, $
             is = GET_AVAILABILITY(vname, refs[r])
             IF (is EQ -1) THEN CONTINUE
 
-            CASE refs[r] OF
-                'cci': dirn = cci_pwd
-                ELSE: dirn = ''
-            ENDCASE
+            dirn=''
 
             ; get reference data name
             ref_alg = sat_name(refs[r], sat, year=year, month=month)
@@ -1382,7 +1397,7 @@ PRO PLOT_PROFILES, file, varname, save_dir
         'cwp_profile': xtitle = 'Cloud Water Path [kg/m!U2!N]'
         'cer_profile': xtitle = 'Cloud Effective Radius [micron]'
         ELSE: BEGIN
-            print, " --- ", varname, " is not defined! "
+            PRINT, " --- ", varname, " is not defined! "
             stop
             END
     ENDCASE
@@ -1476,7 +1491,7 @@ PRO PLOT_MATRICES, file, varname, save_dir
             END
         'cer_matrix': bar_title = 'Cloud Effective Radius [microns]'
         ELSE: BEGIN
-            print, " --- ", varname, " is not defined! "
+            PRINT, " --- ", varname, " is not defined! "
             stop
             END
     ENDCASE

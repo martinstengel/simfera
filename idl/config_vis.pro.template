@@ -1,49 +1,37 @@
 ;------------------------------------------------------------------------------
-PRO CONFIG_VIS, settings, FILE=file, VARS=vars, REFS=refs, $
-                          CCIOLD=cciold, PATTERN=pattern
+PRO CONFIG_VIS, settings, VARS=vars, REFS=refs
 ;------------------------------------------------------------------------------
 
-    ; subfolder of file location
-    ;run = '2_results_basedon_mlev/time_series/v1.1_DWDscops_MaxRand_MixedPase/2008/'
-    ;run = '2_results_basedon_mlev/snapshots/case0.0/'
-    run = '2_results_basedon_mlev/snapshots/case0.1/'
-    ;run = '2_results_basedon_mlev/snapshots/case1.0/'
+    ; should be equal to -> vali_gui/vali_set_path: !SAVE_DIR variable
+    figout = "/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v1.1_DWDscops_MaxRand_MixedPase/"
 
-    ; input
-    inp = '/cmsaf/cmsaf-cld7/cschlund/output/simulator/' + run
-    ; figure output
-    fig = '/cmsaf/cmsaf-cld7/cschlund/figures/simulator/' + run
-    ; simulator git repository
-    rep = '/home/cschlund/Programme/idl/cloud_simulator/idl/subtools/'
-    ; eps2png bash script
-    eps = rep + 'eps2png.sh '
+    ; input monthly nc-files
+    monpat = "*200807*"
+    moninp = "/cmsaf/cmsaf-cld7/cschlund/output/simulator/v1.1_DWDscops_MaxRand_MixedPase/timeseries/cot_thv_0.15/"
+    mfiles = FINDFILE( moninp + monpat, count=moncnt )
 
-    ; latest CC4CL outputs
-    IF ~KEYWORD_SET(cciold) THEN $
-        cci = '/cmsaf/cmsaf-cld7/cschlund/input/vali_gui/' ELSE cci = ''
+    ; input snapshot files
+    snppat = "*20080701_0600+00_mlev_cot-thv-0.15_snapshot-08*"
+    snpinp = "/cmsaf/cmsaf-cld7/cschlund/output/simulator/v1.1_DWDscops_MaxRand_MixedPase/snapshots/case0.0/"
+    sfiles = FINDFILE( snpinp + snppat, count=snpcnt )
 
     ; create figure output path if not existing
-    validres = VALID_DIR( fig )
-    IF(validres EQ 0) THEN creatres = CREATE_DIR( fig )
-
-    IF ~KEYWORD_SET(file) THEN BEGIN 
-        ; get file list
-        IF KEYWORD_SET(pattern) THEN BEGIN
-            files = FINDFILE(inp+pattern, count=count)
-        ENDIF ELSE BEGIN
-            files = FINDFILE(inp+'*MM*nc', count=count)
-        ENDELSE
-
-        IF (count GT 0) THEN BEGIN 
-            PRINT, '** ', STRTRIM(count,2), ' InputFiles found'
-        ENDIF ELSE BEGIN 
-            PRINT, '** NO FILES FOUND'
-            RETURN
-        ENDELSE
-    ENDIF ELSE BEGIN
-        files = [file]
-        count = N_ELEMENTS(files)
-    ENDELSE
+    validres = VALID_DIR( figout )
+    IF(validres EQ 0) THEN creatres = CREATE_DIR( figout )
+    validres = VALID_DIR( figout+'hovmoeller/' )
+    IF(validres EQ 0) THEN creatres = CREATE_DIR( figout+'hovmoeller/' )
+    validres = VALID_DIR( figout+'taylor/' )
+    IF(validres EQ 0) THEN creatres = CREATE_DIR( figout+'taylor/' )
+    validres = VALID_DIR( figout+'timeseries/' )
+    IF(validres EQ 0) THEN creatres = CREATE_DIR( figout+'timeseries/' )
+    validres = VALID_DIR( figout+'monthly/' )
+    IF(validres EQ 0) THEN creatres = CREATE_DIR( figout+'monthly/' )
+    ;validres = VALID_DIR( figout+'diffs/' )
+    ;IF(validres EQ 0) THEN creatres = CREATE_DIR( figout+'diffs/' )
+    ;validres = VALID_DIR( figout+'ctp_cot_histogram/' )
+    ;IF(validres EQ 0) THEN creatres = CREATE_DIR( figout+'ctp_cot_histogram/' )
+    ;validres = VALID_DIR( figout+'plot_l2/' )
+    ;IF(validres EQ 0) THEN creatres = CREATE_DIR( figout+'plot_l2/' )
 
     ; get variable list
     IF ~KEYWORD_SET(vars) THEN BEGIN 
@@ -94,9 +82,8 @@ PRO CONFIG_VIS, settings, FILE=file, VARS=vars, REFS=refs, $
     ; get reference list
     IF KEYWORD_SET(refs) THEN refs = STRSPLIT(refs, /EXTRACT,',')
 
-
-    settings = { inp_pwd:inp, out_pwd:fig, cci_pwd:cci, $
-                 eps2png:eps, refdata:ref_options, $
-                 files:files, nfiles:count, mini_maxi:min_max }
+    settings = { figout:figout, $
+                 sfiles:sfiles, sfiles_count:snpcnt, $
+                 mfiles:mfiles, mfiles_count:moncnt, mini_maxi:min_max }
 
 END
