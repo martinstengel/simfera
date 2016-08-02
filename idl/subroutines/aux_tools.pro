@@ -1101,9 +1101,10 @@ PRO PLOT_PCMULTI, varname, refs, sat, mini=mini, maxi=maxi, outpwd=outpwd
             'iwp_allsky': BEGIN & m0 = 20.0 & m1 = 250.0 & rq = 0.5 & END
             ELSE: BEGIN      & m0 = mini  & m1 = maxi  & rq = 0.0 & END
         ENDCASE
-
+        minst = strcompress(string(m0,f='(f10.2)'), /rem)+',1980'
+        maxst = strcompress(string(m1,f='(f10.2)'), /rem)+',2016'
         plot_simple_timeseries, varname, sat, 'era-i', cov, reference=refs[r], $
-            mini=m0, maxi=m1, verbose=verbose, oplots=oplots, found=found, $
+            mini=minst, maxi=maxst, verbose=verbose, oplots=oplots, found=found, $
 	    addtext=addtext, error=error, /save_as, $
 	    logarithmic=logarithmic, version=version, correct=correct, $
             zonal_only=zonal_only, datum=datum, /show_values, $
