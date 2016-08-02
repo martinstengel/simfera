@@ -27,16 +27,15 @@ Evaluation of clouds in ERA-Interim reanalysis data using Cloud\_cci
 % CC4CL VERSION
 \newcommand{\fv}{fv2.0}
 \newcommand{\cerstring}{CER}
-\newcommand{\basepath}{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/2_results_basedon_mlev}
+\newcommand{\basepath}{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v1.1_DWDscops_MaxRand_MixedPase}
 
 % GRAPHIC PATH
-% \graphicspath{{/cmsaf/cmsaf-cld7/cschlund/figures/simulator/v5.4_bugfix_histos_daysided_only/}}
 \graphicspath{ 
-{\basepath/snapshots/case0.0/},
-{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/200807/},
-{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/hovmoeller/},
-{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/taylor/},
-{\basepath/time_series/v1.1_DWDscops_MaxRand_MixedPase/timeseries/} 
+{\basepath/snapshots/},
+{\basepath/monthly/},
+{\basepath/hovmoeller/},
+{\basepath/taylor/},
+{\basepath/timeseries/} 
 }
 
 % SIMULATOR RUN SETTINGS
@@ -44,6 +43,7 @@ Evaluation of clouds in ERA-Interim reanalysis data using Cloud\_cci
 \newcommand{\filebase}{ERA_Interim_MM}
 \newcommand{\yyyymm}{200807}
 \newcommand{\MonthYear}{July 2008}
+\newcommand{\timeseries}{January 1982 - December 2014}
 \newcommand{\valcot}{0.15}
 \newcommand{\cotthv}{cot-thv-\valcot}
 \newcommand{\obase}{\filebase\yyyymm_\cotthv}
@@ -77,15 +77,20 @@ Evaluation of clouds in ERA-Interim reanalysis data using Cloud\_cci
 \newcommand{\sat}{NOAA-18}
 \newcommand{\era}{ERA-INTERIM}
 \newcommand{\cci}{CC4CL-\sat}
+\newcommand{\noaapm}{CC4CL-NOAA-PM}
 \newcommand{\clara}{CLARA-A2-\sat}
 \newcommand{\comparecci}{Compare_CCI__L3C_\yyyymm}
 \newcommand{\zonal}{zonalmean}
 \newcommand{\histo}{2dhist}
 \newcommand{\compcaption}{
-The upper left map shows the simulated product based on ERA-Interim data, 
-while the upper right map shows the satellite-based {\cci} product.
-Both data sets are presented as a scatter histogram in the lower left figure,
-and the zonal means are given in the lower right figure.}
+derived from the cloud simulator (upper left) and {\cci} (upper right), respectively.
+The modeled and observed results are inter-compared by means of a 
+scatter histogram (lower left) and monthly zonal means (lower right).
+% The upper left map shows the simulated product based on ERA-Interim data, 
+% while the upper right map shows the satellite-based {\cci} product.
+% Both data sets are presented as a scatter histogram in the lower left figure,
+% and the zonal means are given in the lower right figure.
+}
 
 % SIMULATOR OUTPUT PLOTS
 \newcommand{\hisout}{\obase_hist1d}
@@ -110,10 +115,26 @@ and the zonal means are given in the lower right figure.}
 
 % ZONAL MEAN INTER-COMPARISON
 \newcommand{\zonout}{\obase_zonal}
-\newcommand{\szoncaption}{Comparison of monthly zonal mean of}
-\newcommand{\ezoncaption}{obtained from the cloud simulator 
-(black solid line) with other reference data sets.}
+\newcommand{\szoncaption}{Inter-comparison of monthly zonal mean of}
+\newcommand{\ezoncaption}{obtained from the cloud simulator (black solid line) with other reference data sets.}
 
+% HOVMOELLER: Diff_\era_-_\noaapm_\var_hovmoeller_L3C_1980-2016
+\newcommand{\hovpre}{Diff_\era_-_\noaapm}
+\newcommand{\hovsuf}{hovmoeller_L3C_1980-2016}
+\newcommand{\hovcaption}{showing the absolute difference between 
+the modeled ({\era}) and measured ({\noaapm})}
+
+% TAYLOR
+% Taylor diagrams for net, longwave, and shortwave flux components at the top of the atmosphere evaluated against CERES.
+\newcommand{\taysuffix}{taylor_diagram_\era_vs_CC4CL-NOAA-PM}
+\newcommand{\taycaption}{Taylor diagram comparing simulated and observed {\parname}
+computed over all monthly means from 1982/01 to 2014/12 for 9 different regions.
+The pattern statistics are normalized to AVHRR/NOAA afternoon observations ({\noaapm}).}
+
+% TIME time_series
+\newcommand{\tscompare}{era1.1_vs_cci_time_series_noaapm_1978-2016_time_series}
+\newcommand{\tscaption}{derived from the cloud simulator (black) and {\noaapm} (red), respectively, 
+along with the bias corrected root-mean-square-difference (gray)}
 
 % FIGURE SIZES
 \newcommand{\figwidth}{13cm}
