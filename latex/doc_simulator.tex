@@ -1,7 +1,9 @@
 \documentclass[a4paper,11pt]{article}
 \input{config_doc}
 
+% % % ========================================================================
 \begin{document}
+% % % ========================================================================
 
 \title{\doctitle}
 \author{\docauthor}
@@ -13,40 +15,71 @@
 %\newpage
 %\listoftables
 
+% % % ========================================================================
 
 \newpage
 \section{Introduction}\label{sec:intro}
 \input{./content/intro}
 
+% % % ========================================================================
+
 \section{Description of datasets}\label{sec:datasets}
 \input{./content/data_description}
+
+% % % ========================================================================
 
 \section{Cloud simulator description}\label{sec:sim}
 \input{./content/cloud_simulator}
 
+% % % ========================================================================
 
-\section{Comparison of simulated and observed cloud parameters}\label{sec:sim_vs_obs}
+\section{Comparison of simulated and observed cloud parameters}
+\label{sec:sim_vs_obs}
+
+% % % ========================================================================
+
+\subsection{\MonthYear}\label{subsec:monthly}
+
 \FloatBarrier
-\subsection{Monthly Histograms}
+\subsubsection{Histograms}\label{sss:histograms}
 \input{./content/compare_with_cci_hist1d}
 \input{./content/compare_with_cci_hist2d}
-\FloatBarrier
-\subsection{Monthly averages}
-\input{./content/compare_with_cci}
-\FloatBarrier
-\subsection{Monthly Zonal means}
-\input{./content/compare_zonal_mean}
-\FloatBarrier
-\subsection{Time series analysis}
-% \subsection{Taylor diagram of cloud fraction}
 
+\FloatBarrier
+\subsubsection{Monthly means}\label{sss:averages}
+\input{./content/compare_with_cci}
+
+\FloatBarrier
+\subsubsection{Zonal means}\label{sss:zonalmeans}
+\input{./content/compare_zonal_mean}
+
+% % % ========================================================================
+
+\subsection{\timeseries}\label{subsec:timeseries}
+
+\FloatBarrier
+\subsubsection{Time series analysis}\label{sss:simple_time_series}
+\input{./content/compare_time_series}
+
+\FloatBarrier
+\subsubsection{Hovmoeller diagrams}\label{sss:hovmoeller}
+\input{./content/compare_hovmoeller}
+
+\FloatBarrier
+\subsubsection{Taylor diagrams}\label{sss:taylor}
+\input{./content/compare_taylor}
+
+% % % ========================================================================
 
 \section{Summary and conclusions}\label{sec:sum_and_con}
 
+% % % ========================================================================
 
 \newpage
 \addcontentsline{toc}{section}{References}
 \bibliography{shorttitles,database}
 %\bibliography{longtitles,database}
- 
+
+% % % ========================================================================
 \end{document}
+% % % ========================================================================
