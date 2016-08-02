@@ -42,4 +42,5 @@ mpmd/ecflow_suite/*.def
 *.MOD
 *.out
 *.err
+*.cmd
 .directory
