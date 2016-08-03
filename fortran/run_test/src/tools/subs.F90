@@ -245,14 +245,25 @@ MODULE SUBS
             tmp % icer_prof(:,:,z) = GET_ICE_CER( t_z, iwc_z, p_z, & 
                                                   inp % xdim, inp % ydim  )
 
+            ! ----------------------------------------------------------------
             ! COT computation: method of Han et al. (1994)
             !   CWP = (4 * COT * R_eff * rho) / (3 * Q_ext)
             !   COT = (3 * CWP * Q_ext) / (4 * R_eff * rho)
-
+            ! ----------------------------------------------------------------
             tmp % lcot_prof(:,:,z) = (3.0*tmp % lwp_prof(:,:,z) * qext_water) / &
                                      (4.0*tmp % lcer_prof(:,:,z) * 1.0E-6 * rho_water)
             tmp % icot_prof(:,:,z) = (3.0*tmp % iwp_prof(:,:,z) * qext_ice) / &
                                      (4.0*tmp % icer_prof(:,:,z) * 1.0E-6 * rho_ice)
+
+            !! ----------------------------------------------------------------
+            !! ECHAM model: IWP[kg/m2], ref[micron]
+            !! cod_liq = 2.0731 * (ref_liq**(-1.1079)) * 1000. * LWP
+            !! cod_ice = 2.1818 * (ref_ice**(-1.0611)) * 1000. * IWP
+            !! ----------------------------------------------------------------
+            !tmp % lcot_prof(:,:,z) = 2.0731 * ( & 
+            !        tmp%lcer_prof(:,:,z)**(-1.1079) ) *1000.*tmp%lwp_prof(:,:,z)
+            !tmp % icot_prof(:,:,z) = 2.1818 * ( &
+            !        tmp%icer_prof(:,:,z)**(-1.0611) ) *1000.*tmp%iwp_prof(:,:,z)
 
             WHERE ( tmp % lwp_prof(:,:,z) == 0.0 )
                 tmp % lcot_prof(:,:,z) = 0.0
