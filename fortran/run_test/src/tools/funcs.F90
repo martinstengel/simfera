@@ -328,7 +328,7 @@ MODULE FUNCS
       integer ( kind = 4 ) s
       integer ( kind = 4 ) values(8)
       integer ( kind = 4 ) y
-      character ( len = 30 ) time_stamp
+      character ( len = 64 ) time_stamp
     
       call date_and_time ( values = values )
     
@@ -367,7 +367,7 @@ MODULE FUNCS
       !17 March 2016  09:38:14.224 AM
       write ( time_stamp, &
         '(i2.2, 1x, a, 1x, i4, 2x, i2.2, a1, i2.2, a1, i2.2, a1, i3.3, 1x, a)' ) &
-        d, trim ( month(m) ), y, h, ':', n, ':', s, '.', mm, trim ( ampm )
+        d, trim(month(m)), y, h, ':', n, ':', s, '.', mm, trim(ampm)
 
     END FUNCTION timestamp
 
