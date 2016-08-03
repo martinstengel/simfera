@@ -27,6 +27,7 @@ MODULE NCDF_CONSTANTS
     CHARACTER(LEN=*), PARAMETER :: TCR_STR = "P1M"
     CHARACTER(LEN=*), PARAMETER :: THV = "cot_thv"
     CHARACTER(LEN=*), PARAMETER :: NOF = "number_of_files"
+    CHARACTER(LEN=*), PARAMETER :: OVE = "overlap"
     CHARACTER(LEN=*), PARAMETER :: SCO = "scops"
     CHARACTER(LEN=*), PARAMETER :: MPC = "mpc"
     CHARACTER(LEN=*), PARAMETER :: RES = "spatial_resolution"

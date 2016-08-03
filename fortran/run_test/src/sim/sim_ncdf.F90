@@ -658,11 +658,15 @@ MODULE SIM_NCDF
 
         ! local 
         CHARACTER(LEN=64) :: scops_def, mpc_def, ts
+        CHARACTER(LEN=64) :: overlap_def
 
         ts = timestamp()
 
-        IF ( set % scops == 1 ) scops_def = "random"
-        IF ( set % scops == 2 ) scops_def = "max/random"
+        IF ( set % scops == 1 ) scops_def = "DWD SCOPS"
+        IF ( set % scops == 2 ) scops_def = "COSP SCOPS"
+        IF ( set % overlap == 1 ) overlap_def = "max"
+        IF ( set % overlap == 2 ) overlap_def = "random"
+        IF ( set % overlap == 3 ) overlap_def = "max/random"
         IF ( set % mpc == 1 ) mpc_def = "separated phase"
         IF ( set % mpc == 2 ) mpc_def = "mixed phase"
 
@@ -677,6 +681,7 @@ MODULE SIM_NCDF
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, THV, set % thv ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, NOF, nfiles ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, SCO, scops_def ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, OVE, overlap_def ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, MPC, mpc_def ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, RES, RES_STR ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LONRES, RES_STR ) )
