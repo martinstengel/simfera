@@ -3,7 +3,7 @@ In the last two decades major progress has been achieved in improving the repres
 of clouds in General Circulation Models (GCMs, or Global Climte Models). 
 Nevertheless, clouds (and also aerosols) are still being one of the largest uncertainties 
 in estimating and interpreting the changes of Earth's energy budget \cite{IPCC2013}. 
-One of the main problems is that many atomospheric processes cannot be resolved by current model resolutions, 
+One of the main problems is that many atmospheric processes cannot be resolved by current model resolutions, 
 which operate on spatial scales ranging from a few kilometers to hundreds of kilometers. 
 The small-scale processes related to clouds (e.g., cloud formation) 
 are implemented by means of parameterizations that connect grid box mean variables to sub-grid processes.
@@ -41,12 +41,12 @@ Figure~\ref{fig:sim_over} shows the general concept of how to bring model and ob
 together in order to diagnose the cloud parameterization in modern climate models.
 The key question to be answered is: 
 ``What would a satellite see if the atmosphere had the clouds of a climate model?'' 
-Thus, the principle task of the simulator is to synthesizes space-borne measurements of clouds 
+Thus, the principle task of the simulator is to synthesize space-borne measurements of clouds 
 from model states so that differences can be interpreted as model errors.
 GCMs provide grid box mean profiles (e.g. cloud fraction, cloud water content, temperature, etc.)
 and surface parameters (e.g. surface geopotential, land/sea mask, skin temperature, etc.),
 which serve as input to the cloud simulator.
-In general simulators consists of three modules:
+In general simulators consist of three modules:
 \begin{enumerate}\setlength\itemsep{0.2em}
  \item Downscaler: It converts the grid box mean profiles into sub-grid profiles considering
  the mismatch in spatial scale between that of the model grid box ($\sim$ 100 km) and 
