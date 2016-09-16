@@ -465,11 +465,16 @@ MODULE SUBS
 
         ! local variables
         INTEGER(KIND=sint) :: x, y
+        INTEGER(KIND=lint), DIMENSION(:,:), ALLOCATABLE :: dummy
+        ! dummy counter because the mean CFC high/mid/low is based on cnt%cfc
 
         PRINT*, "** SUMUP_VARS"
 
         x = SIZE( fin % cfc, 1 )
         y = SIZE( fin % cfc, 2 )
+
+        ALLOCATE( dummy(x,y) )
+        dummy = 0
 
         WHERE ( tmp % ctp > 10.0 .AND. tmp % cth > 0.0 .AND. tmp % cph >= 0.0 )
             fin % ctp = fin % ctp + tmp % ctp
@@ -480,6 +485,9 @@ MODULE SUBS
         END WHERE
 
         CALL ADDTO( 1, x, y, tmp % cfc,        fin % cfc,        cnt % cfc )
+        CALL ADDTO( 1, x, y, tmp % cfc_high,   fin % cfc_high,   dummy )
+        CALL ADDTO( 1, x, y, tmp % cfc_mid,    fin % cfc_mid,    dummy )
+        CALL ADDTO( 1, x, y, tmp % cfc_low,    fin % cfc_low,    dummy )
         CALL ADDTO( 1, x, y, tmp % cph_day,    fin % cph_day,    cnt % cph_day )
         CALL ADDTO( 1, x, y, tmp % cwp_allsky, fin % cwp_allsky, cnt % cwp_allsky )
         CALL ADDTO( 1, x, y, tmp % lwp_allsky, fin % lwp_allsky, cnt % lwp_allsky )
@@ -494,6 +502,8 @@ MODULE SUBS
         CALL ADDTO( 2, x, y, tmp % cwp,     fin % cwp,     cnt % cwp )
         CALL ADDTO( 2, x, y, tmp % lwp,     fin % lwp,     cnt % lwp )
         CALL ADDTO( 2, x, y, tmp % iwp,     fin % iwp,     cnt % iwp )
+
+        IF ( ALLOCATED( dummy ) ) DEALLOCATE( dummy ) 
 
     END SUBROUTINE SUMUP_VARS
 
@@ -548,7 +558,10 @@ MODULE SUBS
         CALL AVG ( sf, x, y, fin % cth, cnt % ctp )
 
         sf = 1.0
-        CALL AVG ( sf, x, y, fin % cfc,     cnt % cfc )
+        CALL AVG ( sf, x, y, fin % cfc,      cnt % cfc )
+        CALL AVG ( sf, x, y, fin % cfc_high, cnt % cfc )
+        CALL AVG ( sf, x, y, fin % cfc_mid,  cnt % cfc )
+        CALL AVG ( sf, x, y, fin % cfc_low,  cnt % cfc )
         CALL AVG ( sf, x, y, fin % cph_day, cnt % cph_day )
         CALL AVG ( sf, x, y, fin % cot,     cnt % cot )
         CALL AVG ( sf, x, y, fin % cot_liq, cnt % cot_liq )

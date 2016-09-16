@@ -380,6 +380,14 @@ MODULE SIM_CORE
                     array % cph (icol) = NINT( matrix % cph (icol, ilev) ) 
                     array % cfc (icol) = 1.0
 
+                    ! high CFC
+                    IF( array % ctp (icol) .LE. 440.0 ) array % cfc_high (icol) = 1.0
+                    ! mid CFC
+                    IF( array % ctp (icol) .GT. 440.0 .AND. &
+                        array % ctp (icol) .LE. 680.0 ) array % cfc_mid (icol) = 1.0
+                    ! low CFC
+                    IF( array % ctp (icol) .GT. 680.0 ) array % cfc_low (icol) = 1.0
+
                     IF ( flag == is_day ) THEN
 
                         array % cer (icol) = matrix % cer (icol, ilev)
@@ -435,9 +443,18 @@ MODULE SIM_CORE
         WHERE ( array % cph == is_liq )   ice_phase = sreal_fill_value
 
 
+        !FUNCTION GET_MEAN( n, vector, phase, flag ) RESULT( mean )
+
         ! get all_phase parameters
         tmp % cfc (x,y) = GET_MEAN( ncol, array % cfc, all_phase, allsky )
+        tmp % cfc_high (x,y) = GET_MEAN( ncol, array % cfc_high, all_phase, allsky )
+        tmp % cfc_mid (x,y) = GET_MEAN( ncol, array % cfc_mid, all_phase, allsky )
+        tmp % cfc_low (x,y) = GET_MEAN( ncol, array % cfc_low, all_phase, allsky )
+
         IF ( tmp % cfc (x,y) == sreal_fill_value ) tmp % cfc (x,y) = 0.0
+        IF ( tmp % cfc_high (x,y) == sreal_fill_value ) tmp % cfc_high (x,y) = 0.0
+        IF ( tmp % cfc_mid (x,y) == sreal_fill_value ) tmp % cfc_mid (x,y) = 0.0
+        IF ( tmp % cfc_low (x,y) == sreal_fill_value ) tmp % cfc_low (x,y) = 0.0
 
         tmp % ctp (x,y) = GET_MEAN( ncol, array % ctp, all_phase, normal )
         tmp % cth (x,y) = GET_MEAN( ncol, array % cth, all_phase, normal )

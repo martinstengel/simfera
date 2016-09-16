@@ -52,6 +52,7 @@ MODULE STRUCTS
     ! pseudo arrays(ncol)
     TYPE pseudo_arrays
         REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE :: ctp, cth, ctt, cfc
+        REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE :: cfc_high, cfc_mid, cfc_low
         REAL(KIND=sreal), DIMENSION(:), ALLOCATABLE :: cph, cot, cwp, cer
     END TYPE pseudo_arrays
 
@@ -82,6 +83,7 @@ MODULE STRUCTS
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcer_prof, icer_prof
         REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: lcot_prof, icot_prof
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cfc, cph, cph_day
+        REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cfc_high, cfc_mid, cfc_low
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: ctt, cth, ctp
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cwp, lwp, iwp
         REAL(KIND=sreal), DIMENSION(:,:),   ALLOCATABLE :: cwp_allsky
@@ -95,6 +97,7 @@ MODULE STRUCTS
     ! final output (monthly mean - L3C)
     TYPE l3_vars
         REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cfc, cph, cph_day
+        REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cfc_high, cfc_mid, cfc_low
         REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: ctt, cth, ctp
         REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cwp, lwp, iwp
         REAL(KIND=sreal), DIMENSION(:,:), ALLOCATABLE :: cwp_allsky
@@ -140,6 +143,7 @@ MODULE STRUCTS
 
     TYPE mm_ids
         INTEGER(KIND=lint) :: cfc, cph, cph_day
+        INTEGER(KIND=lint) :: cfc_high, cfc_mid, cfc_low
         INTEGER(KIND=lint) :: ctp, cth, ctt
         INTEGER(KIND=lint) :: cot, cot_liq, cot_ice
         INTEGER(KIND=lint) :: cer, cer_liq, cer_ice

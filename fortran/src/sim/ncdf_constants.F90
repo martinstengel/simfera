@@ -67,14 +67,14 @@ MODULE NCDF_CONSTANTS
 
 
     ! attributes
-    CHARACTER(LEN=*), PARAMETER :: fill   = "_FillValue"
-    CHARACTER(LEN=*), PARAMETER :: long   = "long_name"
-    CHARACTER(LEN=*), PARAMETER :: sname  = "standard_name"
-    CHARACTER(LEN=*), PARAMETER :: units  = "units"
-    CHARACTER(LEN=*), PARAMETER :: fscale = "scale_factor"
-    CHARACTER(LEN=*), PARAMETER :: offset = "add_offset"
-    CHARACTER(LEN=*), PARAMETER :: vmin   = "valid_min"
-    CHARACTER(LEN=*), PARAMETER :: vmax   = "valid_max"
+    CHARACTER(LEN=*), PARAMETER :: fill    = "_FillValue"
+    CHARACTER(LEN=*), PARAMETER :: long    = "long_name"
+    CHARACTER(LEN=*), PARAMETER :: sname   = "standard_name"
+    CHARACTER(LEN=*), PARAMETER :: units   = "units"
+    CHARACTER(LEN=*), PARAMETER :: fscale  = "scale_factor"
+    CHARACTER(LEN=*), PARAMETER :: offset  = "add_offset"
+    CHARACTER(LEN=*), PARAMETER :: vmin    = "valid_min"
+    CHARACTER(LEN=*), PARAMETER :: vmax    = "valid_max"
 
     ! units
     CHARACTER(LEN=*), PARAMETER :: unit_one  = "1"
@@ -97,6 +97,12 @@ MODULE NCDF_CONSTANTS
 
     CHARACTER(LEN=*), PARAMETER :: cfc_str = "cloud fraction"
     CHARACTER(LEN=*), PARAMETER :: cfc_std = "cloud_area_fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_high_str = "high level cloud fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_high_com = "high level clouds: ctp <= 440 hPa"
+    CHARACTER(LEN=*), PARAMETER :: cfc_mid_str = "mid level cloud fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_mid_com = "mid level clouds: 440 hPa < ctp <= 680 hPa"
+    CHARACTER(LEN=*), PARAMETER :: cfc_low_str = "low level cloud fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_low_com = "low level clouds: ctp > 680 hPa"
     CHARACTER(LEN=*), PARAMETER :: cph_str = "fraction of liquid water clouds"
     CHARACTER(LEN=*), PARAMETER :: cph_day_str = "daytime fraction of liquid water cloud"
     CHARACTER(LEN=*), PARAMETER :: ctp_str = "cloud top pressure"
