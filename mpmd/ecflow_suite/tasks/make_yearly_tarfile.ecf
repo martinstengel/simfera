@@ -20,11 +20,18 @@ TMP_FOLDER="${BAS_FOLDER}/tmp_%YEAR%_%THV%"
 FIN_FOLDER="${BAS_FOLDER}/%CRUN%"
 mkdir -p ${FIN_FOLDER}
 mkdir -p ${TMP_FOLDER}
+chmod 777 ${TMP_FOLDER}
 
 # copy files to tmp folder for creating final tarfile
 cp -f ${SOURCE} ${TMP_FOLDER}
 cd ${TMP_FOLDER}
 tar czvf ${TARFILE} *.nc
+
+# download file
+CMD="ectrans -remote conny -gateway oflxd11.dwd.de"
+CMSAF="/cmsaf/cmsaf-cld7/cschlund/ectrans"
+chmod 777 ${TARFILE}
+${CMD} -source ${TMP_FOLDER}/${TARFILE} -target ${CMSAF}/${TARFILE} -put
 
 # move to final location and remove nc-files
 mv ${TARFILE} ${FIN_FOLDER}
