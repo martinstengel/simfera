@@ -77,16 +77,18 @@ PRO VIS_SIMULATOR, VERBOSE=verbose, MONTHLY=monthly, $
             file = cfg.SFILES[f]
 
             PRINT, "** Working on: ", file 
-            PLOT_ARRAYS, file, osav
-            PLOT_PROFILES, file, 'cfc_profile', osav
-            PLOT_MATRICES, file, 'cfc_matrix', osav
-            PLOT_PROFILES, file, 'cot_profile', osav
-            PLOT_MATRICES, file, 'cot_matrix', osav
-            PLOT_PROFILES, file, 'cwp_profile', osav
-            PLOT_MATRICES, file, 'cwp_matrix', osav
-            PLOT_PROFILES, file, 'cer_profile', osav
-            PLOT_MATRICES, file, 'cer_matrix', osav
-            PLOT_MATRICES, file, 'cph_matrix', osav 
+            ;PLOT_ARRAYS, file, osav
+            ;PLOT_PROFILES, file, 'cfc_profile', osav, /all
+            PLOT_MATRICES, file, 'cfc_matrix', osav, /all
+            ;PLOT_PROFILES, file, 'cfc_profile', osav
+            ;PLOT_MATRICES, file, 'cfc_matrix', osav
+            ;PLOT_PROFILES, file, 'cot_profile', osav
+            ;PLOT_MATRICES, file, 'cot_matrix', osav
+            ;PLOT_PROFILES, file, 'cwp_profile', osav
+            ;PLOT_MATRICES, file, 'cwp_matrix', osav
+            ;PLOT_PROFILES, file, 'cer_profile', osav
+            ;PLOT_MATRICES, file, 'cer_matrix', osav
+            ;PLOT_MATRICES, file, 'cph_matrix', osav 
         ENDFOR
     ENDIF
 

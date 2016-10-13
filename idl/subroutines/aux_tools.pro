@@ -1347,17 +1347,29 @@ END
 
 
 ;-----------------------------------------------------------------------------
-PRO PLOT_PROFILES, file, varname, save_dir
+PRO PLOT_PROFILES, file, varname, save_dir, all=all
 ;-----------------------------------------------------------------------------
 
     fbase = FSC_Base_Filename(file)
-    save_as = save_dir  + fbase + '_' + varname + '.eps'
-
     READ_SIM_NCDF, p, FILE=file, VAR_NAME='pressure_profile', GLOB_ATTR=globs
-    READ_SIM_NCDF, v, FILE=file, VAR_NAME = varname
-
     pressure = REVERSE(p)
-    data = REVERSE(v)
+
+    IF KEYWORD_SET(all) THEN BEGIN
+        save_as = save_dir  + fbase + '_all_profiles' + '.eps'
+        READ_SIM_NCDF, cfc, FILE=file, VAR_NAME = 'cfc_profile'
+        READ_SIM_NCDF, cot, FILE=file, VAR_NAME = 'cot_profile'
+        READ_SIM_NCDF, cwp, FILE=file, VAR_NAME = 'cwp_profile'
+        READ_SIM_NCDF, cer, FILE=file, VAR_NAME = 'cer_profile'
+        data = LIST(REVERSE(cfc), REVERSE(cot), REVERSE(cwp), REVERSE(cer))
+        data_names = LIST('cfc_profile', 'cot_profile', 'cwp_profile', 'cer_profile')
+        abcd = LIST('(a)', '(b)', '(c)', '(d)')
+    ENDIF ELSE BEGIN
+        save_as = save_dir  + fbase + '_' + varname + '.eps'
+        READ_SIM_NCDF, v, FILE=file, VAR_NAME = varname
+        data = LIST(REVERSE(v))
+        data_names = LIST(varname)
+        abcd = LIST('')
+    ENDELSE
 
     ;** Structure <402ee08>, 11 tags, length=176, data length=176, refs=1:
     ;LON             STRING    '      71.5000'
@@ -1379,43 +1391,63 @@ PRO PLOT_PROFILES, file, varname, save_dir
             '  Latitude = '+latstr+$
             '  Solar Zenith Angle = '+szastr
 
-    !P.MULTI=[0,1,1]
+    IF KEYWORD_SET(all) THEN BEGIN
+        !P.MULTI=[0,2,2] 
+        chars = 2.0
+        syms = 1.5
+        w = 0.38 & h = 0.38 & x0 = 0.11 & y0 = 0.10 & z = 0.58
+        position = LIST( [x0, z, x0+w, z+h], [z, z, z+w, z+h], $
+                         [x0, y0, x0+w, y0+h], [z, y0, z+w, y0+h] )
+        ;start_save, save_as, size=[45,30]
+        start_save, save_as, size='A4', /LANDSCAPE
+    ENDIF ELSE BEGIN 
+        !P.MULTI=[0,1,1]
+        chars = 2.7
+        syms = 2.0
+        position = LIST( [0.13, 0.13, 0.95, 0.9] )
+        start_save, save_as, size='A4', /LANDSCAPE
+    ENDELSE
 
-    position = [0.13, 0.13, 0.95, 0.9]
-    chars = 2.7
-    syms = 2.0
     yrange = [1000., 100.]
     ytickv = [1000., 800., 600., 400., 200., 100.]
     yticks = N_ELEMENTS(ytickv) - 1
     yminor = 2
 
-    start_save, save_as, size='A4', /LANDSCAPE
-
     ; plot profile
-    CASE varname OF
-        'cfc_profile': xtitle = 'Cloud Fraction'
-        'cot_profile': xtitle = 'Cloud Optical Thickness'
-        'cwp_profile': xtitle = 'Cloud Water Path [kg/m!U2!N]'
-        'cer_profile': xtitle = 'Cloud Effective Radius [micron]'
-        ELSE: BEGIN
-            PRINT, " --- ", varname, " is not defined! "
-            stop
-            END
-    ENDCASE
+    FOR d=0, N_ELEMENTS(data)-1 DO BEGIN
 
-    PLOT, [0,0], [1,1], YRANGE=yrange, /YLOG, POSITION=position, $
-        YTICKV=ytickv, YTICKS=yticks, YMINOR=yminor, $
-        XRANGE=[MIN(data), MAX(data)], $
-        YTITLE='Pressure Level [hPa]', CHARS=chars, $
-        COLOR=cgcolor('black'), XTITLE=xtitle
+        IF ((d MOD 2) EQ 0) THEN $
+            ytitle = 'Pressure Level [hPa]' ELSE ytitle=''
 
-    OPLOT, data, pressure, psym=-1, symsize=syms, $
-        COLOR=cgcolor('Blue'), THICK=5
+        CASE data_names[d] OF
+            'cfc_profile': xtitle = 'Cloud Fraction'
+            'cot_profile': xtitle = 'Cloud Optical Thickness'
+            'cwp_profile': xtitle = 'Cloud Water Path [kg/m!U2!N]'
+            'cer_profile': xtitle = 'Cloud Effective Radius [micron]'
+            ELSE: BEGIN
+                PRINT, " --- ", data_names[d], " is not defined! "
+                stop
+                END
+        ENDCASE
 
-    IF ( varname EQ 'cfc_profile' ) THEN BEGIN 
-        cgText, 0.55, 0.94, pixel, ALIGNMENT=0.52, /NORMAL, $ 
-            COLOR=cgcolor('RED6'), CHARSIZE=chars
-    ENDIF
+        PLOT, [0,0], [1,1], YRANGE=yrange, /YLOG, POSITION=position[d], $
+            YTICKV=ytickv, YTICKS=yticks, YMINOR=yminor, YTITLE=ytitle, $
+            XRANGE=[MIN(data[d]), MAX(data[d])], $
+            CHARS=chars, COLOR=cgcolor('black'), XTITLE=xtitle
+
+        OPLOT, data[d], pressure, psym=-1, symsize=syms, $
+            COLOR=cgcolor('Blue'), THICK=5
+
+        a = position[d]
+        cgText, a[2]-0.05, a[3]-0.05, abcd[d], $
+            /NORMAL, COLOR=cgcolor('Black'), CHARSIZE=chars
+
+        ;IF ( data_names[d] EQ 'cfc_profile' ) THEN BEGIN 
+        ;    cgText, 0.55, 0.94, pixel, ALIGNMENT=0.52, /NORMAL, $ 
+        ;        COLOR=cgcolor('RED6'), CHARSIZE=chars
+        ;ENDIF
+
+    ENDFOR
 
     end_save, save_as
 
@@ -1424,17 +1456,31 @@ PRO PLOT_PROFILES, file, varname, save_dir
 END
 
 ;-----------------------------------------------------------------------------
-PRO PLOT_MATRICES, file, varname, save_dir
+PRO PLOT_MATRICES, file, varname, save_dir, all=all
 ;-----------------------------------------------------------------------------
 
     fbase = FSC_Base_Filename(file)
-    save_as = save_dir  + fbase + '_' + varname + '.eps'
-
     READ_SIM_NCDF, pressure, FILE=file, VAR_NAME='pressure_profile', GLOB_ATTR=globs
-    READ_SIM_NCDF, var, FILE=file, VAR_NAME = varname 
 
-    data = ROTATE(var,7)
-    dims = SIZE(var)
+    IF KEYWORD_SET(all) THEN BEGIN
+        save_as = save_dir  + fbase + '_all_matrices' + '.eps'
+        READ_SIM_NCDF, cot, FILE=file, VAR_NAME = 'cot_matrix'
+        READ_SIM_NCDF, cwp, FILE=file, VAR_NAME = 'cwp_matrix'
+        READ_SIM_NCDF, cer, FILE=file, VAR_NAME = 'cer_matrix'
+        READ_SIM_NCDF, cfc, FILE=file, VAR_NAME = 'cfc_matrix'
+        READ_SIM_NCDF, cph, FILE=file, VAR_NAME = 'cph_matrix'
+        data = LIST(ROTATE(cfc,7), ROTATE(cph,7), ROTATE(cot,7), ROTATE(cer,7), ROTATE(cwp,7))
+        data_names = LIST('cfc_matrix', 'cph_matrix', 'cot_matrix', 'cer_matrix', 'cwp_matrix')
+        abcd = LIST('(a)', '(b)', '(c)', '(d)', '(e)')
+    ENDIF ELSE BEGIN
+        save_as = save_dir  + fbase + '_' + varname + '.eps'
+        READ_SIM_NCDF, var, FILE=file, VAR_NAME = varname 
+        data = LIST(ROTATE(var,7))
+        data_names = LIST(varname)
+        abcd = LIST('')
+    ENDELSE
+
+    dims = SIZE(data[0])
     cols = dims[1]
     levs = dims[2]
 
@@ -1458,77 +1504,155 @@ PRO PLOT_MATRICES, file, varname, save_dir
             '  Latitude = '+latstr+$
             '  Solar Zenith Angle = '+szastr
 
-    !P.MULTI=[0,1,1]
+    IF KEYWORD_SET(all) THEN BEGIN
+        !P.MULTI=[0,2,3] 
+        chars = 3.2
+        syms = 1.5
+        pos = [0.05, 0.05, 0.9, 0.95]
+        start_save, save_as, size=[35,30]
+    ENDIF ELSE BEGIN 
+        !P.MULTI=[0,1,1]
+        chars = 2.5
+        syms = 2.0
+        start_save, save_as, size='A4', /LANDSCAPE
+    ENDELSE
 
-    chars = 2.5
-    syms = 2.0
 
-    start_save, save_as, size='A4', /LANDSCAPE
+    FOR d=0, N_ELEMENTS(data)-1 DO BEGIN
 
-    bar_nlev = 6
-    col_table = 2
-    void = WHERE(data LE 0.)
-    bar_format = '(f5.1)'
-    flag = 0
+        bar_nlev = 6
+        col_table = 2
+        void = WHERE(data[d] LE 0.)
+        bar_format = '(f5.1)'
+        flag = 0
 
-    CASE varname OF
-        'cfc_matrix': BEGIN
-            title = pixel
-            col_table = -10 
-            bar_title = 'Cloud Fraction'
-            void = WHERE(data LT 0.)
-            flag = 1
-            END
-        'cph_matrix': BEGIN
-            bar_title = 'Cloud Phase'
-            void = WHERE(data LT 0.)
-            END
-        'cot_matrix': BEGIN
-            bar_title = 'Cloud Optical Thickness'
-            END
-        'cwp_matrix': BEGIN
-            bar_title = 'Cloud Water Path [kg/m!U2!N]'
-            bar_format = '(f5.2)'
-            END
-        'cer_matrix': bar_title = 'Cloud Effective Radius [microns]'
-        ELSE: BEGIN
-            PRINT, " --- ", varname, " is not defined! "
-            stop
-            END
-    ENDCASE
+        CASE data_names[d] OF
+            'cfc_matrix': BEGIN
+                title = pixel
+                col_table = -10 
+                bar_title = 'Cloud Fraction'
+                void = WHERE(data[d] LT 0.)
+                flag = 1
+                END
+            'cph_matrix': BEGIN
+                bar_title = 'Cloud Phase'
+                void = WHERE(data[d] LT 0.)
+                END
+            'cot_matrix': BEGIN
+                bar_title = 'Cloud Optical Thickness'
+                END
+            'cwp_matrix': BEGIN
+                bar_title = 'Cloud Water Path [kg/m!U2!N]'
+                bar_format = '(f5.2)'
+                END
+            'cer_matrix': bar_title = 'Cloud Effective Radius [microns]'
+            ELSE: BEGIN
+                PRINT, " --- ", varname, " is not defined! "
+                stop
+                END
+        ENDCASE
 
-    inter = 5
-    ytick = REVERSE(pressure)
-    ytstr = FLTARR(levs/inter +1)
-    j = 0
-    FOR i=0, N_ELEMENTS(ytick)-1 DO BEGIN
-        ;IF ((i MOD 10) EQ 0) THEN BEGIN
-        IF ((i MOD inter) EQ 0) THEN BEGIN
-            ytstr[j] = ytick[i] & j++
-        ENDIF ELSE BEGIN 
-            CONTINUE
-        ENDELSE
+        inter = 5
+        ytick = REVERSE(pressure)
+        ytstr = FLTARR(levs/inter +1)
+        j = 0
+        FOR i=0, N_ELEMENTS(ytick)-1 DO BEGIN
+            ;IF ((i MOD 10) EQ 0) THEN BEGIN
+            IF ((i MOD inter) EQ 0) THEN BEGIN
+                ytstr[j] = ytick[i] & j++
+            ENDIF ELSE BEGIN 
+                CONTINUE
+            ENDELSE
+        ENDFOR
+
+        yminor = 2
+        ytickname = STRCOMPRESS(STRING(ytstr,FORMAT='(F8.1)'),/rem)
+
+        view2d, data[d], POSITION=pos, YMINOR=yminor, $
+            ytickname=ytickname, yticks=N_ELEMENTS(ytickname)-1, $
+            COL_TABLE=col_table, /COLOR, CHARS=chars, $
+            BAR_TITLE=bar_title, XTITLE='Subcolumn', $
+            YTITLE='Pressure Level [hPa]', NO_DATA_IDX=void, $
+            BAR_NLEV=bar_nlev, BAR_FORMAT=bar_format, YSTYLE=8
+
+        AXIS, YAXIS=1, YRANGE=[levs,0], YMINOR=10, YTICKS=levs/10, $
+            YTITLE='Model Level', CHARS=chars
+
+        print, pos
+        cgText, pos[1]+17., pos[2]+50., abcd[d], $
+            COLOR=cgcolor('Black'), CHARSIZE=chars
+
+        ;IF ( flag EQ 1 ) THEN BEGIN 
+        ;    cgText, 0.55, 0.95, pixel, ALIGNMENT=0.5, /NORMAL, $ 
+        ;        COLOR=cgcolor('RED6'), CHARSIZE=chars
+        ;ENDIF
+
     ENDFOR
 
-    yminor = 2
-    ytickname = STRCOMPRESS(STRING(ytstr,FORMAT='(F8.1)'),/rem)
+    ;bar_nlev = 6
+    ;col_table = 2
+    ;void = WHERE(data LE 0.)
+    ;bar_format = '(f5.1)'
+    ;flag = 0
 
-    view2d, data, POSITION=[0., 0., 0.93, 0.95], $
-        YMINOR=yminor, $
-        ytickname=ytickname, yticks=N_ELEMENTS(ytickname)-1, $
-        COL_TABLE=col_table, /COLOR, CHARS=chars, $
-        BAR_TITLE=bar_title, XTITLE='Subcolumn', $
-        YTITLE='Pressure Level [hPa]', NO_DATA_IDX=void, $
-        BAR_NLEV=bar_nlev, BAR_FORMAT=bar_format, YSTYLE=8
+    ;CASE varname OF
+    ;    'cfc_matrix': BEGIN
+    ;        title = pixel
+    ;        col_table = -10 
+    ;        bar_title = 'Cloud Fraction'
+    ;        void = WHERE(data LT 0.)
+    ;        flag = 1
+    ;        END
+    ;    'cph_matrix': BEGIN
+    ;        bar_title = 'Cloud Phase'
+    ;        void = WHERE(data LT 0.)
+    ;        END
+    ;    'cot_matrix': BEGIN
+    ;        bar_title = 'Cloud Optical Thickness'
+    ;        END
+    ;    'cwp_matrix': BEGIN
+    ;        bar_title = 'Cloud Water Path [kg/m!U2!N]'
+    ;        bar_format = '(f5.2)'
+    ;        END
+    ;    'cer_matrix': bar_title = 'Cloud Effective Radius [microns]'
+    ;    ELSE: BEGIN
+    ;        PRINT, " --- ", varname, " is not defined! "
+    ;        stop
+    ;        END
+    ;ENDCASE
 
-    AXIS, YAXIS=1, YRANGE=[levs,0], $
-        YMINOR=10, YTICKS=levs/10, $
-        YTITLE='Model Level', CHARS=chars
+    ;inter = 5
+    ;ytick = REVERSE(pressure)
+    ;ytstr = FLTARR(levs/inter +1)
+    ;j = 0
+    ;FOR i=0, N_ELEMENTS(ytick)-1 DO BEGIN
+    ;    ;IF ((i MOD 10) EQ 0) THEN BEGIN
+    ;    IF ((i MOD inter) EQ 0) THEN BEGIN
+    ;        ytstr[j] = ytick[i] & j++
+    ;    ENDIF ELSE BEGIN 
+    ;        CONTINUE
+    ;    ENDELSE
+    ;ENDFOR
 
-    IF ( flag EQ 1 ) THEN BEGIN 
-        cgText, 0.55, 0.95, pixel, ALIGNMENT=0.5, /NORMAL, $ 
-            COLOR=cgcolor('RED6'), CHARSIZE=chars
-    ENDIF
+    ;yminor = 2
+    ;ytickname = STRCOMPRESS(STRING(ytstr,FORMAT='(F8.1)'),/rem)
+
+    ;view2d, data, POSITION=[0., 0., 0.93, 0.95], $
+    ;    YMINOR=yminor, $
+    ;    ytickname=ytickname, yticks=N_ELEMENTS(ytickname)-1, $
+    ;    COL_TABLE=col_table, /COLOR, CHARS=chars, $
+    ;    BAR_TITLE=bar_title, XTITLE='Subcolumn', $
+    ;    YTITLE='Pressure Level [hPa]', NO_DATA_IDX=void, $
+    ;    BAR_NLEV=bar_nlev, BAR_FORMAT=bar_format, YSTYLE=8
+
+    ;AXIS, YAXIS=1, YRANGE=[levs,0], $
+    ;    YMINOR=10, YTICKS=levs/10, $
+    ;    YTITLE='Model Level', CHARS=chars
+
+    ;IF ( flag EQ 1 ) THEN BEGIN 
+    ;    cgText, 0.55, 0.95, pixel, ALIGNMENT=0.5, /NORMAL, $ 
+    ;        COLOR=cgcolor('RED6'), CHARSIZE=chars
+    ;ENDIF
 
     end_save, save_as
 
@@ -1570,21 +1694,21 @@ PRO PLOT_ARRAYS, file, save_dir
     cot_tmp[WHERE(cot EQ -1.0)] = !VALUES.F_NAN & cot_avg = MEAN(cot_tmp, /NAN)
     cwp_tmp[WHERE(cwp EQ -1.0)] = !VALUES.F_NAN & cwp_avg = MEAN(cwp_tmp, /NAN)
 
-    cfc_str = ' AVG = '+strcompress(string(cfc_avg,f='(f10.2)'),/rem)
-    ctp_str = ' AVG = '+strcompress(string(ctp_avg,f='(f10.2)'),/rem)
-    ctt_str = ' AVG = '+strcompress(string(ctt_avg,f='(f10.2)'),/rem)
-    cth_str = ' AVG = '+strcompress(string(cth_avg,f='(f10.2)'),/rem)
-    cph_str = ' AVG = '+strcompress(string(cph_avg,f='(f10.2)'),/rem)
-    cer_str = ' AVG = '+strcompress(string(cer_avg,f='(f10.2)'),/rem)
-    cot_str = ' AVG = '+strcompress(string(cot_avg,f='(f10.2)'),/rem)
-    cwp_str = ' AVG = '+strcompress(string(cwp_avg,f='(f10.2)'),/rem)
+    cfc_str = ' (a) AVG = '+strcompress(string(cfc_avg,f='(f10.2)'),/rem)
+    ctp_str = ' (b) AVG = '+strcompress(string(ctp_avg,f='(f10.2)'),/rem)
+    ctt_str = ' (c) AVG = '+strcompress(string(ctt_avg,f='(f10.2)'),/rem)
+    cth_str = ' (d) AVG = '+strcompress(string(cth_avg,f='(f10.2)'),/rem)
+    cph_str = ' (e) AVG = '+strcompress(string(cph_avg,f='(f10.2)'),/rem)
+    cer_str = ' (f) AVG = '+strcompress(string(cer_avg,f='(f10.2)'),/rem)
+    cot_str = ' (g) AVG = '+strcompress(string(cot_avg,f='(f10.2)'),/rem)
+    cwp_str = ' (h) AVG = '+strcompress(string(cwp_avg,f='(f10.2)'),/rem)
 
     lonstr = STRTRIM(STRING(globs.lon, FORMAT='(F6.2)'),2)
     latstr = STRTRIM(STRING(globs.lat, FORMAT='(F6.2)'),2)
     szastr = STRTRIM(STRING(globs.sza, FORMAT='(F6.2)'),2)
     pixel = 'Grid Box: Longitude = '+lonstr+$
-            '  Latitude = '+latstr+$
-            '  Solar Zenith Angle = '+szastr
+            ',  Latitude = '+latstr+$
+            ',  Solar Zenith Angle = '+szastr
 
     dims = SIZE(cfc)
     cols = dims[1]
@@ -1597,8 +1721,12 @@ PRO PLOT_ARRAYS, file, save_dir
     xt = 'Subcolumn'
 
     xl = 0.08 & xu = 0.08
-    yl = 0.08 & yu = 0.60
-    w = 0.16 & h = 0.35 & s = 0.08
+    yl = 0.08 & yu = 0.57
+    w = 0.16 & h = 0.37 & s = 0.08
+    ;yl = 0.08 & yu = 0.60
+    ;w = 0.16 & h = 0.35 & s = 0.08
+    ;cgText, 0.5, 0.49, pixel, ALIGNMENT=0.5, /NORMAL, $
+    ;    COLOR=cgcolor('RED6'), CHARSIZE=3
 
     ; upper row
     ADD_SUBPLOT, xaxis, cfc, -0.5, 1.5, position = [xu,yu,xu+w,yu+h], ytitle='CFC', xtitle=xt, title=cfc_str
@@ -1611,9 +1739,6 @@ PRO PLOT_ARRAYS, file, save_dir
     ADD_SUBPLOT, xaxis, cer, -10, 100., position = [xl+w+s,yl,xl+2*w+s,yl+h], ytitle='CER [microns]', xtitle=xt, title=cer_str
     ADD_SUBPLOT, xaxis, cot, -10, 110, ytitle='COT', position = [xl+2*w+2*s,yl,xl+3*w+2*s,yl+h], xtitle=xt, title=cot_str
     ADD_SUBPLOT, xaxis, cwp, -1.2, 1.2, ytitle='CWP [kg/m!U2!N]', position = [xl+3*w+3*s,yl,xl+4*w+3*s,yl+h], xtitle=xt, title=cwp_str
-
-    cgText, 0.5, 0.49, pixel, ALIGNMENT=0.5, /NORMAL, $
-        COLOR=cgcolor('RED6'), CHARSIZE=3
 
     end_save, save_as
 
