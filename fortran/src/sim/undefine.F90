@@ -18,11 +18,14 @@ MODULE UNDEFINE
         IF ( ALLOCATED(array % ctp) ) DEALLOCATE( array % ctp ) 
         IF ( ALLOCATED(array % cth) ) DEALLOCATE( array % cth )
         IF ( ALLOCATED(array % ctt) ) DEALLOCATE( array % ctt )
-        IF ( ALLOCATED(array % cfc) ) DEALLOCATE( array % cfc )
         IF ( ALLOCATED(array % cph) ) DEALLOCATE( array % cph )
         IF ( ALLOCATED(array % cot) ) DEALLOCATE( array % cot )
         IF ( ALLOCATED(array % cwp) ) DEALLOCATE( array % cwp )
         IF ( ALLOCATED(array % cer) ) DEALLOCATE( array % cer )
+        IF ( ALLOCATED(array % cfc) ) DEALLOCATE( array % cfc )
+        IF ( ALLOCATED(array % cfc_high) ) DEALLOCATE( array % cfc_high )
+        IF ( ALLOCATED(array % cfc_mid) ) DEALLOCATE( array % cfc_mid )
+        IF ( ALLOCATED(array % cfc_low) ) DEALLOCATE( array % cfc_low )
 
     END SUBROUTINE UNDEFINE_ARRAYS
 
@@ -85,6 +88,9 @@ MODULE UNDEFINE
         IF ( ALLOCATED (tmp % lcot_prof) )    DEALLOCATE(tmp % lcot_prof)
         IF ( ALLOCATED (tmp % icot_prof) )    DEALLOCATE(tmp % icot_prof)
         IF ( ALLOCATED (tmp % cfc) )          DEALLOCATE(tmp % cfc)
+        IF ( ALLOCATED (tmp % cfc_high) )     DEALLOCATE(tmp % cfc_high)
+        IF ( ALLOCATED (tmp % cfc_mid) )      DEALLOCATE(tmp % cfc_mid)
+        IF ( ALLOCATED (tmp % cfc_low) )      DEALLOCATE(tmp % cfc_low)
         IF ( ALLOCATED (tmp % cph) )          DEALLOCATE(tmp % cph)
         IF ( ALLOCATED (tmp % cph_day) )      DEALLOCATE(tmp % cph_day)
         IF ( ALLOCATED (tmp % ctp) )          DEALLOCATE(tmp % ctp)
@@ -132,6 +138,9 @@ MODULE UNDEFINE
         TYPE(l3_vars), INTENT(INOUT) :: final
 
         IF ( ALLOCATED (final % cfc)          ) DEALLOCATE(final % cfc)
+        IF ( ALLOCATED (final % cfc_high)     ) DEALLOCATE(final % cfc_high)
+        IF ( ALLOCATED (final % cfc_mid)      ) DEALLOCATE(final % cfc_mid)
+        IF ( ALLOCATED (final % cfc_low)      ) DEALLOCATE(final % cfc_low)
         IF ( ALLOCATED (final % cph)          ) DEALLOCATE(final % cph)
         IF ( ALLOCATED (final % cph_day)      ) DEALLOCATE(final % cph_day)
         IF ( ALLOCATED (final % ctp)          ) DEALLOCATE(final % ctp)

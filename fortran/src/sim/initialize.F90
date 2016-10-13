@@ -67,6 +67,9 @@ MODULE INITIALIZE
         TYPE(l3_vars), INTENT(INOUT) :: fin
 
         ALLOCATE( fin % cfc ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cfc_high ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cfc_mid ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cfc_low ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % cph ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % cph_day ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % ctp ( aux % nlon, aux % nlat) )
@@ -105,6 +108,9 @@ MODULE INITIALIZE
             SIZE(cfg % hist_cer_1d_bin), n_hist_phase ) )
 
         fin % cfc = 0.0
+        fin % cfc_high = 0.0
+        fin % cfc_mid = 0.0
+        fin % cfc_low = 0.0
         fin % cph = 0.0   
         fin % cph_day = 0.0   
         fin % ctp = 0.0
@@ -153,6 +159,9 @@ MODULE INITIALIZE
         ALLOCATE( tmp % icer_prof (inp % xdim, inp % ydim, inp % zdim) )
 
         ALLOCATE( tmp % cfc (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % cfc_high (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % cfc_mid (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % cfc_low (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % ctp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % cth (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % ctt (inp % xdim, inp % ydim) )
@@ -181,6 +190,9 @@ MODULE INITIALIZE
         tmp % icer_prof = 0.0
 
         tmp % cfc = 0.0
+        tmp % cfc_high = 0.0
+        tmp % cfc_mid = 0.0
+        tmp % cfc_low = 0.0
         tmp % ctp = 0.0
         tmp % cth = 0.0
         tmp % ctt = 0.0
@@ -250,14 +262,20 @@ MODULE INITIALIZE
         ALLOCATE( array % ctp ( ncol ) )
         ALLOCATE( array % cth ( ncol ) )
         ALLOCATE( array % ctt ( ncol ) )
-        ALLOCATE( array % cfc ( ncol ) )
         ALLOCATE( array % cph ( ncol ) )
+        ALLOCATE( array % cfc ( ncol ) )
+        ALLOCATE( array % cfc_high ( ncol ) )
+        ALLOCATE( array % cfc_mid ( ncol ) )
+        ALLOCATE( array % cfc_low ( ncol ) )
 
         array % ctp = -1.0
         array % cth = -1.0
         array % ctt = -1.0
-        array % cfc =  0.0
         array % cph = -1.0
+        array % cfc =  0.0
+        array % cfc_high =  0.0
+        array % cfc_mid =  0.0
+        array % cfc_low =  0.0
 
         IF ( flag == is_day ) THEN 
 
