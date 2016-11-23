@@ -1,6 +1,5 @@
 %include <pbs_mars_serial.h>
 %include <head.h>
-%include <myexport.h>
 
 ERA_PATH=%INPUT%/%YYYYMM%
 

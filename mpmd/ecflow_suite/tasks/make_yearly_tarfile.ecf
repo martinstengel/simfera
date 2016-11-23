@@ -1,6 +1,5 @@
 %include <pbs_make_tarfile_serial.h>
 %include <head.h>
-%include <myexport.h>
 
 SIM_PATH=%OUTPUT%/%CRUN%/%YEAR%
 

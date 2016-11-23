@@ -27,8 +27,9 @@ mpmd_threads_number = 12
 serial_threads_number = 2
 
 # cloud optical thickness threshold for upper-most cloud detection
+thv = "1.00"
 #thv = "0.15"
-thv = "0.001"
+#thv = "0.001"
 
 # only in combination with dwd_scops!
 # 1=no mixed phase clouds, only separate liquid & ice clouds
@@ -42,7 +43,9 @@ overlap = "3"
 scops = "1"
 
 # final output directory for netCDF files under "output"
-crun = "v1.1_DWDscops_MaxRand_MixedPase"
+#crun = "v1.1_DWDscops_MaxRand_MixedPase"
+# implementation of low/middle/high CFC
+crun = "v1.2_DWDscops_MaxRand_MixedPase"
 
 # store final output in ECFS archive
 ecfs_path = "ec:/sf7/cloud_simulator"
@@ -64,20 +67,26 @@ output = os.path.join(scratch_base, "output")
 prog = os.path.join(perm_base, "fortran", "cloud_simulator.x")
 sstfile = os.path.join(perm_base, "aux", "sst_era_interim_0.5_0.5.nc")
 
-# -- pycmsaf software
-pycmsaf = "/perm/ms/de/sf7/cschlund/pycmsaf"
+# -- new pycmsaf software: python setup.py install --prefix=$PERM/usr
+prefix = "/perm/ms/de/sf7/usr"
+sitepack = os.path.join(prefix, "lib/python2.7/site-packages")
+binaries = os.path.join(prefix, "bin")
+library  = os.path.join(prefix, "lib")
 
 # -- paths to be exported: $PATH, $PYTHONPATH
-pycmsaf_bin = os.path.join(pycmsaf, "bin")
-python_path = "/usr/local/apps/python/current/bin/python"
+export_path = binaries
+export_python_path = "/usr/local/apps/python/current/bin/python"
+export_library_path = library
 
 # -- server settings @ ecgate
 mpmd_mode = "remote"
 mpmd_submit_cmd = "qsub"
-mpmd_submit_script = os.path.join(pycmsaf_bin, "mpmd_submit.py")
 mpmd_database = os.path.join(perm_base, "mpmd", "mpmd_" + itype + ".sqlite3")
-ecflow_submit = os.path.join(pycmsaf_bin, "ecf_submit.py")
-mpmd_client_prog = os.path.join(pycmsaf_bin, "mpmd_client.py")
+# -- new pycmsaf software
+mpmd_submit_script = os.path.join(binaries, "pycmsaf-mpmd-submit")
+ecflow_submit = os.path.join(binaries, "pycmsaf-ecf-submit")
+mpmd_client_prog = os.path.join(binaries, "pycmsaf-mpmd-client")
+# -- mpmd subdirs
 suite_home_dir = os.path.join(perm_base, "mpmd/ecflow_suite")
 ecf_files_dir = os.path.join(suite_home_dir, "tasks")
 ecf_include_dir = os.path.join(suite_home_dir, "include")
