@@ -502,6 +502,8 @@ MODULE SUBS
         CALL ADDTO( 2, x, y, tmp % cwp,     fin % cwp,     cnt % cwp )
         CALL ADDTO( 2, x, y, tmp % lwp,     fin % lwp,     cnt % lwp )
         CALL ADDTO( 2, x, y, tmp % iwp,     fin % iwp,     cnt % iwp )
+        CALL ADDTO( 2, x, y, tmp % mlwp,    fin % mlwp,    cnt % mlwp )
+        CALL ADDTO( 2, x, y, tmp % miwp,    fin % miwp,    cnt % miwp )
 
         IF ( ALLOCATED( dummy ) ) DEALLOCATE( dummy ) 
 
@@ -571,9 +573,11 @@ MODULE SUBS
         CALL AVG ( sf, x, y, fin % cer_ice, cnt % cer_ice )
 
         sf = 1000.0
-        CALL AVG ( sf, x, y, fin % cwp, cnt % cwp )
-        CALL AVG ( sf, x, y, fin % lwp, cnt % lwp )
-        CALL AVG ( sf, x, y, fin % iwp, cnt % iwp )
+        CALL AVG ( sf, x, y, fin % cwp,  cnt % cwp )
+        CALL AVG ( sf, x, y, fin % lwp,  cnt % lwp )
+        CALL AVG ( sf, x, y, fin % iwp,  cnt % iwp )
+        CALL AVG ( sf, x, y, fin % mlwp, cnt % mlwp )
+        CALL AVG ( sf, x, y, fin % miwp, cnt % miwp )
         CALL AVG ( sf, x, y, fin % cwp_allsky, cnt % cwp_allsky )
         CALL AVG ( sf, x, y, fin % lwp_allsky, cnt % lwp_allsky )
         CALL AVG ( sf, x, y, fin % iwp_allsky, cnt % iwp_allsky )

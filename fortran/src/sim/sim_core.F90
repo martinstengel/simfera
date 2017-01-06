@@ -394,6 +394,13 @@ MODULE SIM_CORE
                         array % cot (icol) = SUM( matrix % cot (icol,:) )
                         array % cwp (icol) = SUM( matrix % cwp (icol,:) )
 
+                        ! in-cloud model lwp
+                        array % mlwp (icol) = SUM( matrix % cwp (icol,:) * &
+                                                   matrix % cph (icol,:) )
+                        ! in-cloud model iwp
+                        array % miwp (icol) = SUM( matrix % cwp (icol,:) * &
+                                                   (1.0 - matrix % cph (icol,:)) )
+
                         IF ( array % cot (icol) > max_cot ) THEN
                             scale_factor = max_cot / array % cot (icol)
                             array % cwp (icol) = array % cwp (icol) * scale_factor
@@ -461,18 +468,22 @@ MODULE SIM_CORE
         tmp % ctt (x,y) = GET_MEAN( ncol, array % ctt, all_phase, normal )
         tmp % cph (x,y) = GET_MEAN( ncol, array % cph, all_phase, normal )
 
+        ! get all_phase parameters
         IF ( flag == is_day ) THEN
             tmp % cph_day (x,y) = tmp % cph (x,y)
             tmp % cot (x,y) = GET_MEAN( ncol, array % cot, all_phase, normal )
             tmp % cer (x,y) = GET_MEAN( ncol, array % cer, all_phase, normal ) 
             tmp % cwp (x,y) = GET_MEAN( ncol, array % cwp, all_phase, normal )
-            tmp % cwp_allsky (x,y) = GET_MEAN( ncol, array % cwp, &
-                                               all_phase, allsky )
+            tmp % mlwp (x,y) = GET_MEAN( ncol, array % mlwp, all_phase, normal )
+            tmp % miwp (x,y) = GET_MEAN( ncol, array % miwp, all_phase, normal )
+            tmp % cwp_allsky (x,y) = GET_MEAN( ncol, array % cwp, all_phase, allsky )
         ELSE ! night
             tmp % cph_day (x,y) = sreal_fill_value
             tmp % cot (x,y) = sreal_fill_value
             tmp % cer (x,y) = sreal_fill_value
             tmp % cwp (x,y) = sreal_fill_value
+            tmp % mlwp (x,y) = sreal_fill_value
+            tmp % miwp (x,y) = sreal_fill_value
             tmp % cwp_allsky (x,y) = sreal_fill_value
         END IF
 

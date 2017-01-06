@@ -23,6 +23,8 @@ MODULE INITIALIZE
         ALLOCATE( cnt % cwp ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % lwp ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % iwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % mlwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % miwp ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % cwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % lwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % iwp_allsky ( aux % nlon, aux % nlat) )
@@ -40,6 +42,8 @@ MODULE INITIALIZE
         cnt % cwp = 0
         cnt % lwp = 0
         cnt % iwp = 0
+        cnt % mlwp = 0
+        cnt % miwp = 0
         cnt % cwp_allsky = 0
         cnt % lwp_allsky = 0
         cnt % iwp_allsky = 0
@@ -78,6 +82,8 @@ MODULE INITIALIZE
         ALLOCATE( fin % cwp ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % lwp ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % iwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % mlwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % miwp ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % cwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % lwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % iwp_allsky ( aux % nlon, aux % nlat) )
@@ -119,6 +125,8 @@ MODULE INITIALIZE
         fin % cwp = 0.0   
         fin % lwp = 0.0   
         fin % iwp = 0.0   
+        fin % mlwp = 0.0   
+        fin % miwp = 0.0   
         fin % cwp_allsky = 0.0 
         fin % lwp_allsky = 0.0
         fin % iwp_allsky = 0.0
@@ -170,6 +178,8 @@ MODULE INITIALIZE
         ALLOCATE( tmp % cwp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % lwp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % iwp (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % mlwp (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % miwp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % cwp_allsky (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % lwp_allsky (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % iwp_allsky (inp % xdim, inp % ydim) )
@@ -201,6 +211,8 @@ MODULE INITIALIZE
         tmp % cwp = 0.0
         tmp % lwp = 0.0
         tmp % iwp = 0.0
+        tmp % mlwp = 0.0
+        tmp % miwp = 0.0
         tmp % cwp_allsky = 0.0
         tmp % lwp_allsky = 0.0
         tmp % iwp_allsky = 0.0
@@ -280,12 +292,16 @@ MODULE INITIALIZE
         IF ( flag == is_day ) THEN 
 
             ALLOCATE( array % cot ( ncol ) )
-            ALLOCATE( array % cwp ( ncol ) )
             ALLOCATE( array % cer ( ncol ) )
+            ALLOCATE( array % cwp ( ncol ) )
+            ALLOCATE( array % mlwp ( ncol ) )
+            ALLOCATE( array % miwp ( ncol ) )
 
             array % cot = -1.0 
-            array % cwp = -1.0 
             array % cer = -1.0 
+            array % cwp = -1.0 
+            array % mlwp = -1.0 
+            array % miwp = -1.0 
         END IF
 
     END SUBROUTINE INITIALIZE_ARRAYS

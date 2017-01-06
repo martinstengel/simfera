@@ -9,5 +9,5 @@ module unload cray-mpich
 module unload atp
 module unload pmi
 module list
-#make clean
-#make
+# make clean
+# make
