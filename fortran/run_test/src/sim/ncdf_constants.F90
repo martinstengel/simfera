@@ -67,14 +67,14 @@ MODULE NCDF_CONSTANTS
 
 
     ! attributes
-    CHARACTER(LEN=*), PARAMETER :: fill   = "_FillValue"
-    CHARACTER(LEN=*), PARAMETER :: long   = "long_name"
-    CHARACTER(LEN=*), PARAMETER :: sname  = "standard_name"
-    CHARACTER(LEN=*), PARAMETER :: units  = "units"
-    CHARACTER(LEN=*), PARAMETER :: fscale = "scale_factor"
-    CHARACTER(LEN=*), PARAMETER :: offset = "add_offset"
-    CHARACTER(LEN=*), PARAMETER :: vmin   = "valid_min"
-    CHARACTER(LEN=*), PARAMETER :: vmax   = "valid_max"
+    CHARACTER(LEN=*), PARAMETER :: fill    = "_FillValue"
+    CHARACTER(LEN=*), PARAMETER :: long    = "long_name"
+    CHARACTER(LEN=*), PARAMETER :: sname   = "standard_name"
+    CHARACTER(LEN=*), PARAMETER :: units   = "units"
+    CHARACTER(LEN=*), PARAMETER :: fscale  = "scale_factor"
+    CHARACTER(LEN=*), PARAMETER :: offset  = "add_offset"
+    CHARACTER(LEN=*), PARAMETER :: vmin    = "valid_min"
+    CHARACTER(LEN=*), PARAMETER :: vmax    = "valid_max"
 
     ! units
     CHARACTER(LEN=*), PARAMETER :: unit_one  = "1"
@@ -97,6 +97,12 @@ MODULE NCDF_CONSTANTS
 
     CHARACTER(LEN=*), PARAMETER :: cfc_str = "cloud fraction"
     CHARACTER(LEN=*), PARAMETER :: cfc_std = "cloud_area_fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_high_str = "high level cloud fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_high_com = "high level clouds: ctp <= 440 hPa"
+    CHARACTER(LEN=*), PARAMETER :: cfc_mid_str = "mid level cloud fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_mid_com = "mid level clouds: 440 hPa < ctp <= 680 hPa"
+    CHARACTER(LEN=*), PARAMETER :: cfc_low_str = "low level cloud fraction"
+    CHARACTER(LEN=*), PARAMETER :: cfc_low_com = "low level clouds: ctp > 680 hPa"
     CHARACTER(LEN=*), PARAMETER :: cph_str = "fraction of liquid water clouds"
     CHARACTER(LEN=*), PARAMETER :: cph_day_str = "daytime fraction of liquid water cloud"
     CHARACTER(LEN=*), PARAMETER :: ctp_str = "cloud top pressure"
@@ -116,8 +122,12 @@ MODULE NCDF_CONSTANTS
     CHARACTER(LEN=*), PARAMETER :: cwp_str = "cloud water path"
     CHARACTER(LEN=*), PARAMETER :: lwp_str = "cloud liquid water path"
     CHARACTER(LEN=*), PARAMETER :: lwp_std = "atmosphere_mass_content_of_cloud_liquid_water"
+    CHARACTER(LEN=*), PARAMETER :: mlwp_str = "model cloud liquid water path"
+    CHARACTER(LEN=*), PARAMETER :: mlwp_std = "model_atmosphere_mass_content_of_cloud_liquid_water"
     CHARACTER(LEN=*), PARAMETER :: iwp_str = "cloud ice water path"
     CHARACTER(LEN=*), PARAMETER :: iwp_std = "atmosphere_mass_content_of_cloud_ice"
+    CHARACTER(LEN=*), PARAMETER :: miwp_str = "model cloud ice water path"
+    CHARACTER(LEN=*), PARAMETER :: miwp_std = "model_atmosphere_mass_content_of_cloud_ice"
     CHARACTER(LEN=*), PARAMETER :: cwp_allsky_str = "grid box mean of cloud water path"
     CHARACTER(LEN=*), PARAMETER :: lwp_allsky_str = "grid box mean of cloud liquid water path"
     CHARACTER(LEN=*), PARAMETER :: lwp_allsky_std = "atmosphere_mass_content_of_cloud_liquid_water"
@@ -126,6 +136,8 @@ MODULE NCDF_CONSTANTS
     CHARACTER(LEN=*), PARAMETER :: nobs_ctp_str = "number of cloud observations"
     CHARACTER(LEN=*), PARAMETER :: nobs_lwp_str = "number of lwp observations"
     CHARACTER(LEN=*), PARAMETER :: nobs_iwp_str = "number of iwp observations"
+    CHARACTER(LEN=*), PARAMETER :: nobs_mlwp_str = "number of model lwp observations"
+    CHARACTER(LEN=*), PARAMETER :: nobs_miwp_str = "number of model iwp observations"
     CHARACTER(LEN=*), PARAMETER :: nobs_comment = "total number of available model grid mean values"//&
                                                   " (i.e., four 6-hourly reanalysis files per day)"
 

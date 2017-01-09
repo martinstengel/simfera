@@ -23,6 +23,8 @@ MODULE INITIALIZE
         ALLOCATE( cnt % cwp ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % lwp ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % iwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % mlwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( cnt % miwp ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % cwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % lwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( cnt % iwp_allsky ( aux % nlon, aux % nlat) )
@@ -40,6 +42,8 @@ MODULE INITIALIZE
         cnt % cwp = 0
         cnt % lwp = 0
         cnt % iwp = 0
+        cnt % mlwp = 0
+        cnt % miwp = 0
         cnt % cwp_allsky = 0
         cnt % lwp_allsky = 0
         cnt % iwp_allsky = 0
@@ -67,6 +71,9 @@ MODULE INITIALIZE
         TYPE(l3_vars), INTENT(INOUT) :: fin
 
         ALLOCATE( fin % cfc ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cfc_high ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cfc_mid ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % cfc_low ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % cph ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % cph_day ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % ctp ( aux % nlon, aux % nlat) )
@@ -75,6 +82,8 @@ MODULE INITIALIZE
         ALLOCATE( fin % cwp ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % lwp ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % iwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % mlwp ( aux % nlon, aux % nlat) )
+        ALLOCATE( fin % miwp ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % cwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % lwp_allsky ( aux % nlon, aux % nlat) )
         ALLOCATE( fin % iwp_allsky ( aux % nlon, aux % nlat) )
@@ -105,6 +114,9 @@ MODULE INITIALIZE
             SIZE(cfg % hist_cer_1d_bin), n_hist_phase ) )
 
         fin % cfc = 0.0
+        fin % cfc_high = 0.0
+        fin % cfc_mid = 0.0
+        fin % cfc_low = 0.0
         fin % cph = 0.0   
         fin % cph_day = 0.0   
         fin % ctp = 0.0
@@ -113,6 +125,8 @@ MODULE INITIALIZE
         fin % cwp = 0.0   
         fin % lwp = 0.0   
         fin % iwp = 0.0   
+        fin % mlwp = 0.0   
+        fin % miwp = 0.0   
         fin % cwp_allsky = 0.0 
         fin % lwp_allsky = 0.0
         fin % iwp_allsky = 0.0
@@ -153,6 +167,9 @@ MODULE INITIALIZE
         ALLOCATE( tmp % icer_prof (inp % xdim, inp % ydim, inp % zdim) )
 
         ALLOCATE( tmp % cfc (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % cfc_high (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % cfc_mid (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % cfc_low (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % ctp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % cth (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % ctt (inp % xdim, inp % ydim) )
@@ -161,6 +178,8 @@ MODULE INITIALIZE
         ALLOCATE( tmp % cwp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % lwp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % iwp (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % mlwp (inp % xdim, inp % ydim) )
+        ALLOCATE( tmp % miwp (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % cwp_allsky (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % lwp_allsky (inp % xdim, inp % ydim) )
         ALLOCATE( tmp % iwp_allsky (inp % xdim, inp % ydim) )
@@ -181,6 +200,9 @@ MODULE INITIALIZE
         tmp % icer_prof = 0.0
 
         tmp % cfc = 0.0
+        tmp % cfc_high = 0.0
+        tmp % cfc_mid = 0.0
+        tmp % cfc_low = 0.0
         tmp % ctp = 0.0
         tmp % cth = 0.0
         tmp % ctt = 0.0
@@ -189,6 +211,8 @@ MODULE INITIALIZE
         tmp % cwp = 0.0
         tmp % lwp = 0.0
         tmp % iwp = 0.0
+        tmp % mlwp = 0.0
+        tmp % miwp = 0.0
         tmp % cwp_allsky = 0.0
         tmp % lwp_allsky = 0.0
         tmp % iwp_allsky = 0.0
@@ -250,24 +274,34 @@ MODULE INITIALIZE
         ALLOCATE( array % ctp ( ncol ) )
         ALLOCATE( array % cth ( ncol ) )
         ALLOCATE( array % ctt ( ncol ) )
-        ALLOCATE( array % cfc ( ncol ) )
         ALLOCATE( array % cph ( ncol ) )
+        ALLOCATE( array % cfc ( ncol ) )
+        ALLOCATE( array % cfc_high ( ncol ) )
+        ALLOCATE( array % cfc_mid ( ncol ) )
+        ALLOCATE( array % cfc_low ( ncol ) )
 
         array % ctp = -1.0
         array % cth = -1.0
         array % ctt = -1.0
-        array % cfc =  0.0
         array % cph = -1.0
+        array % cfc =  0.0
+        array % cfc_high =  0.0
+        array % cfc_mid =  0.0
+        array % cfc_low =  0.0
 
         IF ( flag == is_day ) THEN 
 
             ALLOCATE( array % cot ( ncol ) )
-            ALLOCATE( array % cwp ( ncol ) )
             ALLOCATE( array % cer ( ncol ) )
+            ALLOCATE( array % cwp ( ncol ) )
+            ALLOCATE( array % mlwp ( ncol ) )
+            ALLOCATE( array % miwp ( ncol ) )
 
             array % cot = -1.0 
-            array % cwp = -1.0 
             array % cer = -1.0 
+            array % cwp = -1.0 
+            array % mlwp = -1.0 
+            array % miwp = -1.0 
         END IF
 
     END SUBROUTINE INITIALIZE_ARRAYS

@@ -15,7 +15,7 @@ MODULE SIM_CORE
         USE INITIALIZE
         USE UNDEFINE
         USE STRUCTS
-        USE SIM_NCDF, ONLY: WRITE_SIMCORE_RESULTS
+        !USE FUNCS, only: CALC_COV2D
         USE mod_rng, ONLY: rng_state, init_rng
 
         IMPLICIT NONE
@@ -26,7 +26,7 @@ MODULE SIM_CORE
         TYPE(l3_vars),    INTENT(INOUT) :: fin
 
         ! local variables
-        INTEGER(KIND=sint)  :: nlev, ncol, write_cnt
+        INTEGER(KIND=sint)  :: nlev, ncol
         INTEGER(KIND=sint)  :: xi, yi, flag
         TYPE(scops_matrix)  :: matrix
         TYPE(pseudo_arrays) :: array
@@ -43,7 +43,6 @@ MODULE SIM_CORE
         PRINT*, "   Computing summary statistics"
 
 
-        write_cnt = 0       !counter for writing snapshots
         npoints_model = 1   !number of model points in the horizontal
         ncol = 20           !number of subcolumns (profiles)
         nlev = inp % zdim   !number of model levels
@@ -111,19 +110,6 @@ MODULE SIM_CORE
 
                 CALL COMPUTE_SUMMARY_STATISTICS( xi, yi, ncol, flag, &
                                                  array, set, tmp, fin )
-
-
-                IF ( inp%lon(xi) .LT. 160.0 .AND. write_cnt .LT. 10 .AND. &
-                     SUM(inp%cc_prof(xi,yi,30:60)) .GT. 0.1 .AND. &
-                     inp%sza2d(xi,yi) .GT. 16.0 .AND. &
-                     inp%sza2d(xi,yi) .LT. 18.0 ) THEN
-
-                     write_cnt = write_cnt + 1
-
-                     CALL WRITE_SIMCORE_RESULTS( write_cnt, ncol, nlev, &
-                                                 xi, yi, set, &
-                                                 inp, tmp, matrix, array )
-                 END IF
 
                 CALL UNDEFINE_MATRIX( matrix )
                 CALL UNDEFINE_ARRAYS( array )
@@ -394,11 +380,26 @@ MODULE SIM_CORE
                     array % cph (icol) = NINT( matrix % cph (icol, ilev) ) 
                     array % cfc (icol) = 1.0
 
+                    ! high CFC
+                    IF( array % ctp (icol) .LE. 440.0 ) array % cfc_high (icol) = 1.0
+                    ! mid CFC
+                    IF( array % ctp (icol) .GT. 440.0 .AND. &
+                        array % ctp (icol) .LE. 680.0 ) array % cfc_mid (icol) = 1.0
+                    ! low CFC
+                    IF( array % ctp (icol) .GT. 680.0 ) array % cfc_low (icol) = 1.0
+
                     IF ( flag == is_day ) THEN
 
                         array % cer (icol) = matrix % cer (icol, ilev)
                         array % cot (icol) = SUM( matrix % cot (icol,:) )
                         array % cwp (icol) = SUM( matrix % cwp (icol,:) )
+
+                        ! in-cloud model lwp
+                        array % mlwp (icol) = SUM( matrix % cwp (icol,:) * &
+                                                   matrix % cph (icol,:) )
+                        ! in-cloud model iwp
+                        array % miwp (icol) = SUM( matrix % cwp (icol,:) * &
+                                                   (1.0 - matrix % cph (icol,:)) )
 
                         IF ( array % cot (icol) > max_cot ) THEN
                             scale_factor = max_cot / array % cot (icol)
@@ -449,27 +450,40 @@ MODULE SIM_CORE
         WHERE ( array % cph == is_liq )   ice_phase = sreal_fill_value
 
 
+        !FUNCTION GET_MEAN( n, vector, phase, flag ) RESULT( mean )
+
         ! get all_phase parameters
         tmp % cfc (x,y) = GET_MEAN( ncol, array % cfc, all_phase, allsky )
+        tmp % cfc_high (x,y) = GET_MEAN( ncol, array % cfc_high, all_phase, allsky )
+        tmp % cfc_mid (x,y) = GET_MEAN( ncol, array % cfc_mid, all_phase, allsky )
+        tmp % cfc_low (x,y) = GET_MEAN( ncol, array % cfc_low, all_phase, allsky )
+
         IF ( tmp % cfc (x,y) == sreal_fill_value ) tmp % cfc (x,y) = 0.0
+        IF ( tmp % cfc_high (x,y) == sreal_fill_value ) tmp % cfc_high (x,y) = 0.0
+        IF ( tmp % cfc_mid (x,y) == sreal_fill_value ) tmp % cfc_mid (x,y) = 0.0
+        IF ( tmp % cfc_low (x,y) == sreal_fill_value ) tmp % cfc_low (x,y) = 0.0
 
         tmp % ctp (x,y) = GET_MEAN( ncol, array % ctp, all_phase, normal )
         tmp % cth (x,y) = GET_MEAN( ncol, array % cth, all_phase, normal )
         tmp % ctt (x,y) = GET_MEAN( ncol, array % ctt, all_phase, normal )
         tmp % cph (x,y) = GET_MEAN( ncol, array % cph, all_phase, normal )
 
+        ! get all_phase parameters
         IF ( flag == is_day ) THEN
             tmp % cph_day (x,y) = tmp % cph (x,y)
             tmp % cot (x,y) = GET_MEAN( ncol, array % cot, all_phase, normal )
             tmp % cer (x,y) = GET_MEAN( ncol, array % cer, all_phase, normal ) 
             tmp % cwp (x,y) = GET_MEAN( ncol, array % cwp, all_phase, normal )
-            tmp % cwp_allsky (x,y) = GET_MEAN( ncol, array % cwp, &
-                                               all_phase, allsky )
+            tmp % mlwp (x,y) = GET_MEAN( ncol, array % mlwp, all_phase, normal )
+            tmp % miwp (x,y) = GET_MEAN( ncol, array % miwp, all_phase, normal )
+            tmp % cwp_allsky (x,y) = GET_MEAN( ncol, array % cwp, all_phase, allsky )
         ELSE ! night
             tmp % cph_day (x,y) = sreal_fill_value
             tmp % cot (x,y) = sreal_fill_value
             tmp % cer (x,y) = sreal_fill_value
             tmp % cwp (x,y) = sreal_fill_value
+            tmp % mlwp (x,y) = sreal_fill_value
+            tmp % miwp (x,y) = sreal_fill_value
             tmp % cwp_allsky (x,y) = sreal_fill_value
         END IF
 
