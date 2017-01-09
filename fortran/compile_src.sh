@@ -8,6 +8,14 @@ module unload cray-hdf5
 module unload cray-mpich
 module unload atp
 module unload pmi
+
+echo
+echo " === Before fortran compilation ==="
 module list
-# make clean
-# make
+echo
+make clean
+make
+echo
+echo " === After fortran compilation ==="
+module list
+echo
