@@ -3,11 +3,9 @@
 
 echo "I am task %TASK% in family %FAMILY% responsible for archiving data to %ECFS_PATH%"
 
-# v1.1_time_series_DWDscops_MaxRand_MixedPase_T0.15.tgz
-# v1.1_time_series_DWDscops_MaxRand_MixedPase_T0.001.tgz
 # tarfilename and target path
 TARFILE="%CRUN%_T%THV%.tgz"
-SOURCE="%TAR_PREFIX%_MM*_T%THV%_S%SCOPS%_O%OVERLAP%_M%MPC%.%TAR_SUFFIX%"
+SOURCE="%TAR_PREFIX%_MM*_T%THV%_S%SCOPS%_O%OVERLAP%_M%MPC%_C%CWCMOD%.%TAR_SUFFIX%"
 
 # for downloading via ectrans or uploading to ECFS
 BAS_FOLDER="/scratch/ms/de/sf7/cschlund/tmp/simulator_tarfiles"

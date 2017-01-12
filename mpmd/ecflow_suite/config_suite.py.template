@@ -6,48 +6,87 @@ import os
 # -- modify this ----------------------------------------
 # -------------------------------------------------------
 
-# user settings
+# -- user settings
 remote_host_name = "cca"
 remote_user_name = "sf7"
 
-# base path, user specific
+# -- base path, user specific
 perm = "/perm/ms/de/sf7/cschlund"
 scratch = "/scratch/ms/de/sf7/cschlund"
 
-# subfolder, where your repository is located
-# e.g. /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator
+# -- subfolder, where your repository is located
+#    e.g. /perm/ms/de/sf7/cschlund/SIMULATOR/cloud_simulator
 itype = "SIMULATOR"
 
-# suite name
+# -- suite name
 mysuite = "CLOUD_SIMULATOR"
 
-# mpmd_threads_number must be >= $LENGTH defined in config.sh
+# -- cloud simulator version
+version = "v2.0"
+
+# -- mpmd_threads_number must be >= $LENGTH defined in config.sh
 mpmd_threads_number = 12
-# get_era_data from MARS archive
+# -- get_era_data from MARS archive
 serial_threads_number = 2
 
-# cloud optical thickness threshold for upper-most cloud detection
-thv = "1.00"
-#thv = "0.15"
+# -- select cot threshold value
 #thv = "0.001"
+thv = "0.15"
+#thv = "1.00"
 
-# only in combination with dwd_scops!
-# 1=no mixed phase clouds, only separate liquid & ice clouds
-# 2=all clouds are mixed phase clouds if both water/ice contents exists
-mpc = "2"
+# -- select phase option
+mpc = "1"
+#mpc = "2"
 
-# 1=max, 2=random, 3=max/random
+if mpc is "1":
+    mpc_str = "SeparPhase"
+elif mpc is "2":
+    mpc_str = "MixedPhase"
+else:
+    mpc_str = "undef"
+
+# -- select overlap option
+#overlap = "1"
+#overlap = "2"
 overlap = "3"
 
-# 1=dwd_scops, 2=cosp_scops
+if overlap is "1":
+    overlap_str = "Max"
+elif overlap is "2":
+    overlap_str = "Rand"
+elif overlap is "3":
+    overlap_str = "MaxRand"
+else:
+    overlap_str = "undef"
+
+# -- select scops option
 scops = "1"
+#scops = "2"
 
-# final output directory for netCDF files under "output"
-#crun = "v1.1_DWDscops_MaxRand_MixedPase"
-# implementation of low/middle/high CFC
-crun = "v1.2_DWDscops_MaxRand_MixedPase"
+if scops is "1":
+    scops_str = "DWDscops"
+elif scops is "2":
+    scops_str = "COSPscops"
+else:
+    scops_str = "undef"
 
-# store final output in ECFS archive
+# -- select CWC option
+#    modification of ERA lwc & iwc profile using t-profile
+#cwcmod = "1"
+cwcmod = "2"
+
+if cwcmod is "1":
+    cwcmod_str = "OriCWC"
+elif cwcmod is "2":
+    cwcmod_str = "ModCWC"
+else:
+    cwcmod_str = "undef"
+
+# -- final output directory for netCDF files under "output"
+crun = version + "_" + scops_str + "_" + overlap_str + \
+                 "_" + mpc_str + "_" + cwcmod_str
+
+# -- store final output in ECFS archive
 ecfs_path = "ec:/sf7/cloud_simulator"
 tar_prefix = "ERA_Interim"
 tar_suffix = "tgz"

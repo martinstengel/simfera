@@ -10,7 +10,7 @@ echo "I am task %TASK% in family %FAMILY% responsible for creating yearly tarbal
 thv_cut=`exec echo %THV% | cut -c 1-4`
 
 # tarfilename and target path
-TARFILE="%TAR_PREFIX%_MM%YEAR%_T%THV%_S%SCOPS%_O%OVERLAP%_M%MPC%.%TAR_SUFFIX%"
+TARFILE="%TAR_PREFIX%_MM%YEAR%_T%THV%_S%SCOPS%_O%OVERLAP%_M%MPC%_C%CWCMOD%.%TAR_SUFFIX%"
 SOURCE="%OUTPUT%/%CRUN%/%YEAR%/ERA_Interim_MM%YEAR%*_cot-thv-${thv_cut}.nc"
 
 # for downloading via ectrans or uploading to ECFS

@@ -73,6 +73,7 @@ def set_vars(suite):
     suite.add_variable("TAR_SUFFIX", tar_suffix)
     suite.add_variable("THV", thv)
     suite.add_variable("MPC", mpc)
+    suite.add_variable("CWCMOD", cwcmod)
     suite.add_variable("SCOPS", scops)
     suite.add_variable("OVERLAP", overlap)
     suite.add_variable("CRUN", crun)
@@ -80,6 +81,8 @@ def set_vars(suite):
     suite.add_variable("INPUT", input)
     suite.add_variable("OUTPUT", output)
     suite.add_variable("PROG", prog)
+
+    logger.info("Run settings: {0}".format(crun))
 
 
 def add_trigger(node, trigger):
