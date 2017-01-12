@@ -95,6 +95,8 @@ MODULE COMMON_CONSTANTS
     INTEGER(KIND=sint), PARAMETER :: over_max_rand = 3
     INTEGER(KIND=sint), PARAMETER :: no_mixed_phase = 1 !for dwd_scops
     INTEGER(KIND=sint), PARAMETER :: mixed_phase = 2    !for dwd_scops
+    INTEGER(KIND=sint), PARAMETER :: cwc_mod_off = 1
+    INTEGER(KIND=sint), PARAMETER :: cwc_mod_on = 2 !binning approach
 
     INTEGER(KIND=sint), PARAMETER :: max_cot = 100.0
     REAL(KIND=sreal),   PARAMETER :: is_clear = 0.0

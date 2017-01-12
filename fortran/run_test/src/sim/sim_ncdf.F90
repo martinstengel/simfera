@@ -374,11 +374,10 @@ MODULE SIM_NCDF
 
     !==========================================================================
 
-    SUBROUTINE CREATE_NC_FILENAME( pwd, sdate, thv, overlap, scops, mpc, nc_file )
+    SUBROUTINE CREATE_NC_FILENAME( pwd, sdate, thv, nc_file )
 
         IMPLICIT NONE
 
-        INTEGER(KIND=sint),         INTENT(IN)  :: scops, mpc, overlap
         REAL(KIND=sreal),           INTENT(IN)  :: thv
         CHARACTER(LEN=6),           INTENT(IN)  :: sdate
         CHARACTER(LEN=path_length), INTENT(IN)  :: pwd
@@ -386,42 +385,10 @@ MODULE SIM_NCDF
 
         ! local variables
         CHARACTER(LEN=20) :: thv_int
-        CHARACTER(LEN=20) :: mpc_str, overlap_str, scops_str
 
         WRITE(thv_int, '(F4.2)') thv
 
-        IF ( mpc == no_mixed_phase) THEN 
-            mpc_str = "_no_mixed_phase"
-        ELSEIF ( mpc == mixed_phase) THEN 
-            mpc_str = "_mixed_phase"
-        ELSE 
-            mpc_str = ""
-        END IF
-
-        IF ( overlap == over_max ) THEN
-            overlap_str = "_overlap_max" 
-        ELSEIF ( overlap == over_rand ) THEN
-            overlap_str = "_overlap_rand"
-        ELSEIF ( overlap == over_max_rand ) THEN
-            overlap_str = "_overlap_maxrand"
-        ELSE
-            overlap_str = ""
-        END IF
-
-        IF ( scops == dwd_scops) THEN
-            scops_str = "_dwd_scops"
-        ELSEIF ( scops == cosp_scops) THEN
-            scops_str = "_cosp_scops"
-            mpc_str = ""
-        ELSE
-            scops_str = ""
-        END IF
-
-
         ! create output nc-filename
-        !nc_file = TRIM( pwd ) // "/ERA_Interim_MM" // TRIM(sdate) // &
-        !          '_thv-' // TRIM(thv_int) // TRIM(scops_str) // &
-        !          TRIM(overlap_str) // TRIM(mpc_str)// '.nc' 
         nc_file = TRIM( pwd ) // "/ERA_Interim_MM" // TRIM(sdate) // &
                   '_cot-thv-' // TRIM(thv_int) // '.nc' 
 
@@ -442,16 +409,24 @@ MODULE SIM_NCDF
         ! local 
         CHARACTER(LEN=64) :: scops_def, mpc_def, ts
         CHARACTER(LEN=64) :: overlap_def
+        CHARACTER(LEN=84) :: cwc_mod_def
 
         ts = timestamp()
 
-        IF ( set % scops == 1 ) scops_def = "DWD SCOPS"
-        IF ( set % scops == 2 ) scops_def = "COSP SCOPS"
-        IF ( set % overlap == 1 ) overlap_def = "max"
-        IF ( set % overlap == 2 ) overlap_def = "random"
-        IF ( set % overlap == 3 ) overlap_def = "max/random"
-        IF ( set % mpc == 1 ) mpc_def = "separated phase"
-        IF ( set % mpc == 2 ) mpc_def = "mixed phase"
+        IF ( set % scops == dwd_scops )  scops_def = "DWD SCOPS"
+        IF ( set % scops == cosp_scops ) scops_def = "COSP SCOPS"
+
+        IF ( set % overlap == over_max )      overlap_def = "max"
+        IF ( set % overlap == over_rand )     overlap_def = "random"
+        IF ( set % overlap == over_max_rand ) overlap_def = "max/random"
+
+        IF ( set % mpc == no_mixed_phase ) mpc_def = "separated phase"
+        IF ( set % mpc == mixed_phase )    mpc_def = "mixed phase"
+
+        IF ( set % cwc_mod == cwc_mod_off ) &
+            cwc_mod_def = "original model CWC used"
+        IF ( set % cwc_mod == cwc_mod_on )  &
+            cwc_mod_def = "model CWC modified using t-profile (binning approach)"
 
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, PROJECT, PROJECT_STR ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, TITLE, TITLE_STR ) )
@@ -466,6 +441,7 @@ MODULE SIM_NCDF
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, SCO, scops_def ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, OVE, overlap_def ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, MPC, mpc_def ) )
+        CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, CWCMOD, cwc_mod_def ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, RES, RES_STR ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LONRES, RES_STR ) )
         CALL CHECK ( nf90_put_att( fid, NF90_GLOBAL, LATRES, RES_STR ) )
@@ -799,8 +775,7 @@ MODULE SIM_NCDF
 
         ! create output nc-filename
         CALL CREATE_NC_FILENAME( set % out_path, set % start_date(1:6), &
-                                 set % thv, set % overlap, set % scops, &
-                                 set % mpc, nc_file )
+                                 set % thv, nc_file )
 
         ! create ncdf file
         CALL CHECK ( nf90_create( TRIM(nc_file), nf90_clobber, ncid ) )
@@ -992,7 +967,7 @@ MODULE SIM_NCDF
 
     !==========================================================================
 
-    SUBROUTINE READ_ERA_NCFILE( ifile, idata )
+    SUBROUTINE READ_ERA_NCFILE( ifile, idata, settings )
 
         USE SUBS
 
@@ -1005,6 +980,7 @@ MODULE SIM_NCDF
         CHARACTER(LEN=20)             :: string
         CHARACTER(LEN=file_length), INTENT(IN) :: ifile
         TYPE(era_input), INTENT(INOUT)         :: idata
+        TYPE(config),    INTENT(INOUT)         :: settings
 
         !local variables: total CWC, scaling factor
         INTEGER(KIND=sint)                              :: z
@@ -1085,75 +1061,73 @@ MODULE SIM_NCDF
         WHERE ( idata % lwc_prof .LT. 0.0 ) idata % lwc_prof = 0.0
         WHERE ( idata % iwc_prof .LT. 0.0 ) idata % iwc_prof = 0.0
 
-        ! --- Jan 2017 by MST --------------------
         ! modify lwc and iwc regarding temperature
+        IF ( settings % cwc_mod == cwc_mod_on ) THEN 
 
-        ! allocate local variables
-        ALLOCATE( mst_cwc( idata % xdim, idata % ydim, idata % zdim ) )
-        ALLOCATE( mst_sca( idata % xdim, idata % ydim, idata % zdim ) )
+            ALLOCATE( mst_cwc( idata % xdim, idata % ydim, idata % zdim ) )
+            ALLOCATE( mst_sca( idata % xdim, idata % ydim, idata % zdim ) )
 
-        ! z = 60: lowermost model level
-        ! z =  1: uppermost model level
-        DO z=idata % zdim, 1, -1
+            ! z = 60: lowermost model level
+            ! z =  1: uppermost model level
+            DO z=idata % zdim, 1, -1
 
-            ! total cloud water content
-            mst_cwc(:,:,z) = idata % lwc_prof(:,:,z) + idata % iwc_prof(:,:,z)
+                ! total cloud water content
+                mst_cwc(:,:,z) = idata % lwc_prof(:,:,z) + idata % iwc_prof(:,:,z)
 
-            ! reset liquid and ice water content w.r.t. temperature
-            ! LIQUID
-            WHERE( idata % temp_prof(:,:,z) .GE. 273.15 )
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z)
-                idata % iwc_prof(:,:,z) = 0.
-            END WHERE
-            ! ICE
-            WHERE( idata % temp_prof(:,:,z) .LT. 240.0 )
-                idata % lwc_prof(:,:,z) = 0.
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z)
-            END WHERE
-            ! IN BETWEEN
-            WHERE( idata % temp_prof(:,:,z) .GE. 240. .AND. idata % temp_prof(:,:,z) .LT.  245. )
-                mst_sca(:,:,z) = 0.109
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
-            END WHERE
-            WHERE( idata % temp_prof(:,:,z) .GE. 245. .AND. idata % temp_prof(:,:,z) .LT.  250. )
-                mst_sca(:,:,z) = 0.256
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
-            END WHERE
-            WHERE( idata % temp_prof(:,:,z) .GE. 250. .AND. idata % temp_prof(:,:,z) .LT.  255. )
-                mst_sca(:,:,z) = 0.314
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
-            END WHERE
-            WHERE( idata % temp_prof(:,:,z) .GE. 255. .AND. idata % temp_prof(:,:,z) .LT.  260. )
-                mst_sca(:,:,z) = 0.378
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
-            END WHERE
-            WHERE( idata % temp_prof(:,:,z) .GE. 260. .AND. idata % temp_prof(:,:,z) .LT.  265. )
-                mst_sca(:,:,z) = 0.493
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
-            END WHERE
-            WHERE( idata % temp_prof(:,:,z) .GE. 265. .AND. idata % temp_prof(:,:,z) .LT.  270. )
-                mst_sca(:,:,z) = 0.700
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
-            END WHERE
-            WHERE( idata % temp_prof(:,:,z) .GE. 270. .AND. idata % temp_prof(:,:,z) .LT.  275. )
-                mst_sca(:,:,z) = 0.947
-                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
-                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
-            END WHERE
+                ! reset liquid and ice water content w.r.t. temperature
+                ! LIQUID
+                WHERE( idata % temp_prof(:,:,z) .GE. 273.15 )
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z)
+                    idata % iwc_prof(:,:,z) = 0.
+                END WHERE
+                ! ICE
+                WHERE( idata % temp_prof(:,:,z) .LT. 240.0 )
+                    idata % lwc_prof(:,:,z) = 0.
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z)
+                END WHERE
+                ! IN BETWEEN
+                WHERE( idata % temp_prof(:,:,z) .GE. 240. .AND. idata % temp_prof(:,:,z) .LT.  245. )
+                    mst_sca(:,:,z) = 0.109
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+                END WHERE
+                WHERE( idata % temp_prof(:,:,z) .GE. 245. .AND. idata % temp_prof(:,:,z) .LT.  250. )
+                    mst_sca(:,:,z) = 0.256
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+                END WHERE
+                WHERE( idata % temp_prof(:,:,z) .GE. 250. .AND. idata % temp_prof(:,:,z) .LT.  255. )
+                    mst_sca(:,:,z) = 0.314
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+                END WHERE
+                WHERE( idata % temp_prof(:,:,z) .GE. 255. .AND. idata % temp_prof(:,:,z) .LT.  260. )
+                    mst_sca(:,:,z) = 0.378
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+                END WHERE
+                WHERE( idata % temp_prof(:,:,z) .GE. 260. .AND. idata % temp_prof(:,:,z) .LT.  265. )
+                    mst_sca(:,:,z) = 0.493
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+                END WHERE
+                WHERE( idata % temp_prof(:,:,z) .GE. 265. .AND. idata % temp_prof(:,:,z) .LT.  270. )
+                    mst_sca(:,:,z) = 0.700
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+                END WHERE
+                WHERE( idata % temp_prof(:,:,z) .GE. 270. .AND. idata % temp_prof(:,:,z) .LT.  275. )
+                    mst_sca(:,:,z) = 0.947
+                    idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                    idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+                END WHERE
 
-        END DO
+            END DO
 
-        ! deallocate local variables
-        IF ( ALLOCATED( mst_cwc ) ) DEALLOCATE ( mst_cwc )
-        IF ( ALLOCATED( mst_sca ) ) DEALLOCATE ( mst_sca )
+            IF ( ALLOCATED( mst_cwc ) ) DEALLOCATE ( mst_cwc )
+            IF ( ALLOCATED( mst_sca ) ) DEALLOCATE ( mst_sca )
 
-        ! --- Jan 2017 END -----------------------
+        ENDIF ! modify lwc and iwc regarding temperature
 
         ! compute now: z=1, 60
         ! * geopotential profile = idata % geop_prof
