@@ -30,6 +30,7 @@ MODULE NCDF_CONSTANTS
     CHARACTER(LEN=*), PARAMETER :: OVE = "overlap"
     CHARACTER(LEN=*), PARAMETER :: SCO = "scops"
     CHARACTER(LEN=*), PARAMETER :: MPC = "mpc"
+    CHARACTER(LEN=*), PARAMETER :: CWCMOD = "cwcmod"
     CHARACTER(LEN=*), PARAMETER :: RES = "spatial_resolution"
     CHARACTER(LEN=*), PARAMETER :: RES_STR = "0.50 degree"
     CHARACTER(LEN=*), PARAMETER :: DTC = "date_created"

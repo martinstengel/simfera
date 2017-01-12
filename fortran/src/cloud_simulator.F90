@@ -27,6 +27,7 @@ PROGRAM CLOUD_SIMULATOR
 
     CHARACTER(LEN=10)   :: thv_str
     CHARACTER(LEN=1)    :: mpc_str, scops_str, overlap_str
+    CHARACTER(LEN=1)    :: cwc_mod_str
     CHARACTER(LEN=4)    :: sy_str, ey_str
     CHARACTER(LEN=2)    :: sm_str, em_str, sd_str, ed_str
 
@@ -42,28 +43,30 @@ PROGRAM CLOUD_SIMULATOR
 
     ! get number of arguments
     nargs = COMMAND_ARGUMENT_COUNT()
-    IF ( nargs == 13 ) THEN
+    IF ( nargs == 14 ) THEN
         CALL GET_COMMAND_ARGUMENT(  1, thv_str )
         CALL GET_COMMAND_ARGUMENT(  2, scops_str )
         CALL GET_COMMAND_ARGUMENT(  3, overlap_str )
         CALL GET_COMMAND_ARGUMENT(  4, mpc_str )
-        CALL GET_COMMAND_ARGUMENT(  5, cfg % sst_file )
-        CALL GET_COMMAND_ARGUMENT(  6, cfg % inp_path )
-        CALL GET_COMMAND_ARGUMENT(  7, cfg % out_path )
-        CALL GET_COMMAND_ARGUMENT(  8, sy_str )
-        CALL GET_COMMAND_ARGUMENT(  9, ey_str )
-        CALL GET_COMMAND_ARGUMENT( 10, sm_str )
-        CALL GET_COMMAND_ARGUMENT( 11, em_str )
-        CALL GET_COMMAND_ARGUMENT( 12, sd_str )
-        CALL GET_COMMAND_ARGUMENT( 13, ed_str )
+        CALL GET_COMMAND_ARGUMENT(  5, cwc_mod_str )
+        CALL GET_COMMAND_ARGUMENT(  6, cfg % sst_file )
+        CALL GET_COMMAND_ARGUMENT(  7, cfg % inp_path )
+        CALL GET_COMMAND_ARGUMENT(  8, cfg % out_path )
+        CALL GET_COMMAND_ARGUMENT(  9, sy_str )
+        CALL GET_COMMAND_ARGUMENT( 10, ey_str )
+        CALL GET_COMMAND_ARGUMENT( 11, sm_str )
+        CALL GET_COMMAND_ARGUMENT( 12, em_str )
+        CALL GET_COMMAND_ARGUMENT( 13, sd_str )
+        CALL GET_COMMAND_ARGUMENT( 14, ed_str )
     ELSE
-        PRINT*, " --- ERROR! 13 arguments are expected !"
+        PRINT*, " --- ERROR! 14 arguments are expected !"
         STOP
     END IF
 
     ! convert strings to real & integer
     READ( thv_str, '(F8.3)' ) cfg % thv
     READ( mpc_str, '(I1)' ) cfg % mpc
+    READ( cwc_mod_str, '(I1)' ) cfg % cwc_mod
     READ( overlap_str, '(I1)' ) cfg % overlap
     READ( scops_str, '(I1)' ) cfg % scops
     READ( sy_str, '(I4)' ) cfg % sy
@@ -98,7 +101,7 @@ PROGRAM CLOUD_SIMULATOR
             DO ff = 1, nfiles ! loop over files per month
 
                 CALL CONVERT_ERA_FILE( files(ff,1), ncfile )
-                CALL READ_ERA_NCFILE( ncfile, input )
+                CALL READ_ERA_NCFILE( ncfile, input, cfg )
                 CALL INIT_SZA( input, aux )
 
                 CALL INITIALIZE_TEMPS( input, temps )

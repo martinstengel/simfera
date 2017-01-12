@@ -349,6 +349,11 @@ MODULE SUBS
     
         PRINT('(A30, E8.2)'), "COT-THV: ", cfg % thv
 
+        IF ( cfg % cwc_mod == cwc_mod_off) & 
+            PRINT('(A30, I1)'), "Using orig. CWC from ERA: ", cfg % cwc_mod
+        IF ( cfg % cwc_mod == cwc_mod_on) &
+            PRINT('(A30, I1)'), "CWC modified (binning approach): ", cfg % cwc_mod
+
         IF ( cfg % mpc == no_mixed_phase) & 
             PRINT('(A30, I1)'), "no_mixed_phase: ", cfg % mpc
         IF ( cfg % mpc == mixed_phase) &
