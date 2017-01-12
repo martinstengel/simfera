@@ -1006,6 +1006,11 @@ MODULE SIM_NCDF
         CHARACTER(LEN=file_length), INTENT(IN) :: ifile
         TYPE(era_input), INTENT(INOUT)         :: idata
 
+        !local variables: total CWC, scaling factor
+        INTEGER(KIND=sint)                              :: z
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: mst_cwc
+        REAL(KIND=sreal), DIMENSION(:,:,:), ALLOCATABLE :: mst_sca
+
         PRINT*, "** READ_ERA_NCFILE"
 
         ! open ncdf file
@@ -1079,6 +1084,76 @@ MODULE SIM_NCDF
         WHERE ( idata % cc_prof  .LT. 0.0 ) idata % cc_prof  = 0.0
         WHERE ( idata % lwc_prof .LT. 0.0 ) idata % lwc_prof = 0.0
         WHERE ( idata % iwc_prof .LT. 0.0 ) idata % iwc_prof = 0.0
+
+        ! --- Jan 2017 by MST --------------------
+        ! modify lwc and iwc regarding temperature
+
+        ! allocate local variables
+        ALLOCATE( mst_cwc( idata % xdim, idata % ydim, idata % zdim ) )
+        ALLOCATE( mst_sca( idata % xdim, idata % ydim, idata % zdim ) )
+
+        ! z = 60: lowermost model level
+        ! z =  1: uppermost model level
+        DO z=idata % zdim, 1, -1
+
+            ! total cloud water content
+            mst_cwc(:,:,z) = idata % lwc_prof(:,:,z) + idata % iwc_prof(:,:,z)
+
+            ! reset liquid and ice water content w.r.t. temperature
+            ! LIQUID
+            WHERE( idata % temp_prof(:,:,z) .GE. 273.15 )
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z)
+                idata % iwc_prof(:,:,z) = 0.
+            END WHERE
+            ! ICE
+            WHERE( idata % temp_prof(:,:,z) .LT. 240.0 )
+                idata % lwc_prof(:,:,z) = 0.
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z)
+            END WHERE
+            ! IN BETWEEN
+            WHERE( idata % temp_prof(:,:,z) .GE. 240. .AND. idata % temp_prof(:,:,z) .LT.  245. )
+                mst_sca(:,:,z) = 0.109
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+            END WHERE
+            WHERE( idata % temp_prof(:,:,z) .GE. 245. .AND. idata % temp_prof(:,:,z) .LT.  250. )
+                mst_sca(:,:,z) = 0.256
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+            END WHERE
+            WHERE( idata % temp_prof(:,:,z) .GE. 250. .AND. idata % temp_prof(:,:,z) .LT.  255. )
+                mst_sca(:,:,z) = 0.314
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+            END WHERE
+            WHERE( idata % temp_prof(:,:,z) .GE. 255. .AND. idata % temp_prof(:,:,z) .LT.  260. )
+                mst_sca(:,:,z) = 0.378
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+            END WHERE
+            WHERE( idata % temp_prof(:,:,z) .GE. 260. .AND. idata % temp_prof(:,:,z) .LT.  265. )
+                mst_sca(:,:,z) = 0.493
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+            END WHERE
+            WHERE( idata % temp_prof(:,:,z) .GE. 265. .AND. idata % temp_prof(:,:,z) .LT.  270. )
+                mst_sca(:,:,z) = 0.700
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+            END WHERE
+            WHERE( idata % temp_prof(:,:,z) .GE. 270. .AND. idata % temp_prof(:,:,z) .LT.  275. )
+                mst_sca(:,:,z) = 0.947
+                idata % lwc_prof(:,:,z) = mst_cwc(:,:,z) * mst_sca(:,:,z)
+                idata % iwc_prof(:,:,z) = mst_cwc(:,:,z) * ( 1.0 - mst_sca(:,:,z) )
+            END WHERE
+
+        END DO
+
+        ! deallocate local variables
+        IF ( ALLOCATED( mst_cwc ) ) DEALLOCATE ( mst_cwc )
+        IF ( ALLOCATED( mst_sca ) ) DEALLOCATE ( mst_sca )
+
+        ! --- Jan 2017 END -----------------------
 
         ! compute now: z=1, 60
         ! * geopotential profile = idata % geop_prof
