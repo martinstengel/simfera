@@ -64,7 +64,7 @@ PROGRAM CLOUD_SIMULATOR
     END IF
 
     ! convert strings to real & integer
-    READ( thv_str, '(F8.3)' ) cfg % thv
+    READ( thv_str, '(F10.6)' ) cfg % thv
     READ( mpc_str, '(I1)' ) cfg % mpc
     READ( cwc_mod_str, '(I1)' ) cfg % cwc_mod
     READ( overlap_str, '(I1)' ) cfg % overlap
