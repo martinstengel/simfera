@@ -28,7 +28,7 @@ tar czvf ${TARFILE} *.nc
 
 # download file
 CMD="ectrans -remote conny -gateway oflxd11.dwd.de"
-CMSAF="/cmsaf/cmsaf-cld7/cschlund/esa_cloud_cci/simulator/output/ectrans"
+CMSAF="/cmsaf/cmsaf-cld7/esa_cloud_cci/simulator/output/ectrans"
 chmod 777 ${TARFILE}
 ${CMD} -source ${TMP_FOLDER}/${TARFILE} -target ${CMSAF}/${TARFILE} -put
 
