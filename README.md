@@ -1,7 +1,7 @@
 
 # cloud_simulator
 
-  * **git clone** https://github.com/cschlund/cloud_simulator.git
+  * **git clone** https://github.com/martinstengel/simfera.git
   
   * cd cloud_simulator/fortran
   
